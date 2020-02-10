@@ -2,7 +2,7 @@
 
 ## Notes
 - "data" directory will hold all our data. We will keep data files labelled with the date to make it easy to follow.
-- Currently, use the "001_trial1_right_log_18-09-46-931825.txt" file. It's raw csv data with 3 columns: timestamp(ms) | power | keypress.
+- Currently, use the "001_trial1_right_log_18-09-46-931825.txt" file and try to match the timestamps with the OpenBCI one.
 Note that every keypress comes up as a duplicate, despite one press. Just take the first one. With this limitation in mind, just use this data to produce preliminary visualizations for transforms. We will get more data as we go!
 
 ## Siggy workflow reminders
