@@ -20,14 +20,14 @@ Task description (markov)
 
 
 Each finger is represented by a number:
-0 - left - pinky
-1 - left - ring
-2 - left - middle
-3 - left - index
-4 - left - thumb
+0 - left - pinky  
+1 - left - ring  
+2 - left - middle  
+3 - left - index  
+4 - left - thumb  
 
-5 - right - pinky
-6 - right - ring
-7 - right - middle
-8 - right - index
-9 - right - thumb
+5 - right - pinky  
+6 - right - ring  
+7 - right - middle  
+8 - right - index  
+9 - right - thumb  
