@@ -1,0 +1,8 @@
+2020-02-09 Miasya
+Uploaded 2 data files representing 1 run. The timestamps don't correspond well. We need to figure out how to match them
+001_trial1_right_log_18-09-46-931825.txt
+001_trial1_right_OpenBCI-RAW-2020-02-09_17-59-22.txt
+
+Uploaded 1 file consisting of 2 dicts: One for letter to corresponding finger, and one from finger to potential set of letters.
+This is based on touch typing
+finger_letter_mapping.py
