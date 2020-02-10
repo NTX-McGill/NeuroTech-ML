@@ -19,7 +19,7 @@ Task description (markov)
 
 
 
-Each finger is represented by a number:
+Each finger is represented by a number:  
 0 - left - pinky  
 1 - left - ring  
 2 - left - middle  
