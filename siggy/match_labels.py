@@ -1,8 +1,18 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[438]:
+
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
 import pytz
+
+
+# In[439]:
+
 
 def get_ms(str_time):
   """
@@ -20,6 +30,10 @@ def get_ms(str_time):
   timezone_date_time_obj = timezone.localize(date_time_obj)
   return timezone_date_time_obj.timestamp() * 1000
 
+
+# In[440]:
+
+
 def closest_time(times, marker_time):
     """
         Get row index of data timestamp closest to marker_time 
@@ -31,6 +45,10 @@ def closest_time(times, marker_time):
     """
     
     return np.argmin(np.abs(times - marker_time))
+
+
+# In[1]:
+
 
 def append_labels(data_file, labels_file, channels):
     """
@@ -44,7 +62,7 @@ def append_labels(data_file, labels_file, channels):
     """
     
     #Load data from files
-    data = np.loadtxt(fname,
+    data = np.loadtxt(data_file,
                       delimiter=',',
                       skiprows=7,
                       usecols=channels)
@@ -66,6 +84,10 @@ def append_labels(data_file, labels_file, channels):
     labelled_data["keyspressed"] = new_col
     
     return labelled_data
+
+
+# In[446]:
+
 
 def label_window(data, length=1, shift=0.1, offset=2):
     """
@@ -119,3 +141,14 @@ def label_window(data, length=1, shift=0.1, offset=2):
     windows_df['keyspressed'] = pd.Series(window_labels)
     
     return windows_df
+
+
+# In[449]:
+
+
+if __name__ == '__main__':
+    markers = '../data/001_trial1_right_log_18-09-46-931825.txt'
+    fname = '../data/001_trial1_right_OpenBCI-RAW-2020-02-09_17-59-22.txt'
+    labelled_raw = append_labels(fname, markers, channel)
+    label_window(labelled_raw)
+
