@@ -47,7 +47,7 @@ def closest_time(times, marker_time):
     return np.argmin(np.abs(times - marker_time))
 
 
-# In[1]:
+# In[2]:
 
 
 def append_labels(data_file, labels_file, channels):
@@ -69,6 +69,7 @@ def append_labels(data_file, labels_file, channels):
     labels = pd.read_csv(labels_file)
     
     #Get useful columns
+    emg = data[:, :-1]
     data_timestamps = data[:, -1]
     label_timestamps = labels['timestamp(ms)']
     keyspressed = labels[' keypressed'] #Tell Software to fix the col name
