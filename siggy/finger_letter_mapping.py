@@ -14,12 +14,11 @@
 # 1 - left - ring
 # 2 - left - middle
 # 3 - left - index
-# 4 - left - thumb
+# 4 - SPACE
 # 5 - right - pinky
 # 6 - right - ring
 # 7 - right - middle
 # 8 - right - index
-# 9 - right - thumb
 
 letter_finger = {'q' : 0, 'a' : 0, 'z' : 0,
                 'w' : 1, 's' : 1, 'x' : 1,
@@ -28,18 +27,18 @@ letter_finger = {'q' : 0, 'a' : 0, 'z' : 0,
                 'p' : 5,
                 'o' : 6, 'l' : 6,
                 'i' : 7, 'k' : 7,
-                'u' : 8, 'j' : 8, 'm' : 8, 'y' : 8, 'h' : 8, 'n' : 8}
+                'u' : 8, 'j' : 8, 'm' : 8, 'y' : 8, 'h' : 8, 'n' : 8, 
+                ' ' : 4}
 
 finger_letter = {0 : ('q', 'a', 'z'),
                 1 : ('w', 's', 'x'),
                 2 : ('e', 'd', 'c'),
                 3 : ('r', 'f', 'v', 't', 'g', 'b'),
-                4 : None,
+                4 : ' ',
                 5 : ('p'),
                 6 : ('o', 'l'),
                 7 : ('i', 'k'),
-                8 : ('u', 'j', 'm', 'y', 'h', 'n'),
-                9 : None}
+                8 : ('u', 'j', 'm', 'y', 'h', 'n')}
 
 
 """
@@ -47,10 +46,8 @@ finger_letter = {0 : ('q', 'a', 'z'),
 my_sentence = "do you like pancakes"
 
 for c in my_sentence:
-    if c != ' ':
+    if c in letter_finger.keys(): 
         print(letter_finger[c])
-    else:
-        print(' ')
 """
 
 
