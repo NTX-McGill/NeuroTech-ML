@@ -3,9 +3,9 @@
 Date: February 16th, 2020\
 Location: Building 21
 
-### Session 1: Subject 001
+## Session 1: Subject 001
 
-*Electrodes*
+### Electrodes
 
 | Channel  |      1      |      2      |      3     |       4     |  5  |  6  | 7   |  8  |
 |----------|-------------|-------------|------------|-------------|-----|-----|-----|-----|
@@ -13,7 +13,7 @@ Location: Building 21
 
 - Ground electrode on bone on back of forearm (near the wrist)
 
-*Trials*
+### Trials
 - Trial 1: Guided, keyboard
     - Participant typed on keyboard, following dashboard prompts
     - 4 fingers used (right hand, no thumb)
@@ -38,7 +38,7 @@ Location: Building 21
     - Participant typed in the air, following dashboard prompts
     - Arm was perpendicular to the floor (i.e. vertical), on the side of the body
 
-*Remarks*
+### Remarks
 - Any left hand prompt (letters 'a', 's', 'd', 'f') was ignored because we only put electrodes on the right hand
 - For trials 3 and 6 (self-directed), all prompts were ignored
-- Ignored prompts were still logged
+- Ignored prompts were still logged by the dashboard
