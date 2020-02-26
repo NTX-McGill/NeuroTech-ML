@@ -23,14 +23,26 @@ SAMPLING_FREQ = 250
 def load_dta(markers='./001_trial1_right_log_18-09-46-931825.txt',
 			 fname='./001_trial1_right_OpenBCI-RAW-2020-02-09_17-59-22.txt',
 			 channel = [1,2,3,4]):
-	df_labels = pd.read_csv(markers)
-	start = df_labels['timestamp(ms)'].iloc[0]
-	end = df_labels['timestamp(ms)'].iloc[-1]
+	try:# for the first type of labels data, try to load it
+		df_labels = pd.read_csv(markers)
+		print('labels dataframe',list(df_labels.columns))#trace
+		input('press enter (trace)')#trace
+		start = df_labels['timestamp(ms)'].iloc[0]
+		end = df_labels['timestamp(ms)'].iloc[-1]
+	except:# for the later kind of labeled data
+		df_labels = pd.read_csv(markers,names=['datetime(ms)','int_time(ms)',
+											   'prompt','leftright','finger','keypressed'])
+		print('labels dataframe',list(df_labels.columns))#trace
+		input('press enter (trace)')#trace
+		start = df_labels['int_time(ms)'].iloc[0]
+		end = df_labels['int_time(ms)'].iloc[-1]
+
 	channel.append(13)
 	data = np.loadtxt(fname,delimiter=',',skiprows=7,usecols=channel)
 	eeg = data[:,:-1]
 	timestamps = data[:,-1]
-	return eeg,timestamps,start,end,df_labels
+
+	return eeg,timestamps,start,end,df_labels# watch out over-loaded, returns two types of df_labels
 
 
 # change this so that it takes a date
@@ -42,15 +54,22 @@ inputs:
 outputs:
   milliseconds (float)
 """
-def get_ms(str_time, str_date='2020-02-09 '):
+def get_ms(str_time, str_date='2020-02-09 '):# overload this to deal with two differnet types of database
 	#if str_date[-1]!=' ': 
 	#	str_date+=' '# must have a space!
-    date_time_str = str_date + str_time
-    date_time_obj = datetime.datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S:%f')
+	try:# first type of data
+		date_time_str = str_date + str_time
+		date_time_obj = datetime.datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S:%f')
 
-    timezone = pytz.timezone('America/New_York')
-    timezone_date_time_obj = timezone.localize(date_time_obj)
-    return timezone_date_time_obj.timestamp() * 1000
+		timezone = pytz.timezone('America/New_York')
+		timezone_date_time_obj = timezone.localize(date_time_obj)
+		return timezone_date_time_obj.timestamp() * 1000
+	except:
+	# second type of data, here the str_time is actually already in the correct format
+		return str_time
+		
+
+    
 
 # return the date from data in labels data frame in string format
 #def get_str_date():
@@ -156,16 +175,37 @@ def display_spec(markers='./001_trial1_right_log_18-09-46-931825.txt',
 	start_idx = np.where(timestamps > get_ms(start))[0][0]
 	end_idx = np.where(timestamps > get_ms(end))[0][0]
 
-	markings = [get_ms(val) for val in df_labels['timestamp(ms)'].values[::2]]# notice the 2 here... cause duplicate
-	labels = df_labels.values[:,1]
+	print('labels dataframe columnnames\n',list(df_labels.columns))
+	input()#trace
+	try:# for the first type of data
+		markings = [get_ms(val) for val in df_labels['timestamp(ms)'].values[::2]]# notice the 2 here... cause duplicate
+		labels = df_labels.values[:,1]
+	except:# for the second kind of data
+		markings = [val[0] for val in df_labels[['int_time(ms)','keypressed']] if val[1] != None]
+		print(markings[:5])
+		input('trace 5')
+		markings = [float(i) for i in markings]
+		labels = df_labels.values[:,-1]
+		labels = [i for i in labels if i!=None]# drop the none values
 
 	for idx,ch in enumerate(eeg.T):
 		ch = filter_signal(ch)
 		t, spec_freqs, spec_PSDperBin = get_spectral_content(ch[start_idx:start_idx + 10000], 250)
 		fig=plt.figure(figsize=(15,12), dpi= 80, facecolor='w', edgecolor='k')
 		plot_specgram(spec_freqs, spec_PSDperBin,'channel {}'.format(idx + 1), 0)
-		for mark, label in zip(markings, labels):
-		    plt.text((mark - get_ms(start)-750)/1000,10,label, color='white')
+		# trace
+		print('type mark, type start')
+		#print(type(mark),type(start))
+		#input('enter trace')#trace
+		try:
+			for mark, label in zip(markings, labels):
+				plt.text((mark - get_ms(start)-750)/1000,10,label, color='white')
+		except:
+			for mark,label in zip(markings,labels):
+				print(type(mark),type(start),'\n',mark,start)
+				input('enter trace')#trace
+				plt.text((mark - start)/1000,10,label,color='white')
+				
 
 
 # just plots the graphs with only markers, fnam and channels
