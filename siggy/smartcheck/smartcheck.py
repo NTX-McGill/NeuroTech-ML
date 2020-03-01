@@ -88,11 +88,10 @@ class Smartcheck:
 
     def word_probability(self, word, prev):
         """Probability of a given word."""
-        bg = "{} {}".format(prev, word)
         p_c = self.model[word] if word in self.model else 1e-10 
-        p_cw = self.bigrams[bg] if bg in self.bigrams else 1e-10 
+        p_cw = self.bigrams[prev][word] if prev in self.bigrams and word in self.bigrams[prev] else 1e-10 
         p = p_c * p_cw if prev else p_c
-        print(word, p_c, p_cw)
+        # print(word, p_c, p_cw)
         return p
 
     def correct_sentence(self, sentence):
@@ -102,7 +101,6 @@ class Smartcheck:
         for i in range(1, len(words)):
             corrected += self.correction(words[i], words[i-1]) + " "
         return fw + " " + corrected
-
 
     def correction(self, word, prev):
         """Return the most probable correction."""
@@ -158,5 +156,5 @@ def test(test_file):
 if __name__ == "__main__":
     # test("test2.txt")
     sc = Smartcheck()
-    print(sc.correct_sentence("I like coffeeee"))
+    print(sc.correct_sentence("I like coffeeee. I relly liek it so mch its th bes"))
  
