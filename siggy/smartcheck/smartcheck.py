@@ -98,9 +98,10 @@ class Smartcheck:
     def correct_sentence(self, sentence):
         corrected = ""
         words = [w.strip().lower() for w in self.words(sentence)]
+        fw = self.correction(words[0], "")
         for i in range(1, len(words)):
             corrected += self.correction(words[i], words[i-1]) + " "
-        return words[0] + " " + corrected
+        return fw + " " + corrected
 
 
     def correction(self, word, prev):
