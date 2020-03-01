@@ -24,7 +24,7 @@ class Smartcheck:
 
     def __init__(
             self, 
-            dict_file = "dictionary.txt",
+            dict_file = "10k_dict.txt",
             model_file = "count_1w.txt", 
             bigram_file = "count_2w.txt"
     ):
@@ -35,7 +35,7 @@ class Smartcheck:
         self.bigrams = defaultdict(lambda: defaultdict(lambda: 0))
         self.model = {} 
         self.pop_model()
-        self.pop_bigrams()
+        self.pop_bigrams_old(nps_chat)
 
     def process_file(self, filename):
         content = {}
@@ -71,9 +71,8 @@ class Smartcheck:
         
     def pop_bigrams_old(self, corpus):
         """Populate self.bigrams with probabilities of next words"""
-        for sentence in corpus.sents():
-            for w1, w2 in bigrams(word_tokenize(sentence), pad_right=True, pad_left=True):
-                self.bigrams[w1][w2] += 1
+        for w1, w2 in bigrams(corpus.words()): 
+            self.bigrams[w1][w2] += 1
 
         # Convert trigrams to probabilities
         for wp in self.bigrams:
@@ -93,6 +92,7 @@ class Smartcheck:
         p_c = self.model[word] if word in self.model else 1e-10 
         p_cw = self.bigrams[bg] if bg in self.bigrams else 1e-10 
         p = p_c * p_cw if prev else p_c
+        print(word, p_c, p_cw)
         return p
 
     def correct_sentence(self, sentence):
@@ -158,5 +158,5 @@ def test(test_file):
 if __name__ == "__main__":
     # test("test2.txt")
     sc = Smartcheck()
-    print(sc.correct_sentence("I like coffe"))
+    print(sc.correct_sentence("I like coffeeee"))
  
