@@ -12,6 +12,7 @@ Smartcheck: smart spellcheck in pure Python.
 """
 
 from nltk import bigrams, word_tokenize
+from nltk.corpus import nps_chat
 from collections import Counter, defaultdict
 import re
 
@@ -68,9 +69,9 @@ class Smartcheck:
         for bigram in bigram_counts:
             self.bigrams[bigram.lower()] = bigram_counts[bigram] / N
         
-    def pop_bigrams_old(self):
+    def pop_bigrams_old(self, corpus):
         """Populate self.bigrams with probabilities of next words"""
-        for sentence in self.sentences(self.corpus):
+        for sentence in corpus.sents():
             for w1, w2 in bigrams(word_tokenize(sentence), pad_right=True, pad_left=True):
                 self.bigrams[w1][w2] += 1
 
@@ -92,8 +93,15 @@ class Smartcheck:
         p_c = self.model[word] if word in self.model else 1e-10 
         p_cw = self.bigrams[bg] if bg in self.bigrams else 1e-10 
         p = p_c * p_cw if prev else p_c
-        print(word, p_c, p_cw)
         return p
+
+    def correct_sentence(self, sentence):
+        corrected = ""
+        words = [w.strip().lower() for w in self.words(sentence)]
+        for i in range(1, len(words)):
+            corrected += self.correction(words[i], words[i-1]) + " "
+        return words[0] + " " + corrected
+
 
     def correction(self, word, prev):
         """Return the most probable correction."""
@@ -106,7 +114,7 @@ class Smartcheck:
     def candidates(self, word):
         """Candidate list of possible correct words."""
         return (self.known([word]) or \
-                self.known(self.edits1(word)) | \
+                self.known(self.edits1(word)) or \
                 self.known(self.edits2(word)) or \
                 set([word]))
 
@@ -149,8 +157,5 @@ def test(test_file):
 if __name__ == "__main__":
     # test("test2.txt")
     sc = Smartcheck()
-    while 1:
-        prev, word = input("").split()[:2]
-        print(sc.correction(word, prev))
-
+    print(sc.correct_sentence("I like coffe"))
  
