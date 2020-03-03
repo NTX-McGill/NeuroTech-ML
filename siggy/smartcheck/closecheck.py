@@ -1,3 +1,5 @@
+# levenshtein with memoizaiton from https://www.python-course.eu/levenshtein_distance.php
+
 def memoize(func):
     mem = {}
     def memoizer(*args, **kwargs):
