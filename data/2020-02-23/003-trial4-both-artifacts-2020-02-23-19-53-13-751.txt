@@ -1,5 +1,12 @@
-name=003
-notes=003. Trial 4. Both handds. Artifacts.
+{
+    "id": "003",
+    "trial": "4",
+    "mode": "In-the-air",
+    "datetime": "2020-02-23-18:49:45:254",
+    "timestamp": "1582501762856",
+    "prompts": "",
+    "notes": "Artifacts (both hands). 'j': left fist clench. 'k': left swipe (straight fingers). 'l': left swipe (curl fingers). ';': left roll wrist. 'f': right fist clench. 'd': right swipe (straight fingers). 'S': right swipe (curl fingers). 'a': right roll wrist. 'h': noise (meaningless movement)."
+}
 datetime, timestamp, event, hand, finger, key
 2020-02-23-19:53:16:806, 1582505596806, prompt_end, right, pinkie, 
 2020-02-23-19:53:20:203, 1582505600203, prompt_end, right, index finger, 

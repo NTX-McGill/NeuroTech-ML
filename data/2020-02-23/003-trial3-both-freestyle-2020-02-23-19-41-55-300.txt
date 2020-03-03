@@ -1,3 +1,12 @@
+{
+    "id": "003",
+    "trial": "3",
+    "mode": "Self-directed",
+    "datetime": "2020-02-23-19:41:42:385",
+    "timestamp": "1582504918111",
+    "prompts": "",
+    "notes": "Both hands"
+}
 name=003
 notes=003. Trial 3. Both hands. Self-directed.
 datetime, timestamp, event, hand, finger, key

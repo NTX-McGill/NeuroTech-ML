@@ -1,5 +1,12 @@
-name=002
-notes=002. Trial 3. Both hands. Free type.
+{
+    "id": "002",
+    "trial": "3",
+    "mode": "Self-directed",
+    "datetime": "2020-02-23-17:05:42:385",
+    "timestamp": "1582500991486",
+    "prompts": "",
+    "notes": "Both hands"
+}
 datetime, timestamp, event, hand, finger, key
 2020-02-23-18:36:31:486, 1582500991486, prompt_end, left, index finger, 
 2020-02-23-18:36:32:420, 1582500992420, keystroke, , , d

@@ -1,5 +1,12 @@
-name=002
-notes=002. Trial 5. Right hand. Artifacts/movements.
+{
+    "id": "002",
+    "trial": "5",
+    "mode": "In-the-air",
+    "datetime": "2020-02-23-18:49:45:254",
+    "timestamp": "1582501762856",
+    "prompts": "",
+    "notes": "Artifacts (right hand). 'f': right fist clench. 'd': right swipe (straight fingers). 'S': right swipe (curl fingers). 'a': right roll wrist. 'h': noise (meaningless movement)."
+}
 datetime, timestamp, event, hand, finger, key
 2020-02-23-18:52:27:253, 1582501947253, prompt_end, left, pinkie, 
 2020-02-23-18:52:30:649, 1582501950649, prompt_end, right, pinkie, 
