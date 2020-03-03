@@ -1,3 +1,12 @@
+{
+    "id": "001",
+    "trial": "3",
+    "mode": "Self-directed",
+    "datetime": "2020-02-16-19:46:45:254",
+    "timestamp": "1581900412187",
+    "prompts": "",
+    "notes": "All fingers. Ignore all prompts."
+}
 2020-02-16-19:46:52:187, 1581900412187, keystroke, , , j
 2020-02-16-19:46:53:202, 1581900413202, keystroke, , , u
 2020-02-16-19:46:53:590, 1581900413590, prompt_end, left, index finger, 

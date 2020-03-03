@@ -1,3 +1,12 @@
+{
+    "id": "001",
+    "trial": "5",
+    "mode": "In-the-air",
+    "datetime": "2020-02-16-19:41:45:254",
+    "timestamp": "1581900122720",
+    "prompts": "left pinkie a , left ring finger s , left middle finger d ,left index finger f ,right index finger j ,right middle finger k ,right ring finger l ,right pinkie semicolon",
+    "notes": "Right hand only. Ignore left hand prompts. Position: standing."
+}
 2020-02-16-19:42:02:720, 1581900122720, prompt_end, right, middle finger, 
 2020-02-16-19:42:06:086, 1581900126086, prompt_end, right, middle finger, 
 2020-02-16-19:42:09:449, 1581900129449, prompt_end, right, pinkie, 
