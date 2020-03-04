@@ -1,0 +1,89 @@
+{
+    "id": "009",
+    "trial": "2",
+    "mode": "Guided",
+    "datetime": "2020-03-03-17:46:12:375",
+    "timestamp": "1583275572375",
+    "prompts": "left pinkie a , left ring finger s , left middle finger d ,left index finger f ,right index finger j ,right middle finger k ,right ring finger l ,right pinkie semicolon",
+    "notes": ""
+}
+datetime, timestamp, event, hand, finger, key
+2020-03-03-17:46:15:041, 1583275575041, prompt_end, left, middle finger, 
+2020-03-03-17:46:15:085, 1583275575085, keystroke, , , d
+2020-03-03-17:46:18:299, 1583275578299, prompt_end, right, middle finger, 
+2020-03-03-17:46:18:365, 1583275578365, keystroke, , , k
+2020-03-03-17:46:21:563, 1583275581563, keystroke, , , s
+2020-03-03-17:46:21:565, 1583275581565, prompt_end, left, ring finger, 
+2020-03-03-17:46:24:794, 1583275584794, prompt_end, left, index finger, 
+2020-03-03-17:46:24:836, 1583275584836, keystroke, , , f
+2020-03-03-17:46:28:052, 1583275588052, prompt_end, right, index finger, 
+2020-03-03-17:46:28:091, 1583275588091, keystroke, , , j
+2020-03-03-17:46:31:320, 1583275591320, prompt_end, left, ring finger, 
+2020-03-03-17:46:31:367, 1583275591367, keystroke, , , s
+2020-03-03-17:46:34:547, 1583275594547, prompt_end, right, middle finger, 
+2020-03-03-17:46:34:620, 1583275594620, keystroke, , , k
+2020-03-03-17:46:37:701, 1583275597701, keystroke, , , s
+2020-03-03-17:46:37:818, 1583275597818, prompt_end, left, ring finger, 
+2020-03-03-17:46:41:036, 1583275601036, prompt_end, right, middle finger, 
+2020-03-03-17:46:41:100, 1583275601100, keystroke, , , k
+2020-03-03-17:46:44:289, 1583275604289, prompt_end, left, ring finger, 
+2020-03-03-17:46:44:536, 1583275604536, keystroke, , , s
+2020-03-03-17:46:47:468, 1583275607468, keystroke, , , l
+2020-03-03-17:46:47:554, 1583275607554, prompt_end, right, ring finger, 
+2020-03-03-17:46:50:750, 1583275610750, keystroke, , , ;
+2020-03-03-17:46:50:806, 1583275610806, prompt_end, right, pinkie, 
+2020-03-03-17:46:54:034, 1583275614034, prompt_end, right, middle finger, 
+2020-03-03-17:46:54:380, 1583275614380, keystroke, , , k
+2020-03-03-17:46:57:282, 1583275617282, prompt_end, left, ring finger, 
+2020-03-03-17:47:00:476, 1583275620476, keystroke, , , l
+2020-03-03-17:47:00:535, 1583275620535, prompt_end, right, ring finger, 
+2020-03-03-17:47:03:752, 1583275623752, prompt_end, left, middle finger, 
+2020-03-03-17:47:06:984, 1583275626984, prompt_end, left, middle finger, 
+2020-03-03-17:47:07:032, 1583275627032, keystroke, , , d
+2020-03-03-17:47:10:213, 1583275630213, keystroke, , , a
+2020-03-03-17:47:10:270, 1583275630270, prompt_end, left, pinkie, 
+2020-03-03-17:47:13:463, 1583275633463, keystroke, , , ;
+2020-03-03-17:47:13:523, 1583275633523, prompt_end, right, pinkie, 
+2020-03-03-17:47:16:750, 1583275636750, prompt_end, right, pinkie, 
+2020-03-03-17:47:19:983, 1583275639983, prompt_end, right, middle finger, 
+2020-03-03-17:47:20:116, 1583275640116, keystroke, , , k
+2020-03-03-17:47:23:125, 1583275643125, keystroke, , , ;
+2020-03-03-17:47:23:277, 1583275643277, prompt_end, right, pinkie, 
+2020-03-03-17:47:26:505, 1583275646505, prompt_end, left, middle finger, 
+2020-03-03-17:47:29:738, 1583275649738, prompt_end, left, index finger, 
+2020-03-03-17:47:29:822, 1583275649822, keystroke, , , f
+2020-03-03-17:47:32:982, 1583275652982, prompt_end, right, ring finger, 
+2020-03-03-17:47:32:983, 1583275652983, keystroke, , , l
+2020-03-03-17:47:36:237, 1583275656237, prompt_end, left, pinkie, 
+2020-03-03-17:47:39:464, 1583275659464, prompt_end, right, index finger, 
+2020-03-03-17:47:42:691, 1583275662691, prompt_end, left, pinkie, 
+2020-03-03-17:47:45:915, 1583275665915, prompt_end, right, index finger, 
+2020-03-03-17:47:45:985, 1583275665985, keystroke, , , j
+2020-03-03-17:47:49:172, 1583275669172, prompt_end, right, ring finger, 
+2020-03-03-17:47:52:405, 1583275672405, prompt_end, right, pinkie, 
+2020-03-03-17:47:55:634, 1583275675634, prompt_end, right, ring finger, 
+2020-03-03-17:47:58:803, 1583275678803, keystroke, , , l
+2020-03-03-17:47:58:896, 1583275678896, prompt_end, right, ring finger, 
+2020-03-03-17:48:02:094, 1583275682094, keystroke, , , f
+2020-03-03-17:48:02:157, 1583275682157, prompt_end, right, index finger, 
+2020-03-03-17:48:05:384, 1583275685384, prompt_end, left, ring finger, 
+2020-03-03-17:48:05:438, 1583275685438, keystroke, , , s
+2020-03-03-17:48:08:616, 1583275688616, keystroke, , , k
+2020-03-03-17:48:08:708, 1583275688708, prompt_end, right, middle finger, 
+2020-03-03-17:48:11:936, 1583275691936, prompt_end, right, middle finger, 
+2020-03-03-17:48:11:992, 1583275691992, keystroke, , , k
+2020-03-03-17:48:15:225, 1583275695225, prompt_end, left, middle finger, 
+2020-03-03-17:48:15:269, 1583275695269, keystroke, , , d
+2020-03-03-17:48:18:503, 1583275698503, prompt_end, left, index finger, 
+2020-03-03-17:48:21:705, 1583275701705, keystroke, , , f
+2020-03-03-17:48:21:775, 1583275701775, prompt_end, left, index finger, 
+2020-03-03-17:48:25:002, 1583275705002, prompt_end, left, index finger, 
+2020-03-03-17:48:25:006, 1583275705006, keystroke, , , f
+2020-03-03-17:48:28:270, 1583275708270, keystroke, , , j
+2020-03-03-17:48:28:337, 1583275708337, prompt_end, right, index finger, 
+2020-03-03-17:48:31:572, 1583275711572, prompt_end, right, ring finger, 
+2020-03-03-17:48:31:575, 1583275711575, keystroke, , , l
+2020-03-03-17:48:34:834, 1583275714834, keystroke, , , ;
+2020-03-03-17:48:34:900, 1583275714900, prompt_end, right, pinkie, 
+2020-03-03-17:48:38:138, 1583275718138, prompt_end, left, index finger, 
+2020-03-03-17:48:38:223, 1583275718223, keystroke, , , f
