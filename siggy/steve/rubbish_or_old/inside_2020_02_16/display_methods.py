@@ -258,14 +258,14 @@ def plot_ts_filtered(markers='./001_trial1_right_keyboard_2020-02-16-19-09-10-30
 	elif explicit_interval:
 		start_idx = explicit_interval[0]
 		stop_idx = explicit_interval[1]
-		lr_trimmed = lr.truncate(before=start_idx_new,after=stop_idx_new)
+		lr_trimmed = lr.truncate(before=start_idx , after=stop_idx)
 		only_keypressed = lr_trimmed[lr_trimmed['keypressed'].notna()]
 
 	# plot the data
-	channels = [i for i in lr.columns if i not in ('timestamp(ms)','keypressed')]
+	the_channels = [i for i in lr.columns if i not in ('timestamp(ms)','keypressed')]
 	count=0
-	plt.figure(figsize=figsize)
-	for channel_name in channels:
+	fig = plt.figure(figsize=figsize)
+	for channel_name in the_channels:
 		count+=1
 		ch = lr_trimmed[channel_name].values
 		timestamps = lr_trimmed['timestamp(ms)'].values
@@ -286,12 +286,14 @@ def plot_ts_filtered(markers='./001_trial1_right_keyboard_2020-02-16-19-09-10-30
 		    ts_keypress.append(only_keypressed.loc[only_keypressed['keypressed']==letter]['timestamp(ms)'].values)
 		    
 		# make the plot - raw data
-		plt.subplot(len(channels),1,count)
+		chop_idx = 250
+		plt.subplot(len(the_channels),1,count)
+		print('channel_name',channel_name)#channel_name
 		plt.title(channel_name,fontsize=17)
 		
 		# frequency filter
 		freq_filtered = filter_signal(ch)
-		plt.plot(np.arange(len(freq_filtered))[150:],freq_filtered[150:], label='frequency notch filter',color='green',alpha=.3)
+		plt.plot(np.arange(len(freq_filtered))[chop_idx:],freq_filtered[chop_idx:], label='frequency notch filter',color='green',alpha=.3)
 		
 		
 		# smooth the filtered with convolution
@@ -302,25 +304,29 @@ def plot_ts_filtered(markers='./001_trial1_right_keyboard_2020-02-16-19-09-10-30
 		freq_filtered_rms_30 = rms(freq_filtered,30)
 		freq_diff_smooth = mmav2(np.abs(np.diff(freq_filtered)),window=10)
 
-		plt.plot(np.arange(len(freq_filtered_conv))[150:],freq_filtered_conv[150:],label='conv',alpha=.75)
-		plt.plot(np.arange(len(freq_filtered_conv_abs))[150:],freq_filtered_conv_abs[150:],label='conv abs',alpha=.75)
+		plt.plot(np.arange(len(freq_filtered_conv))[chop_idx:],freq_filtered_conv[chop_idx:],label='conv',alpha=.75)
+		plt.plot(np.arange(len(freq_filtered_conv_abs))[chop_idx:],freq_filtered_conv_abs[chop_idx:],label='conv abs',alpha=.75)
 
-		plt.plot(np.arange(len(freq_filtered_rms_15))[150:],freq_filtered_rms_15[150:],label='rms 15',alpha=.5)
-		plt.plot(np.arange(len(freq_filtered_rms_5))[150:],freq_filtered_rms_5[150:],label='rms 5',alpha=.5)
-		plt.plot(np.arange(len(freq_filtered_rms_30))[150:],freq_filtered_rms_30[150:],label='rms 30',alpha=.6)
+		plt.plot(np.arange(len(freq_filtered_rms_15))[chop_idx:],freq_filtered_rms_15[chop_idx:],label='rms 15',alpha=.5)
+		plt.plot(np.arange(len(freq_filtered_rms_5))[chop_idx:],freq_filtered_rms_5[chop_idx:],label='rms 5',alpha=.5)
+		plt.plot(np.arange(len(freq_filtered_rms_30))[chop_idx:],freq_filtered_rms_30[chop_idx:],label='rms 30',alpha=.6)
 
-		plt.plot(np.arange(len(freq_diff_smooth))[150:],freq_diff_smooth[150:],label='freq abs difference',color='red',alpha=.35)
+		plt.plot(np.arange(len(freq_diff_smooth))[chop_idx:],freq_diff_smooth[chop_idx:],label='freq abs difference',color='red',alpha=.35)
 
 		l = list(lr_trimmed['timestamp(ms)'].values)
 		for x,y,lab in zip(ts_keypress,ch_i_keypress,labels):
 			x_new = [l.index(i) for i in x]
 			plt.plot(x_new,np.ones(len(y))*75.0,marker=lab,color='red',linestyle='None')
-
-		plt.legend(fontsize=12,loc=4)
-
+		
+		plt.legend(fontsize=12,loc=1,framealpha=.1)
+		
+		# set the y axis max min if i'm taking pictures
+		if explicit_interval:
+			x1,x2,y1,y2 = plt.axis()
+			plt.axis((x1,x2,-65,150))
 	if save_fig: plt.savefig(save_fig)
 	if disp: plt.show()
-	#plt.show()
+	plt.close(fig)
 
 
 
@@ -330,11 +336,13 @@ def get_explicit_letter_intervals(markers='./001_trial1_right_keyboard_2020-02-1
 								channel=[1,2,3,4]):
 	# load the data and find where they all are
 	channel.append(13)
+	channel1 = channel[:]
+
 	lr = load_raw.load_dta(markers,fname,channel)
 	key = lr[lr['keypressed'].notna()]
 	keypress_indices = [key.iloc[i].name for i in range(len(key))]
-	# the intervals should go from -200 till +500
-	intervals = [(i-300,i+600) for i in keypress_indices]
+	# the intervals should go from -350 till +500, it gets trimmed by chop_idx later which should be set to 250
+	intervals = [(i-600,i+600) for i in keypress_indices]
 	letters = key['keypressed'].values
 	return intervals,letters
 
@@ -356,6 +364,7 @@ def take_pictures(fname_dta=[('./001_trial1_right_keyboard_2020-02-16-19-09-10-3
 				channel=[1,2,3,4],
 				figsize=(10,12),
 				folder_name='pictures'):
+	channel1 = channel[:]
 	# make a folder
 	os.mkdir(folder_name)# throws exception if file already exists
 	
@@ -366,14 +375,42 @@ def take_pictures(fname_dta=[('./001_trial1_right_keyboard_2020-02-16-19-09-10-3
 		markers = abc[0]
 		fname = abc[1]
 		# load the data, and get intervals information
-		lr = load_raw.load_dta(markers,fname,channel)
-		explicit_intervals,letters = get_explicit_intervals(markers=markers,fname=fname,channel=channel)
+		lr = load_raw.load_dta(markers,fname,channel+[13])
+		explicit_intervals,letters = get_explicit_letter_intervals(markers=markers,fname=fname,channel=channel)
 		count2=0
 		for i,j in zip(explicit_intervals,letters):
 			count2+=1
-			plot_ts_filtered(markers=markers,fname=fname,channel=channel,figsize=figsize,
-							explicit_interval=i,
-							save_fig='./'+folder_name+'/'+j+'_'+str(count1)+'_'+str(count2)+'_'+markers[2:-4]+'.png',disp=False)
+			channel=channel1[:]
+			try:
+				plot_ts_filtered(markers=markers,fname=fname,channel=channel,figsize=figsize,
+								explicit_interval=i,
+				save_fig='./'+folder_name+'/'+j+'_'+str(count1)+'_'+str(count2)+'_'+markers[2:-4]+'.png',
+				disp=False)
+			except: continue
+
+
+# actually take the pictures, thsi method is just temporary it's to make execution faster so i dont have to go thorugh jnb
+
+def big_shooting():
+	import os
+	txt = [i for i in os.listdir() if '.txt' in i]
+	dta_fnames = [i for i in os.listdir() if '.txt' in i and 'OpenBCI' in i]
+	markers = [i for i in os.listdir() if '.txt' in i and 'OpenBCI' not in i]
+	dta_fnames.sort()
+	markers.sort()
+	len(dta_fnames),len(markers)
+	fname_dta = [(i,j) for i,j in zip(markers,dta_fnames)]
+	fname_dta[:2]
+	
+	#take_pictures(channel=[1,2],figsize=(10,12),fname_dta=fname_dta,folder_name='channels_1_2')
+	#take_pictures(channel=[3,4],figsize=(10,12),fname_dta=fname_dta,folder_name='channels_3_4')
+	#take_pictures(channel=[1,2,3,4],figsize=(10,15),fname_dta=fname_dta,folder_name='channels_1234')
+	#take_pictures(channel=[1],figsize=(10,10),fname_dta=fname_dta,folder_name='channel_1')
+	#take_pictures(channel=[2],figsize=(10,10),fname_dta=fname_dta,folder_name='channel_2')
+	#take_pictures(channel=[3],figsize=(10,10),fname_dta=fname_dta,folder_name='channel_3')
+	#take_pictures(channel=[4],figsize=(10,10),fname_dta=fname_dta,folder_name='channel_4')
+
+
 
 
 

@@ -84,7 +84,7 @@ def append_labels(data_file, label_file, channels):
     labels = pd.read_csv(label_file, 
                          sep=", ", 
                          names=['timestamp(datetime)', 'timestamp(ms)', 'type', 'hand', 'finger', 'keypressed'], 
-                         header=None, 
+                         header=None,
                          engine='python')
     
     #Get useful columns
@@ -100,7 +100,8 @@ def append_labels(data_file, label_file, channels):
             new_col[closest_time(data_timestamps, label_timestamps[i])] = keyspressed[i]
     
     #Put everything into a DataFrame
-    names = ["channel " + str(i) for i in range(1, data.shape[1])] + ['timestamp(ms)']
+	#names = ['channel '+ str(i) for i in range(1,data.shape[1])] + ['timestamp(ms)']
+    names = ["channel " + str(i) for i in channels[:-1]] + ['timestamp(ms)']
     labelled_data = pd.DataFrame(data, columns=names)
     labelled_data["keypressed"] = new_col
     
