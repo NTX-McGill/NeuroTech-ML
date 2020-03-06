@@ -17,15 +17,22 @@ from features import *
 def get_name(channel_name, feature_name):
     return "{}_{}".format(channel_name, feature_name)
 
+def all_names(channel_names, feature_names):
+    names = []
+    for channel_name in channel_names:
+        for feature_name in feature_names:
+            names.append(get_name(channel_name, feature_name))
+    return names
 
 def compute_feature(df, channel_names, feature_name, to_df=True):
     """
-    Non-mutable computation
+    Get features from window, non-mutating
     
     Parameters
     ----------
     df : pd.DataFrame
         dataframe with windows
+    channel_names : list of strings
     feature_name : string
         string name of the feature function
     to_df : bool
@@ -50,18 +57,42 @@ def compute_feature(df, channel_names, feature_name, to_df=True):
         result = pd.DataFrame(result)
     return result
 
-def compute_features(df, channel_names, feature_names):
+def compute_features(df, channel_names, feature_names, mutate=False):
+    """
+    Get features from window, non-mutating
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        dataframe with windows
+    channel_names : list of strings
+    feature_names : list of strings
+
+    Returns
+    -------
+    df_result : pd.DataFrame
+        new dataframe with feature columns for each channel
+
+    """
     all_results = {}
     for feature_name in feature_names:
         result = compute_feature(df, channel_names, feature_name, to_df=False)
         all_results.update(result)
+    if mutate:
+        for key, val in all_results.items():
+            df[key] = val
+        return df
     df_result = pd.DataFrame(all_results)
+    # TODO: extract other 'labels' from df?
+    df_result['keypressed'] = df['keypressed']
     return df_result
+
+
 
 if __name__ == "__main__":
     # features to use
     # options are: iemg, mav, mmav, var, rms, zc, wamp, wl
-    feature_names = ['mav', 'var', 'rms']
+    feature_names = ['mav', 'var', 'rms', 'name_of_new']
     channels = [1,2,3,4]
     channel_names = ['channel {}'.format(i) for i in channels]
     filename = 'windows-2020-02-16.pkl'
