@@ -23,7 +23,7 @@ from sklearn.metrics import plot_confusion_matrix
 
 # features to use
 # options are: iemg, mav, mmav, var, rms, zc, wamp, wl
-feature_names = ['mav', 'var', 'rms']
+feature_names = ['mav', 'var','rms3']
 channels = [1,2,3,4]
 channel_names = ['channel {}'.format(i) for i in channels]
 filename = 'windows-2020-02-16.pkl'
@@ -37,7 +37,6 @@ df['keypressed'].fillna(0, inplace=True)
 print("Key press values: {}".format(df['keypressed'].unique()))
 
 features = compute_features(df, channel_names, feature_names, mutate=True)
-
 
 
 cols = all_names(channel_names, feature_names) + ['keypressed']

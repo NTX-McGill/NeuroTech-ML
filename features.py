@@ -31,6 +31,16 @@ def mmav(signal):
     w = np.array([weights(n, len(signal)) for n in range(len(signal))])
     return np.dot(w, np.abs(signal)) / len(signal)
 
+#Modified mean abs value 2
+def mmav2(signal):
+    def weights(n,N):
+        if n < .33*N or n > .67*N: return .33
+        else: return .67
+    w = np.array([weights(n, len(signal)) for n in range(len(signal))])
+    return np.dot(w, np.abs(signal)) / len(signal)
+
+#
+
 #Variance
 def var(signal):
     return np.sum(np.square(signal)) / (len(signal) - 1)
@@ -38,6 +48,7 @@ def var(signal):
 #Root mean square
 def rms(signal):
     return np.sqrt(np.sum(np.square(signal)) / len(signal))
+
 
 #In what follows, thresholds: 10-100mV
 
@@ -58,6 +69,40 @@ def wl(signal):
     signal = np.array(signal)
     shifted_signal = np.append(signal[1:], signal[-1])
     return np.sum(np.abs(signal-shifted_signal))
+
+# slope sign change
+def ssch(signal):
+    def is_neg(a):
+        if a<0: return 1
+        else: return 0
+    return np.sum([is_neg(signal(i)*signal(i+1)) for i in range(len(signal)-1)])
+
+#The Length of the Waveform Per Unit
+def wfl(signal):
+    return np.sum([np.abs(signal(i)-signal(i+1)) for i in range(len(signal)-1)]) / len(signal)
+
+
+### subinterval features
+
+#Root mean squared subwindows 1 of 3
+def rms3_1(signal):
+    # split signal into three parts
+    signal_split = signal[:int(len(signal)/3)]
+    return np.sqrt(np.sum(np.square(signal_split))) / len(signal_split)
+
+#Root mean squared subwindows 2 of 3
+def rms3_2(signal):
+    # split signal into three parts
+    signal_split = signal[int(len(signal)/3):int(2*len(signal)/3)]
+    return np.sqrt(np.sum(np.square(signal_split))) / len(signal_split)
+
+#Root mean squared subwindows 3 of 3
+def rms3_3(signal):
+    # split signal into three parts
+    signal_split = signal[int(2*len(signal)/3):]
+    return np.sqrt(np.sum(np.square(signal_split))) / len(signal_split)
+
+
 
 #Still want WL and SSC
     
