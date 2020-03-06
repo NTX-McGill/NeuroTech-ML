@@ -5,8 +5,10 @@ Created on Fri Mar  6 11:16:38 2020
 
 @author: marley
 """
-from featurize import compute_features
+from featurize import compute_features,all_names
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from sklearn import model_selection
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -15,6 +17,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.metrics import plot_confusion_matrix
+
 
 
 
@@ -64,7 +67,7 @@ models.append(('LR', LogisticRegression()))
 models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
 models.append(('CART', DecisionTreeClassifier()))
-models.append(('NB', GaussianNB()))
+# models.append(('NB', GaussianNB()))
 models.append(('SVM', SVC()))
 
 
