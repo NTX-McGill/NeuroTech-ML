@@ -391,7 +391,7 @@ def take_pictures(fname_dta=[('./001_trial1_right_keyboard_2020-02-16-19-09-10-3
 
 # actually take the pictures, thsi method is just temporary it's to make execution faster so i dont have to go thorugh jnb
 
-def big_shooting():
+def big_shooting(channel=[1,2,3,4]):
 	import os
 	txt = [i for i in os.listdir() if '.txt' in i]
 	dta_fnames = [i for i in os.listdir() if '.txt' in i and 'OpenBCI' in i]
@@ -401,6 +401,8 @@ def big_shooting():
 	len(dta_fnames),len(markers)
 	fname_dta = [(i,j) for i,j in zip(markers,dta_fnames)]
 	fname_dta[:2]
+	
+	take_pictures(channel=channel, figisze=(10,12), fname_dta=fname_dta, folder_name='channels_'+str(channel))
 	
 	#take_pictures(channel=[1,2],figsize=(10,12),fname_dta=fname_dta,folder_name='channels_1_2')
 	#take_pictures(channel=[3,4],figsize=(10,12),fname_dta=fname_dta,folder_name='channels_3_4')
