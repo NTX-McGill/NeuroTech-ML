@@ -29,33 +29,47 @@ def compute_feature(df, channel_names, feature_name, to_df=True):
     Get features from window, non-mutating
     
     Parameters
-    ----------
+    ----------q_40_60_abs(si
     df : pd.DataFrame
         dataframe with windows
     channel_names : list of strings
     feature_name : string
         string name of the feature function
     to_df : bool
-        if output should be converted to a dataframe
+        if output should be converfeatures(ted to a dataframe
 
     Returns
     -------
     df_result : pd.DataFrame (to_df = True) or dictionary
         new dataframe with feature columns for each channel
-
+    
     """
     fn = globals()[feature_name]
     computed_features = []
+    new_channel_names = []
     for _, row in df.iterrows():
         val = [fn(row[channel_name]) for channel_name in channel_names]
         computed_features.append(val)
     computed_features = np.array(computed_features).T
-    
-    result = {get_name(channel_name, feature_name): feature
+    result = {}
+    if computed_features.ndim > 2:
+        print(computed_features)
+        for i in range(computed_features.shape[0]):
+            feat = computed_features[i]
+            for channel_name, actual_feat in zip(channel_names, feat):
+                new_name = get_name(channel_name, feature_name) + "_" + str(i)
+                result[new_name] = actual_feat
+                new_channel_names.append(new_name)
+    else:
+        print('\n\n\n\nasdfasdfasdfasf')
+        print(computed_features)
+        new_channel_names = [get_name(channel_name,feature_name) for channel_name in channel_names]
+        result = {get_name(channel_name, feature_name): feature
                               for channel_name, feature in zip(channel_names, computed_features)}
     if to_df:
         result = pd.DataFrame(result)
-    return result
+    print(new_channel_names)
+    return result,new_channel_names
 
 def compute_features(df, channel_names, feature_names, mutate=False):
     """
@@ -75,17 +89,20 @@ def compute_features(df, channel_names, feature_names, mutate=False):
 
     """
     all_results = {}
+    all_ch_names = []
     for feature_name in feature_names:
-        result = compute_feature(df, channel_names, feature_name, to_df=False)
+        result,new_channel_names = compute_feature(df, channel_names, feature_name, to_df=False)
         all_results.update(result)
+        all_ch_names = all_ch_names + new_channel_names
     if mutate:
         for key, val in all_results.items():
             df[key] = val
-        return df
+        return df, all_ch_names
     df_result = pd.DataFrame(all_results)
     # TODO: extract other 'labels' from df?
     df_result['keypressed'] = df['keypressed']
-    return df_result
+    # print('\n\nall chnames',all_ch_names)
+    return df_result,all_ch_names
 
 
 

@@ -234,17 +234,24 @@ def plot_ts_filtered(markers='./001_trial1_right_keyboard_2020-02-16-19-09-10-30
 	"""
 	plot labelled time series data
 	time interval if specified must be a two-tuple with values (x,y) 0<x<y<1 
+	explicit_interval is just indices (start, stop)
 	"""
 	# load labelled raw data
 	channel.append(13)
 	lr = load_raw.load_dta(markers,fname,channel)
 
 	# trim the data frame for plotting
+	
 	keypressed = lr['keypressed']
-	start_idx = keypressed.first_valid_index()
-	stop_idx = keypressed.last_valid_index()
-	# by default trim like this - to be rectified in following conditional statments if needed
-	lr_trimmed = lr.truncate(before=start_idx-500,after=stop_idx+500)
+	try:
+		start_idx = keypressed.first_valid_index()
+		stop_idx = keypressed.last_valid_index()
+		# by default trim like this - to be rectified in following conditional statments if needed
+		lr_trimmed = lr.truncate(before=start_idx-500,after=stop_idx+500)
+	except:
+		start_idx = 0
+		stop_idx = 50000
+		lr_trimmed = lr.truncate(before=start_idx,after=stop_idx)
 	only_keypressed = lr_trimmed[lr_trimmed['keypressed'].notna()]
 
 	# trim more if user wants it to be trimmed
@@ -323,7 +330,7 @@ def plot_ts_filtered(markers='./001_trial1_right_keyboard_2020-02-16-19-09-10-30
 		# set the y axis max min if i'm taking pictures
 		if explicit_interval:
 			x1,x2,y1,y2 = plt.axis()
-			plt.axis((x1,x2,-65,150))
+			plt.axis((x1,x2,-65,175))
 	if save_fig: plt.savefig(save_fig)
 	if disp: plt.show()
 	plt.close(fig)
@@ -402,7 +409,7 @@ def big_shooting(channel=[1,2,3,4]):
 	fname_dta = [(i,j) for i,j in zip(markers,dta_fnames)]
 	fname_dta[:2]
 	
-	take_pictures(channel=channel, figisze=(10,12), fname_dta=fname_dta, folder_name='channels_'+str(channel))
+	take_pictures(channel=channel, figisize=(10,12), fname_dta=fname_dta, folder_name='channels_'+str(channel))
 	
 	#take_pictures(channel=[1,2],figsize=(10,12),fname_dta=fname_dta,folder_name='channels_1_2')
 	#take_pictures(channel=[3,4],figsize=(10,12),fname_dta=fname_dta,folder_name='channels_3_4')

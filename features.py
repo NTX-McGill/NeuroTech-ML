@@ -12,6 +12,13 @@ from scipy import signal
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import seaborn as sns
+import matplotlib.mlab as mlab
+
+def silly(signal):
+    if len(signal) < 20:
+        print('aaaaaaahhhhhhhhh hell')
+        return np.asarray([1,2,3])
+    return np.asarray(signal[:3])
 
 #Integrated IEMG
 def iemg(signal):
@@ -51,6 +58,7 @@ def rms(signal):
 
 
 #In what follows, thresholds: 10-100mV
+    
 
 #Zero crossing
 def zc(signal, threshold=40):
@@ -75,15 +83,57 @@ def ssch(signal):
     def is_neg(a):
         if a<0: return 1
         else: return 0
-    return np.sum([is_neg(signal(i)*signal(i+1)) for i in range(len(signal)-1)])
+    return np.sum([is_neg(signal[i]*signal[i+1]) for i in range(len(signal)-1)])
 
 #The Length of the Waveform Per Unit
 def wfl(signal):
-    return np.sum([np.abs(signal(i)-signal(i+1)) for i in range(len(signal)-1)]) / len(signal)
+    return np.sum([np.abs(signal[i]-signal[i+1]) for i in range(len(signal)-1)]) / len(signal)
+
+#Spectrogram
+
+# helper function returns just the trimmed power spectrum - we don't care really about very low frequencies (below 5hz)
+def get_psd(signal):
+    psd,freqs = mlab.psd(signal,NFFT=256,window=mlab.window_hanning,Fs=250,noverlap=0)
+    return psd
+
+# some basic freq domain features
+def freq_low(signal):
+    return np.sum(get_psd(signal)[5:20])
+
+def freq_20_40_abs(signal):
+    return np.sum(get_psd(signal)[20:40])
+
+def freq_40_60_abs(signal):
+    return np.sum(get_psd(signal)[40:60])
+
+def freq_60_80_abs(signal):
+    return np.sum(get_psd(signal)[60:80])
+
+def freq_80_100_abs(signal):
+    return np.sum(get_psd(signal)[80:100])
+
+def freq_100_120_abs(signal):
+    return np.sum(get_psd(signal)[100:120])
+
+# some more freq domain features
+def freq_var(signal):
+    if len(signal) < 250:
+        print('aaaaaaahhhhhhhhh hell')
+        return np.asarray([1,2,3])
+    psd = get_psd(signal)
+    return np.asarray([np.mean(psd[:40]),np.mean(psd[40:80]),np.mean(psd[80:])])
+
+
+def freq_ssch(signal):
+    return ssch(get_psd(signal)[:])
+def freq_mav(signal):
+    return mav(get_psd(signal)[:])
+
+# counts the number of .20 crossings
+
 
 
 ### subinterval features
-
 #Root mean squared subwindows 1 of 3
 def rms3_1(signal):
     # split signal into three parts

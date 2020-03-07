@@ -22,18 +22,16 @@ def get_ms(str_time):
   return timezone_date_time_obj.timestamp() * 1000
 
 def closest_time(times, marker_time):
-    """
-        Get row index of data timestamp closest to marker_time 
-        inputs:
-          times       (ndarray)
-          marker_time (float)
-        outputs:
-          row index   (int)
-    """
-    
-    return np.argmin(np.abs(times - marker_time))
-
-
+	"""
+		Get row index of data timestamp closest to marker_time 
+		inputs:
+		  times       (ndarray)
+		  marker_time (float)
+		outputs:
+		  row index   (int)
+	"""
+	#print('print \n\n print',type(times),type(marker_time))
+	return np.argmin(np.abs(times - marker_time))
 
 def append_labels_deprecated(data_file, labels_file, channels):
     """
@@ -66,46 +64,48 @@ def append_labels_deprecated(data_file, labels_file, channels):
     return labelled_data
 
 def append_labels(data_file, label_file, channels):
-    """
-        Append ASCII values of labels in keyboard markings file to nearest (in terms of time) 
-        data point from data set
-        inputs:
-          data_file     (string)
-          labels_file   (string)
-        outputs:
-          labelled_data (DataFrame)
-    """
-    
+	"""
+		Append ASCII values of labels in keyboard markings file to nearest (in terms of time) 
+		data point from data set
+		inputs:
+		  data_file     (string)
+		  labels_file   (string)
+		outputs:
+		  labelled_data (DataFrame)
+	"""
+	
     #Load data from files
-    data = np.loadtxt(data_file,
-                      delimiter=',',
-                      skiprows=7,
-                      usecols=channels)
-    labels = pd.read_csv(label_file, 
-                         sep=", ", 
-                         names=['timestamp(datetime)', 'timestamp(ms)', 'type', 'hand', 'finger', 'keypressed'], 
-                         header=None,
-                         engine='python')
+	data = np.loadtxt(data_file,
+					delimiter=',',
+					skiprows=7,
+					usecols=channels)
+	
+	labels = pd.read_csv(label_file,
+					skiprows=9,
+					sep=", ", 
+					names=['timestamp(datetime)', 'timestamp(ms)', 'type', 'hand', 'finger', 'keypressed'], 
+					header=None,
+					engine='python')
+	
+	#Get useful columns
+	emg = data[:, :-1]
+	data_timestamps = data[:, -1]
+	label_timestamps = labels['timestamp(ms)']
+	keyspressed = labels['keypressed'] #Tell Software to fix the col name
     
-    #Get useful columns
-    emg = data[:, :-1]
-    data_timestamps = data[:, -1]
-    label_timestamps = labels['timestamp(ms)']
-    keyspressed = labels['keypressed'] #Tell Software to fix the col name
-    
-    #Map keyspressed to a column of data
-    new_col = pd.Series(np.full(len(emg), np.NaN))
-    for i in range(len(label_timestamps)):
-        if keyspressed[i]:
-            new_col[closest_time(data_timestamps, label_timestamps[i])] = keyspressed[i]
-    
-    #Put everything into a DataFrame
+	#Map keyspressed to a column of data
+	new_col = pd.Series(np.full(len(emg), np.NaN))
+	for i in range(len(label_timestamps)):
+		if keyspressed[i]:
+			new_col[closest_time(data_timestamps, label_timestamps[i])] = keyspressed[i]
+
+	#Put everything into a DataFrame
 	#names = ['channel '+ str(i) for i in range(1,data.shape[1])] + ['timestamp(ms)']
-    names = ["channel " + str(i) for i in channels[:-1]] + ['timestamp(ms)']
-    labelled_data = pd.DataFrame(data, columns=names)
-    labelled_data["keypressed"] = new_col
-    
-    return labelled_data
+	names = ["channel " + str(i) for i in channels[:-1]] + ['timestamp(ms)']
+	labelled_data = pd.DataFrame(data, columns=names)
+	labelled_data["keypressed"] = new_col
+
+	return labelled_data
 
 def label_window(data, length=1, shift=0.1, offset=2):
     """
@@ -147,7 +147,7 @@ def label_window(data, length=1, shift=0.1, offset=2):
         if len(w_labels) == 0: #No keys pressed
             window_labels.append(np.NaN) 
         elif len(w_labels) == 1: #One key pressed
-            window_labels.append(w_labels.iloc[0]) 
+            window_labels.append(w_labels.iloc[0])
         else: #If more than one keypressed in window, take closest one to middle of window
             indices = np.array([np.where(labels.iloc[i:i+length] == l) for l in w_labels])
             mid_ind = (2*i + length)//2
