@@ -19,14 +19,12 @@ from sklearn.svm import SVC
 from sklearn.metrics import plot_confusion_matrix
 
 
-ALL_FEATURES = ['freq_mav','freq_ssch','freq_var_mid','freq_var_low','freq_var_high','freq_100_120_abs','freq_80_100_abs',
-                'freq_60_80_abs','freq_40_60_abs','freq_20_40_abs','freq_low','iemg','mav','mmav','mmav2','var',
-                'rms','zc','wamp','wl','ssch','wfl','get_psd']
+ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
 
 # features to use
 # options are: iemg, mav, mmav, var, rms, zc, wamp, wl
-feature_names = ['mav', 'var','rms3_1','freq_var']
-# feature_names = ALL_FEATURES[:]
+# feature_names = ['mav', 'var','rms3_1','freq_var']
+feature_names = ALL_FEATURES[:]
 # feature_names = ['freq_mav','freq_var_low','freq_var_mid','freq_var_high','freq_100_120_abs','freq_80_100_abs','freq_60_80_abs',
                  # 'freq_20_40_abs','mav','var','rms3_1','rms3_2','rms3_3','zc','mmav']
 channels = [1,2,3,4]

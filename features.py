@@ -20,6 +20,8 @@ def silly(signal):
         return np.asarray([1,2,3])
     return np.asarray(signal[:3])
 
+
+
 #Integrated IEMG
 def iemg(signal):
     return np.sum(np.abs(signal))
@@ -97,60 +99,35 @@ def get_psd(signal):
     return psd
 
 # some basic freq domain features
-def freq_low(signal):
-    return np.sum(get_psd(signal)[5:20])
-
-def freq_20_40_abs(signal):
-    return np.sum(get_psd(signal)[20:40])
-
-def freq_40_60_abs(signal):
-    return np.sum(get_psd(signal)[40:60])
-
-def freq_60_80_abs(signal):
-    return np.sum(get_psd(signal)[60:80])
-
-def freq_80_100_abs(signal):
-    return np.sum(get_psd(signal)[80:100])
-
-def freq_100_120_abs(signal):
-    return np.sum(get_psd(signal)[100:120])
+def freq_feats(signal):
+    if len(signal) < 250:
+        print('we need to fix this : the window is too short')
+        return [1,2,3,4,5,6]
+    psd = get_psd(signal)
+    return [np.mean(psd[5:20]),np.mean(psd[20:40]),np.mean(psd[40:60]),np.mean(psd[60:80]),np.mean(psd[80:100]),np.mean(psd[100:120])]    
 
 # some more freq domain features
 def freq_var(signal):
     if len(signal) < 250:
-        print('aaaaaaahhhhhhhhh hell')
+        print('aaaaaaahhhhhhhhh hell : the window is too short')
         return np.asarray([1,2,3])
     psd = get_psd(signal)
     return np.asarray([np.mean(psd[:40]),np.mean(psd[40:80]),np.mean(psd[80:])])
 
-
-def freq_ssch(signal):
-    return ssch(get_psd(signal)[:])
-def freq_mav(signal):
-    return mav(get_psd(signal)[:])
-
-# counts the number of .20 crossings
-
+# more freq domain features
+def freq_misc(signal):
+    if len(signal) < 250:
+        print('window too short')
+        return [1,2,3,4]
+    psd = get_psd(signal)
+    return [ssch(psd),mav(psd),mmav(psd),zc(psd-[.5]*len(psd))]
 
 
 ### subinterval features
-#Root mean squared subwindows 1 of 3
-def rms3_1(signal):
-    # split signal into three parts
-    signal_split = signal[:int(len(signal)/3)]
-    return np.sqrt(np.sum(np.square(signal_split))) / len(signal_split)
-
-#Root mean squared subwindows 2 of 3
-def rms3_2(signal):
-    # split signal into three parts
-    signal_split = signal[int(len(signal)/3):int(2*len(signal)/3)]
-    return np.sqrt(np.sum(np.square(signal_split))) / len(signal_split)
-
-#Root mean squared subwindows 3 of 3
-def rms3_3(signal):
-    # split signal into three parts
-    signal_split = signal[int(2*len(signal)/3):]
-    return np.sqrt(np.sum(np.square(signal_split))) / len(signal_split)
+#Root mean squared subwindows
+def rms_3(signal):
+    signal_split = [signal[:int(len(signal)/3)],signal[int(len(signal)/3):int(2*len(signal)/3)],signal[int(2*len(signal)/3):]]
+    return [np.sqrt(np.sum(np.square(i))) / len(signal_split[0]) for i in signal_split]
 
 
 

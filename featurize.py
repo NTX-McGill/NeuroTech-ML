@@ -61,7 +61,7 @@ def compute_feature(df, channel_names, feature_name, to_df=True):
                 result[new_name] = actual_feat
                 new_channel_names.append(new_name)
     else:
-        print('\n\n\n\nasdfasdfasdfasf')
+        print('compted_features')
         print(computed_features)
         new_channel_names = [get_name(channel_name,feature_name) for channel_name in channel_names]
         result = {get_name(channel_name, feature_name): feature
