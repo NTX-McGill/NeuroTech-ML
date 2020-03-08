@@ -19,11 +19,14 @@ from sklearn.svm import SVC
 from sklearn.metrics import plot_confusion_matrix
 
 
-
+ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
 
 # features to use
 # options are: iemg, mav, mmav, var, rms, zc, wamp, wl
-feature_names = ['mav', 'var','rms3']
+# feature_names = ['mav', 'var','rms3_1','freq_var']
+feature_names = ALL_FEATURES[:]
+# feature_names = ['freq_mav','freq_var_low','freq_var_mid','freq_var_high','freq_100_120_abs','freq_80_100_abs','freq_60_80_abs',
+                 # 'freq_20_40_abs','mav','var','rms3_1','rms3_2','rms3_3','zc','mmav']
 channels = [1,2,3,4]
 channel_names = ['channel {}'.format(i) for i in channels]
 filename = 'windows-2020-02-16.pkl'
@@ -36,10 +39,10 @@ df['keypressed'] = df['keypressed'].map(label_map)
 df['keypressed'].fillna(0, inplace=True)
 print("Key press values: {}".format(df['keypressed'].unique()))
 
-features = compute_features(df, channel_names, feature_names, mutate=True)
+features,all_ch_names = compute_features(df, channel_names, feature_names, mutate=True)
+# print(all_ch_names)
 
-
-cols = all_names(channel_names, feature_names) + ['keypressed']
+cols = all_ch_names + ['keypressed']
 
 activation = features[features['keypressed'] > 0]
 activation = activation[cols].to_numpy()
@@ -62,7 +65,7 @@ seed = 7
 scoring = 'accuracy'
 # Spot Check Algorithms
 models = []
-models.append(('LR', LogisticRegression()))
+# models.append(('LR', LogisticRegression()))
 models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
 models.append(('CART', DecisionTreeClassifier()))
