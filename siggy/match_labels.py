@@ -135,7 +135,6 @@ def label_window(data, length=1, shift=0.1, offset=2):
             channel = emg.iloc[i:i+length, j]
             w.append(np.array(channel))
         
-        
         #Only use windows with enough data points
         if len(w[0]) != length: continue
         
@@ -143,7 +142,7 @@ def label_window(data, length=1, shift=0.1, offset=2):
 
         #Handle the labels of the windows
         if have_keys:
-            key_labels = data.iloc[start - offset:end + offset, -1]
+            key_labels = data['keypressed'][start - offset: end + offset]
             w_key_labels = key_labels[i:i+length][key_labels[i:i+length].notnull()]
 
             if len(w_key_labels) == 0: #No keys pressed
@@ -155,8 +154,8 @@ def label_window(data, length=1, shift=0.1, offset=2):
                 mid_ind = (2*i + length)//2
                 window_key_labels.append(w_key_labels.iloc[np.argmin(np.abs(indices - mid_ind))])
         else:
-            hand_labels = data.iloc[start - offset:end + offset, -3]
-            finger_labels = data.iloc[start - offset:end + offset, -2]
+            hand_labels = data['hand'][start - offset:end + offset]
+            finger_labels = data['finger'][start - offset:end + offset]
             w_hand_labels = hand_labels[i:i+length][hand_labels[i:i+length].notnull()]
             w_finger_labels = finger_labels[i:i+length][finger_labels[i:i+length].notnull()]
 
@@ -174,7 +173,6 @@ def label_window(data, length=1, shift=0.1, offset=2):
     
     #Put everything into a DataFrame
     names = [data.columns[i] for i in ch_ind]
-#    names = ["channel " + str(i) for i in range(1, data.shape[1]-3)]
     windows_df = pd.DataFrame(windows, columns=names)
     
     if have_keys:
@@ -296,13 +294,14 @@ if __name__ == '__main__':
     #Testing code
     channels = [1,2,3,4,5,6,7,8]
     
-    markers = '../data/2020-02-23/002-trial2-both-air-2020-02-23-18-25-35-660.txt'
-    fname = '../data/2020-02-23/002-trial2-both-air-OpenBCI-RAW-2020-02-23_18-20-55.txt'
-    test = append_labels(fname, markers, channels)
+#    markers = '../data/2020-02-23/002-trial1-both-guided-2020-02-23-18-16-45-254.txt'
+#    fname = '../data/2020-02-23/002-trial1-both-guided-OpenBCI-RAW-2020-02-23_18-14-32.txt'
+#    test = append_labels(fname, markers, channels)
 #    out = label_window(labelled_raw)
     
-#    directory = '../data/2020-03-03/'
+    directory = '../data/2020-02-23/'
 #    labelled_raw, windows = merge_data(directory, channels)
+    labelled_Raw, good_windows = merge_data(directory, channels)
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
 #     windows.to_pickle('windows-2020-02-23.pkl')
 
