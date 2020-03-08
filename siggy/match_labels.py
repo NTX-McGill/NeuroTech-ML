@@ -16,6 +16,66 @@ def closest_time(times, marker_time):
     
     return np.argmin(np.abs(times - marker_time))
 
+def notch_filter(freq=60.0, order=3, fs=250):
+    """
+        Design notch filter. Outputs numerator and denominator polynomials of iir filter.
+        inputs:
+            freq  (float)
+            order (int)
+            fs    (int)
+        outputs:
+            (ndarray), (ndarray)
+    """
+    nyq = fs / 2
+    bp_stop_f = freq + 3.0 * np.array([-1,1])
+    return signal.butter(order, bp_stop_f / nyq, 'bandstop')
+    
+def butter_filter(low=5.0, high=120.0, order=4, fs=250):
+    """
+        Design butterworth filter. Outputs numerator and denominator polynomials of iir filter.
+        inputs:
+            low   (float)
+            high  (float)
+            order (int)
+            fs    (int)
+        outputs:
+            (ndarray), (ndarray)
+    """
+    nyq = fs / 2
+    return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
+
+def filter_signal(arr, notch=True):
+    """
+        Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
+        inputs:
+            arr   (ndarray)
+            notch (boolean)
+        outputs:
+            (ndarray)
+    """
+    if notch:
+        nb, na = notch_filter()
+        arr = signal.lfilter(nb, na, arr)
+        
+    bb, ba = butter_filter()
+    return signal.lfilter(bb, ba, arr)
+
+def filter_dataframe(df):
+    """
+        Filters the signals in a dataframe.
+        inputs:
+            df          (DataFrame)
+        outputs:
+            filtered_df (DataFrame)
+    """
+    filtered_df = df.copy()
+    
+    for col in df.columns:
+        if 'channel' in col:
+            filtered_df[col] = filter_signal(np.array(df[col]))
+        
+    return filtered_df
+
 def append_labels(data_file, label_file, channels):
     """
         Append ASCII values of labels in keyboard markings file to nearest (in terms of time) 
@@ -28,11 +88,14 @@ def append_labels(data_file, label_file, channels):
     """
     
     #Constants
-    mode_legend = {'guided': 1, 'self-directed': 2, 'in-the-air': 3}    
+    mode_legend = {'Guided': 1, 'Self-directed': 2, 'In-the-air': 3}    
     hand_legend = {'left': 1, 'right': 2}
-    finger_legend = {'thumb': 1, 'index finger': 2, 'middle finger': 3, 'ring finger': 4, 'pinkie': 5}
-    
-#    channels =  list(set(channels).add(13))
+    hand_finger_legend = {'left' : {'thumb': 6, 'index finger': 7, 'middle finger': 8, 'ring finger': 9, 'pinkie': 10},
+                          'right': {'thumb': 1, 'index finger': 2, 'middle finger': 3, 'ring finger': 4, 'pinkie': 5}}
+    LABEL_MAP = {'q':10, 'w':9, 'e':8, 'r':7, 't':7, 'y':2, 'u':2, 'i':3, 'o':4, 'p':5,
+                 'a':10, 's':9, 'd':8, 'f':7, 'g':7, 'h':2, 'j':2, 'k':3, 'l':4, ';':5,
+                 'z':10, 'x':9, 'c':8, 'v':7, 'b':7, 'n':2, 'm':2, ',':3, '.':4, '/':5,
+                 '[':5, ']':5, "'":5, '\\':5 }
     
     #Load data from files
     data = np.loadtxt(data_file,
@@ -50,7 +113,7 @@ def append_labels(data_file, label_file, channels):
     with open(label_file) as f:
         meta = f.readlines()[1:8]
         idx = int(meta[0].split(':')[1].strip(' ",\n'))
-        mode = mode_legend[meta[2].split(':')[1].strip(' ",\n').lower()]
+        mode = mode_legend[meta[2].split(':')[1].strip(' ",\n')]
     
     #Get useful columns
     emg = data[:, :-1]
@@ -74,11 +137,15 @@ def append_labels(data_file, label_file, channels):
     for i in range(len(label_timestamps)):
         ind = closest_time(data_timestamps, label_timestamps[i])
         
-        #If there are keystrokes, no need for hand/finger labels
+        #If there are key presses, ignore "prompt_end" lines, otherwise only use "prompt_end" lines
+        #... prompt_end, left, index finger,   <-- Example of labels in "prompt_end" line
+        #... keystroke, , , k                  <-- Example of labels in non-"prompt_end" line
         if any(keys.notnull()):
-            key_labels[ind] = keys[i]
+            #Ignore "prompt_end" lines
+            if keys[i]: 
+                hand_labels[ind], finger_labels[ind], key_labels[ind] = (LABEL_MAP[keys[i]] - 1) // 5 + 1, LABEL_MAP[keys[i]], keys[i]    
         else:
-            hand_labels[ind], finger_labels[ind], key_labels[ind] = hand_legend[hands[i]], finger_legend[fingers[i][:-1]], keys[i]
+            hand_labels[ind], finger_labels[ind] = hand_legend[hands[i]], hand_finger_legend[hands[i]][fingers[i][:-1]]
     
     #Put everything into a DataFrame
     names = ["channel " + str(i) for i in range(1, data.shape[1])] + ['timestamp(ms)']
@@ -189,66 +256,6 @@ def label_window(data, length=1, shift=0.1, offset=2):
     
     return windows_df
 
-def notch_filter(freq=60.0, order=3, fs=250):
-    """
-        Design notch filter. Outputs numerator and denominator polynomials of iir filter.
-        inputs:
-            freq  (float)
-            order (int)
-            fs    (int)
-        outputs:
-            (ndarray), (ndarray)
-    """
-    nyq = fs / 2
-    bp_stop_f = freq + 3.0 * np.array([-1,1])
-    return signal.butter(order, bp_stop_f / nyq, 'bandstop')
-    
-def butter_filter(low=5.0, high=120.0, order=4, fs=250):
-    """
-        Design butterworth filter. Outputs numerator and denominator polynomials of iir filter.
-        inputs:
-            low   (float)
-            high  (float)
-            order (int)
-            fs    (int)
-        outputs:
-            (ndarray), (ndarray)
-    """
-    nyq = fs / 2
-    return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
-
-def filter_signal(arr, notch=True):
-    """
-        Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
-        inputs:
-            arr   (ndarray)
-            notch (boolean)
-        outputs:
-            (ndarray)
-    """
-    if notch:
-        nb, na = notch_filter()
-        arr = signal.lfilter(nb, na, arr)
-        
-    bb, ba = butter_filter()
-    return signal.lfilter(bb, ba, arr)
-
-def filter_dataframe(df):
-    """
-        Filters the signals in a dataframe.
-        inputs:
-            df          (DataFrame)
-        outputs:
-            filtered_df (DataFrame)
-    """
-    filtered_df = df.copy()
-    
-    for col in df.columns:
-        if 'channel' in col:
-            filtered_df[col] = filter_signal(np.array(df[col]))
-        
-    return filtered_df
-
 def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
     """
     Combines all datasets in 'directory' into a single DataFrame.
@@ -270,6 +277,10 @@ def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
         print("Appending trial with labels:", files[i])
         data = append_labels(files[i+1], files[i], channels)
         
+        if data.empty:
+            print("Not in air, skipping file!")
+            continue
+        
         #Filter data
         if filter_data: 
             data = filter_dataframe(data)
@@ -277,17 +288,17 @@ def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
         #Window data
         w = label_window(data)
         
-        #Reindex dataframes before appending
-        data.index = [i for i in range(big_data.shape[0], big_data.shape[0] + data.shape[0])]
-        w.index = [i for i in range(windows.shape[0], windows.shape[0] + w.shape[0])]
-        
         #Add data/windows to larger dataframe
         big_data = big_data.append(data)
         windows = windows.append(w)
             
         print("Adding windows with shape:", str(w.shape) + ". Current total size:", str(windows.shape))
         print("Adding data with shape:", str(data.shape) + ". Current total size:", str(big_data.shape))
-        
+    
+    #Reindex datarames before returning
+    big_data.reset_index(inplace=True)
+    windows.reset_index(inplace=True)
+    
     return big_data, windows
 
 if __name__ == '__main__':
@@ -297,11 +308,11 @@ if __name__ == '__main__':
 #    markers = '../data/2020-02-23/002-trial1-both-guided-2020-02-23-18-16-45-254.txt'
 #    fname = '../data/2020-02-23/002-trial1-both-guided-OpenBCI-RAW-2020-02-23_18-14-32.txt'
 #    test = append_labels(fname, markers, channels)
-#    out = label_window(labelled_raw)
+#    out = label_window(test)
     
     directory = '../data/2020-02-23/'
-#    labelled_raw, windows = merge_data(directory, channels)
-    labelled_Raw, good_windows = merge_data(directory, channels)
+    labelled_raw, good_windows = merge_data(directory, channels)
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
 #     windows.to_pickle('windows-2020-02-23.pkl')
 
+#    w = pd.read_pickle('windows-2020-02-23.pkl')
