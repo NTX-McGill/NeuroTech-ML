@@ -32,13 +32,13 @@ def append_labels(data_file, label_file, channels):
     hand_legend = {'left': 1, 'right': 2}
     finger_legend = {'thumb': 1, 'index finger': 2, 'middle finger': 3, 'ring finger': 4, 'pinkie': 5}
     
-    channels =  list(set(channels).add(13))
+#    channels =  list(set(channels).add(13))
     
     #Load data from files
     data = np.loadtxt(data_file,
                       delimiter=',',
                       skiprows=7,
-                      usecols=channels)
+                      usecols=channels + [13])
     labels = pd.read_csv(label_file, 
                          skiprows= 10,
                          sep=", ", 
@@ -102,7 +102,7 @@ def label_window(data, length=1, shift=0.1, offset=2):
         output:
             windows (DataFrame) 
     """
-   
+    
     SAMPLING_FREQ = 250
     
     #Convert arguments
@@ -134,7 +134,8 @@ def label_window(data, length=1, shift=0.1, offset=2):
         for j in range(emg.shape[1]):
             channel = emg.iloc[i:i+length, j]
             w.append(np.array(channel))
-            
+        
+        
         #Only use windows with enough data points
         if len(w[0]) != length: continue
         
@@ -262,11 +263,10 @@ def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
         windows     (DataFrame)
     """
     #Set up which files and channels to merge
-    channels += [13]
     files = sorted(glob(directory + '/' + file_regex))
 
     #Merge dataframes from files
-    out = pd.DataFrame()
+    big_data = pd.DataFrame()
     windows = pd.DataFrame()
     for i in range(0, len(files), 2):
         print("Appending trial with labels:", files[i])
@@ -276,30 +276,33 @@ def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
         if filter_data: 
             data = filter_dataframe(data)
         
-        #Reindex data
-        data.index = [i for i in range(windows.shape[0], windows.shape[0] + data.shape[0])]
+        #Window data
+        w = label_window(data)
+        
+        #Reindex dataframes before appending
+        data.index = [i for i in range(big_data.shape[0], big_data.shape[0] + data.shape[0])]
+        w.index = [i for i in range(windows.shape[0], windows.shape[0] + w.shape[0])]
         
         #Add data/windows to larger dataframe
-        out = out.append(data)
-        w = label_window(data)
+        big_data = big_data.append(data)
         windows = windows.append(w)
             
         print("Adding windows with shape:", str(w.shape) + ". Current total size:", str(windows.shape))
-        print("Adding data with shape:", str(data.shape) + ". Current total size:", str(out.shape))
+        print("Adding data with shape:", str(data.shape) + ". Current total size:", str(big_data.shape))
         
-    return out, windows
+    return big_data, windows
 
 if __name__ == '__main__':
     #Testing code
-    channels = [1,2,3,4]
+    channels = [1,2,3,4,5,6,7,8]
     
-#    markers = '../data/2020-03-05/004_trial1_guided_table_2020-03-05-16-07-46-017.txt'
-#    fname = '../data/2020-03-05/004_trial1_guided_table_OpenBCI-RAW-2020-03-05_16-06-38.txt'
-#    labelled_raw = append_labels(fname, markers, channels)
+    markers = '../data/2020-02-23/002-trial2-both-air-2020-02-23-18-25-35-660.txt'
+    fname = '../data/2020-02-23/002-trial2-both-air-OpenBCI-RAW-2020-02-23_18-20-55.txt'
+    test = append_labels(fname, markers, channels)
 #    out = label_window(labelled_raw)
     
-    directory = '../data/2020-02-23/'
-    labelled_raw, windows = merge_data(directory, channels)
+#    directory = '../data/2020-03-03/'
+#    labelled_raw, windows = merge_data(directory, channels)
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
 #     windows.to_pickle('windows-2020-02-23.pkl')
 
