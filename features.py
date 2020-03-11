@@ -133,3 +133,26 @@ def rms_3(signal):
 
 #Still want WL and SSC
     
+## Unhelpful feature: power spectral density
+""" # FIX DIMENSIONS LATER
+def psd(signal):
+    shift = 0.1
+    fs_Hz = 250
+    NFFT = 256
+    overlap = NFFT - int(shift * fs_Hz)
+    
+    # Pxx - 1D array for power spectrum values
+    # freq - 1D array corresponding to Pxx values
+    Pxx, freq = mlab.psd(np.squeeze(signal),
+                                   NFFT=NFFT,
+                                   window=mlab.window_hanning,
+                                   Fs=fs_Hz,
+                                   noverlap=overlap
+                                   )
+    # Make it size 130 so we can splice it
+    Pxx.append(Pxx[-1])
+    # Bin it by taking average power of every 10 hz
+    Pxx_bins = np.reshape(Pxx,(10,-1)).mean();
+    
+    return Pxx_bins
+"""
