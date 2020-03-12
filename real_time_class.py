@@ -12,9 +12,10 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 import seaborn as sns
 from features import *
 import pickle
+import numpy as np
 
 # New: requires match_labels.py for filtering the data
-from match_labels import *
+#from match_labels import *
 
 class RealTimeML():
     def __init__(self):
@@ -108,12 +109,13 @@ class RealTimeML():
     
     
     def predict_function(self, arr):
-        # add filtering
+        # assume already filtered
+        """
         arr_filtered = np.zeros((arr.shape))
         for ch in range(arr.shape[1]):
             arr_filtered[:,ch]= filter_signal(arr[:,ch])
-        
-        res, _ = self.compute_features(arr_filtered, self.channel_names, self.features)
+        """
+        res, _ = self.compute_features(arr, self.channel_names, self.features)
         input_arr = np.array(list(res.values()))
         return self.clf.predict_proba(np.squeeze(input_arr).reshape(1, -1))
    
