@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 channels = [1,2,3,4,5,6,7,8]
 length = 250
-shift = 0.1
+shift = 0.1 * length
 
 channel_names = ['channel {}'.format(i) for i in channels]
 feature_names = ['mav']
@@ -37,7 +37,7 @@ label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.t
 
 res = append_labels(data_file, label_file, channels)
 #%%
-data = filter_dataframe(res)
+data = filter_dataframe(res)[channel_names].to_numpy()
 #%%
 windows = label_window(data)
 #%%
@@ -96,21 +96,10 @@ ML = RealTimeML()
 all_predictions = []
 
 # for now we make windows into a numpy array cause it's not liking the df
-
-# old format that previously worked:
-# Windows is a list, where every entry of the list is a 250 by 8 numpy ndarry
-# that represents the 250 data points for each of the 8 channels
-
-# ok lets convert
 windows = windows[channel_names]
 
-""" PSEUDOCODE OF WHAT WE NEED TO DO TO FIX IT -- PLZ REPAIR ME
-windows_list = []
-for row in windows:
-    windows_list.append(windows[row].to_numpy())
-"""
-
-for win in windows:   
+windows_fixed = windows.to_numpy()
+for win in windows_fixed:   
     all_predictions.append(ML.predict_function(win))
     
 #%%
@@ -119,8 +108,8 @@ plt.clf()
 fig = plt.subplots(figsize=(20,15))
 
 # arbitrary start and end points for graphing
-start = 10000
-end = start + 1000 
+start = 20000
+end = start + length * 5 # for 5 seconds
 
 # for each hand plot spaghetti line plot
 for ch in range(0,4):
