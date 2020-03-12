@@ -7,6 +7,16 @@ Created on Sun Mar  8 16:49:41 2020
 
 """
 
+****QUICK USAGE NOTE***
+- You can play with everything within the "CHANGE HERE" box
+- Beware - The axes aren't consistent!
+- Ask me if you need any explanations!
+
+"""
+
+
+"""
+
 # DONE:
 # take data windows of 1s (use rolands code) but with no excess info
 # Featurize
@@ -16,7 +26,7 @@ Created on Sun Mar  8 16:49:41 2020
 
 # TO DO:
 # Match the colours of finger label to channel
-# standardize the axes and general increase readability
+# standardize the axes and general increase in readability
 
 """
 
@@ -26,71 +36,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 channels = [1,2,3,4,5,6,7,8]
+
+##############################################
+###### YOU CAN CHANGE FROM HERE ##############
+##############################################
+
 length = 250
 shift = 0.1 * length
 
 channel_names = ['channel {}'.format(i) for i in channels]
 feature_names = ['mav']
-#%%
+
 data_file = 'data/2020-03-08/012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt'
 label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.txt'
 
+# arbitrary start and end points for graphing
+start = length * 30 # start 30 seconds in
+end = start + length * 5 # watch for 5 seconds
+
+##############################################
+#### TO HERE ^^ WITH NO ISSUES (I hope) ######
+##############################################
+#%%
 res = append_labels(data_file, label_file, channels)
-#%%
 data = filter_dataframe(res)
-#%%
 windows = label_window(data)
-#%%
-"""
-
-OLD PARSING - uses an OPENBCI file with json manually removed
-
-data_file = 'miasya_data_test.txt'
-
-raw_data = np.loadtxt(data_file,
-                      delimiter=',',
-                      skiprows=7,
-                      usecols=channels)
-
-data = np.zeros((raw_data.shape))
-
-# Note this requires import
-for ch in range(raw_data.shape[1]):
-     data[:,ch] = filter_signal(raw_data[:,ch])
-    
-#%%
-length = 250 # 1.00 seconds
-shift = 50  # 0.20 seconds
-windows = []
-
-# for all possible windows
-for i in range(0, data.shape[0]-length, shift):
-    #Handle windowing the data
-    w = np.zeros((data.shape[1], length))
-    
-    # for all channels
-    for j in range(data.shape[1]):
-        w[j] = data[i:i+length, j]
-            
-    windows.append(w)
-"""
-#%%
-"""
-
-More old stuff
-
-# Windows is a list, where every entry of the list is a 250 by 8 numpy ndarry
-# that represents the 250 data points for each of the 8 channels
-# The time of the occurance is related to the index of within the windows list
-# do the math lol where shift is 0.2s
-
-# Fix plots later
-#x = np.linspace(0,250)
-#plt.plot(x,windows[0][0,:])
-
-# Now to featurize each of the windoes individually
-"""
-
 #%% 
 ML = RealTimeML()
 all_predictions = []
@@ -104,23 +74,18 @@ for win in windows_fixed:
     
 #%%
 # now we have the predictions, and we need to plot it against all the channels
-plt.clf()
 fig = plt.subplots(figsize=(20,15),sharex=True)
-
-# arbitrary start and end points for graphing
-start = length * 30 # start 30 seconds in
-end = start + length * 5 # watch for 5 seconds
 
 emg = data.to_numpy()
 
 # for each hand plot spahetti line plot
 for ch in range(0,4):
-    plt.subplot(4,1,1)
+    plt.subplot(5,1,1)
     plt.plot(emg[start:end,ch])
 plt.title('hand one')
     
 for ch in range(4,8):
-    plt.subplot(4,1,2)
+    plt.subplot(5,1,2)
     plt.plot(emg[start:end,ch])
 plt.title('hand two')
 
@@ -140,16 +105,31 @@ for pred in all_predictions:
     
 #%%
 # on last subplot show events for each classification
-color = ['b','g','r','c','m','y','k','Crimson', 'DarkOrange', 'SpringGreen']
-plt.subplot(4,1,3)
+# almost a rainbow?
+color = ['r','DarkOrange', 'y', 'g', 'b','c','m','k','Crimson', 'SpringGreen']
 
 # fit pred_vals to window that we're displaying
 fitted_pred_vals = pred_vals[int(start/shift):int(end/shift)];
 fitted_pred_vals[fitted_pred_vals != 0] -= start;
 
 # Now make eventplot for predicted values
-for clas in range(pred_vals.shape[1]):
-    plt.eventplot(fitted_pred_vals[:,clas], colors=color[clas])
+plt.subplot(5,1,3)
+plt.title('predictions every window - hand one')
+for clas in range(0,5):
+    plt.eventplot(fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0], colors=color[clas])
+
+    # now put the labels, markers is marker times, so the x position?
+    markers = fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0]
+    
+    # and put markers of uniform colour above event lines
+    for m in markers:
+        plt.text(int(m),1,str(clas))
+        
+plt.subplot(5,1,4)
+plt.title('predictions every window - hand two')     
+for clas in range(5,10):
+
+    plt.eventplot(fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0], colors=color[clas])
 
     # now put the labels, markers is marker times, so the x position?
     markers = fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0]
@@ -171,16 +151,17 @@ fitted_labels['timestamp(ms)'] = fitted_labels['timestamp(ms)'] - start
 
 #%%
 
-# Now plot
-plt.subplot(4,1,4)
+# Now plot actual labels
+plt.subplot(5,1,5)
+plt.title('actual keypresses')
 
 for row in range(fitted_labels.shape[0]):
     # plot spike
     plt.eventplot([fitted_labels.iloc[row,0]], colors=color[row])
     
     # plot text (finger number AND character)
-    plt.text(fitted_labels.iloc[row,0],0,fitted_labels.iloc[row,1])
-    plt.text(fitted_labels.iloc[row,0],1,fitted_labels.iloc[row,2])
+    plt.text(fitted_labels.iloc[row,0],1,fitted_labels.iloc[row,1])
+    plt.text(fitted_labels.iloc[row,0],1.5,fitted_labels.iloc[row,2])
 
 #%%
         
