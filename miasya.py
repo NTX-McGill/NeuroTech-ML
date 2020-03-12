@@ -12,9 +12,9 @@ Created on Sun Mar  8 16:49:41 2020
 # Featurize
 # put in model, get prediction ie most likely keypress/finger (if >0.5)
 # plot predictions as markings on the stacked signal windows
+# add actual labels (number and letter)
 
 # TO DO:
-# add actual labels (number and letter)
 # Match the colours of finger label to channel
 # standardize the axes and general increase readability
 
@@ -37,7 +37,7 @@ label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.t
 
 res = append_labels(data_file, label_file, channels)
 #%%
-data = filter_dataframe(res)[channel_names].to_numpy()
+data = filter_dataframe(res)
 #%%
 windows = label_window(data)
 #%%
@@ -105,26 +105,28 @@ for win in windows_fixed:
 #%%
 # now we have the predictions, and we need to plot it against all the channels
 plt.clf()
-fig = plt.subplots(figsize=(20,15))
+fig = plt.subplots(figsize=(20,15),sharex=True)
 
 # arbitrary start and end points for graphing
-start = 20000
-end = start + length * 5 # for 5 seconds
+start = length * 30 # start 30 seconds in
+end = start + length * 5 # watch for 5 seconds
 
-# for each hand plot spaghetti line plot
+emg = data.to_numpy()
+
+# for each hand plot spahetti line plot
 for ch in range(0,4):
-    plt.subplot(3,1,1)
-    plt.plot(data[start:end,ch])
+    plt.subplot(4,1,1)
+    plt.plot(emg[start:end,ch])
 plt.title('hand one')
     
 for ch in range(4,8):
-    plt.subplot(3,1,2)
-    plt.plot(data[start:end,ch])
+    plt.subplot(4,1,2)
+    plt.plot(emg[start:end,ch])
 plt.title('hand two')
 
 #%%
 # pred val holds whichever index is greatest and has a probability > 0.5
-pred_vals = np.zeros((int((data.shape[0]-length)/shift)+1,10))
+pred_vals = np.zeros((int((emg.shape[0]-length)/shift)+1,10))
 
 # This gets the timestamps we need for the eventplot later
 time = 0
@@ -139,14 +141,13 @@ for pred in all_predictions:
 #%%
 # on last subplot show events for each classification
 color = ['b','g','r','c','m','y','k','Crimson', 'DarkOrange', 'SpringGreen']
-plt.subplot(3,1,3)
+plt.subplot(4,1,3)
 
 # fit pred_vals to window that we're displaying
 fitted_pred_vals = pred_vals[int(start/shift):int(end/shift)];
 fitted_pred_vals[fitted_pred_vals != 0] -= start;
-#%%
 
-# Now make eventplot
+# Now make eventplot for predicted values
 for clas in range(pred_vals.shape[1]):
     plt.eventplot(fitted_pred_vals[:,clas], colors=color[clas])
 
@@ -157,5 +158,29 @@ for clas in range(pred_vals.shape[1]):
     for m in markers:
         plt.text(int(m),1,str(clas))
 #%%
-# Uncomment to maybe use later for plotting
-#labels = res[['timestamp(ms)','finger','keypressed']]
+# Now add actual labels over the predicted
+        
+# Keep only actual logged values
+labels = res[['timestamp(ms)','finger','keypressed']].dropna()
+
+# Only keep ones in the plotting ranges
+labels['timestamp(ms)'] = labels['timestamp(ms)'] - labels.iloc[0,0]
+fitted_labels = labels[labels['timestamp(ms)'] >= start]
+fitted_labels = fitted_labels[fitted_labels['timestamp(ms)'] <= end]
+fitted_labels['timestamp(ms)'] = fitted_labels['timestamp(ms)'] - start
+
+#%%
+
+# Now plot
+plt.subplot(4,1,4)
+
+for row in range(fitted_labels.shape[0]):
+    # plot spike
+    plt.eventplot([fitted_labels.iloc[row,0]], colors=color[row])
+    
+    # plot text (finger number AND character)
+    plt.text(fitted_labels.iloc[row,0],0,fitted_labels.iloc[row,1])
+    plt.text(fitted_labels.iloc[row,0],1,fitted_labels.iloc[row,2])
+
+#%%
+        
