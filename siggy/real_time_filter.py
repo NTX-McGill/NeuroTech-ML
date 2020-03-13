@@ -5,8 +5,8 @@
 
 
 from scipy import zeros, signal, random
-from ipynb.fs.full.match_labels import append_labels, label_window
-from ipynb.fs.full.features import filter_signal
+from match_labels import append_labels, label_window, filter_signal
+# from ipynb.fs.full.features import filter_signal
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -100,12 +100,17 @@ if __name__ == '__main__':
     channels = [1,2,3,4,13]
 
     labelled_raw = append_labels(fname, markers, channels)
-    out = label_window(labelled_raw, shift=1)
+    labelled_raw['keypressed'] = np.NaN
+    out = label_window(labelled_raw, shift=1, offset=0, take_everything=True)
     
 #     plt.plot(labelled_raw.iloc[:,0])
     
-    results = test_filter(list(out.iloc[:10,0]))
-    plt.plot(filter_signal(labelled_raw.iloc[:2500,0]))
-    plt.plot(np.append(results[0], results[1:]))
-    plt.show()
+    filtered_all = filter_signal(labelled_raw['channel 1'])
+    input_windows = list(out.iloc[:10,0])
+    results = test_filter(input_windows)
+    for num, window in enumerate(results):
+        plt.figure()
+        plt.plot(filtered_all[num * 250:(num+1)*250])
+        plt.plot(window)
+        plt.show()
 

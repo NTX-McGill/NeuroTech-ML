@@ -158,7 +158,7 @@ def append_labels(data_file, label_file, channels):
     
     return labelled_data
 
-def label_window(data, length=1, shift=0.1, offset=2):
+def label_window(data, length=1, shift=0.1, offset=2, take_everything=False):
     """
         Combines data points from data into labelled windows
         inputs:
@@ -185,6 +185,9 @@ def label_window(data, length=1, shift=0.1, offset=2):
     else:
         start = np.where(data['hand'].notnull())[0][0]
         end = np.where(data['hand'].notnull())[0][-1]
+    if take_everything:
+        start = 0
+        end = len(data)
     
     ch_ind = []
     for i in range(len(data.columns)):
