@@ -27,7 +27,8 @@ Created on Sun Mar  8 16:49:41 2020
 # TO DO:
 # Match the colours of finger label to channel
 # standardize the axes and general increase in readability
-
+# Change filtering to be window-wise to be consistent with the real time model
+# When everything works, make the code beautiful
 """
 
 from real_time_class import RealTimeML
@@ -51,14 +52,15 @@ feature_names = ['mav']
 data_file = 'data/2020-03-08/012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt'
 label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.txt'
 
+# TO HERE ####################################
 #%%
 res = append_labels(data_file, label_file, channels)
 data = filter_dataframe(res)
 windows = label_window(data, offset=0, take_everything=True)
 
 # for now we make windows into a numpy array cause it's not liking the df
+# We also only take the 1000 entries to speed it up
 windows = windows[channel_names].iloc[:1000]
-  
 windows_fixed = windows.to_numpy()
 #%% 
 ML = RealTimeML()
@@ -72,20 +74,19 @@ for start_sec in [i*5 for i in range(1, 6)]:
     end = start + length*5
     #%%
     # now we have the predictions, and we need to plot it against all the channels
-    fig = plt.subplots(figsize=(20,15),sharex=True)
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1,figsize=(20,15),sharex=True)
     
     emg = data.to_numpy()
-    
     # for each hand plot spahetti line plot
+    ax1 = plt.subplot(5,1,1)
     for ch in range(0,4):
-        plt.subplot(5,1,1)
-        plt.plot(emg[start:end,ch])
-    plt.title('hand one')
+        ax1.plot(emg[start:end,ch])
+    ax1.set_title('hand one')
         
+    ax2 = plt.subplot(5,1,2)
     for ch in range(4,8):
-        plt.subplot(5,1,2)
-        plt.plot(emg[start:end,ch])
-    plt.title('hand two')
+        ax2.plot(emg[start:end,ch])
+    ax2.set_title('hand two')
     
     #%%
     # pred val holds whichever index is greatest and has a probability > 0.5
@@ -111,30 +112,31 @@ for start_sec in [i*5 for i in range(1, 6)]:
     fitted_pred_vals[fitted_pred_vals != 0] -= start;
     
     # Now make eventplot for predicted values
-    plt.subplot(5,1,3)
-    plt.title('predictions every window - hand one')
+    # RIGHT FLUSH MEANS THAT THE PREDICTION IS PLACED AT THE END OF THE WINDOW
+    ax3 = plt.subplot(5,1,3)
+    ax3.set_title('predictions every window - hand one - note:right flush')
     for clas in range(0,5):
-        plt.eventplot(fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0], colors=color[clas])
+        ax3.eventplot(fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0], colors=color[clas])
     
         # now put the labels, markers is marker times, so the x position?
         markers = fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0]
         
         # and put markers of uniform colour above event lines
         for m in markers:
-            plt.text(int(m),1,str(clas))
+            ax3.text(int(m),1,str(clas))
             
-    plt.subplot(5,1,4)
-    plt.title('predictions every window - hand two')     
+    ax4 = plt.subplot(5,1,4)
+    ax4.set_title('predictions every window - hand two - note:right flush')     
     for clas in range(5,10):
     
-        plt.eventplot(fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0], colors=color[clas])
+        ax4.eventplot(fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0], colors=color[clas])
     
         # now put the labels, markers is marker times, so the x position?
         markers = fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0]
         
         # and put markers of uniform colour above event lines
         for m in markers:
-            plt.text(int(m),1,str(clas))
+            ax4.text(int(m),1,str(clas))
     #%%
     # Now add actual labels over the predicted
             
@@ -150,16 +152,17 @@ for start_sec in [i*5 for i in range(1, 6)]:
     #%%
     
     # Now plot actual labels
-    plt.subplot(5,1,5)
-    plt.title('actual keypresses')
+    ax5 = plt.subplot(5,1,5)
+    ax5.set_title('actual keypresses')
     
     for row in range(fitted_labels.shape[0]):
         # plot spike
-        plt.eventplot([fitted_labels.iloc[row,0]], colors=color[row])
+        ax5.eventplot([fitted_labels.iloc[row,0]], colors=color[row])
         
         # plot text (finger number AND character)
-        plt.text(fitted_labels.iloc[row,0],1,fitted_labels.iloc[row,1])
-        plt.text(fitted_labels.iloc[row,0],1.5,fitted_labels.iloc[row,2])
+        ax5.text(fitted_labels.iloc[row,0],1,fitted_labels.iloc[row,1])
+        ax5.text(fitted_labels.iloc[row,0],1.5,fitted_labels.iloc[row,2])
     
+    plt.show()
     #%%
             
