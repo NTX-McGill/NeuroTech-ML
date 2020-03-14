@@ -76,7 +76,7 @@ feature_names = ALL_FEATURES[:]
 
 window_size = 2
 channels = [1,2,3,4,5,6,7,8]
-filename = 'windows-2020-02-23.pkl'
+filename = 'windows-2020-02-23_real_time_filtered.pkl'
 file_prefix = filename.split(".")[0]
 channel_names = ['channel {}'.format(i) for i in channels]
 

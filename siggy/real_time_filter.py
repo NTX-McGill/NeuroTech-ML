@@ -44,7 +44,7 @@ def filter_sbs(n=10000, split=5000):
 # In[116]:
 
 
-def butter_filter(windows, fs=250, order=2, low=20, high=120, notch=True):
+def butter_filter(windows, fs=250, order=2, low=5, high=120, notch=True):
     result = []
     nyq = fs / 2
     b, a = signal.butter(order, [low/nyq, high/nyq], 'bandpass')
@@ -62,6 +62,7 @@ def butter_filter(windows, fs=250, order=2, low=20, high=120, notch=True):
 
 def notch_filter(arr, fs=250, z=[]):
     freqs = np.array([60.0])
+    # nyq = fs / 2
     nyq = fs / 2
     for f in np.nditer(freqs):
         bp_stop_f = f + 3.0 * np.array([-1,1])
@@ -98,19 +99,22 @@ if __name__ == '__main__':
     markers = '../data/2020-02-16/001_trial2_right_air_2020-02-16-19-15-12-263.txt'
     fname = '../data/2020-02-16/001_trial2_right_air_OpenBCI-RAW-2020-02-16_19-14-29.txt'
     channels = [1,2,3,4,13]
-
+    
+    # load the raw info 
     labelled_raw = append_labels(fname, markers, channels)
-    labelled_raw['keypressed'] = np.NaN
     out = label_window(labelled_raw, shift=1, offset=0, take_everything=True)
     
-#     plt.plot(labelled_raw.iloc[:,0])
+    # plt.plot(labelled_raw.iloc[:,0])
     
     filtered_all = filter_signal(labelled_raw['channel 1'])
+    
     input_windows = list(out.iloc[:10,0])
     results = test_filter(input_windows)
     for num, window in enumerate(results):
         plt.figure()
-        plt.plot(filtered_all[num * 250:(num+1)*250])
-        plt.plot(window)
+        plt.plot(filtered_all[num * 250:(num+1)*250],label='og filter')
+        plt.plot(window,label='real time filter')
+        plt.title('window number '+str(num))
+        plt.legend()
         plt.show()
 
