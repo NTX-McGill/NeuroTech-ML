@@ -4,6 +4,27 @@ import matplotlib.pyplot as plt
 from glob import glob
 from scipy import signal
 
+
+# copied from real_time filter.py
+def test_filter(windows, fs=250, order=2, low=20, high=120):
+    result = []
+    nyq = fs / 2
+    bb, ba = signal.butter(order, [low/nyq, high/nyq], 'bandpass')
+    bz = signal.lfilter_zi(bb, ba)
+
+    notch_freq = 60.0
+    bp_stop = notch_freq + 3.0 * np.array([-1,1])
+    nb, na = signal.iirnotch(notch_freq, notch_freq / 6, fs)
+    nz = signal.lfilter_zi(nb, na)
+
+    for w in windows:
+        w, nz = signal.lfilter(nb, na, w, zi=nz)
+        w, bz = signal.lfilter(bb, ba, w, zi=bz)
+        result.append(w)
+    
+    return result
+
+
 def closest_time(times, marker_time):
     """
         Get row index of data timestamp closest to marker_time 
@@ -56,9 +77,11 @@ def filter_signal(arr, notch=True):
     if notch:
         nb, na = notch_filter()
         arr = signal.lfilter(nb, na, arr)
-        
+    
     bb, ba = butter_filter()
     return signal.lfilter(bb, ba, arr)
+    
+    
 
 def filter_dataframe(df):
     """
@@ -260,7 +283,12 @@ def label_window(data, length=1, shift=0.1, offset=2, take_everything=False):
     
     return windows_df
 
-def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
+# takes a channel and filters it like it would be done in merge_data w/ the realtime signal thingy
+def filter_signal_realtime(arr):
+    # break up the signal into little windows, then print all of them 
+    
+
+def merge_data(directory, channels, filter_data=True,filter_by_window=False, file_regex='*.txt'):
     """
     Combines all datasets in 'directory' into a single DataFrame.
     Optionally filters the data.
@@ -271,10 +299,10 @@ def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
         out         (DataFrame)
         windows     (DataFrame)
     """
-    #Set up which files and channels to merge
+    # Set up which files and channels to merge
     files = sorted(glob(directory + '/' + file_regex))
 
-    #Merge dataframes from files
+    # Merge dataframes from files
     big_data = pd.DataFrame()
     windows = pd.DataFrame()
     for i in range(0, len(files), 2):
@@ -285,15 +313,25 @@ def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
             print("Not in air, skipping file!")
             continue
         
-        #Filter data
-        if filter_data: 
+        # Filter data
+        if filter_data and not filter_by_window: 
             data = filter_dataframe(data)
         
-        #Window data
+        # Window data
         w = label_window(data)
         
-        #Add data/windows to larger dataframe
-        big_data = big_data.append(data)
+        if filter_by_window:
+            print('w columns',w.columns)#trace 
+            for i in channels: 
+                channel_name = w.columns[i-1] 
+                input_windows = list(w[channel_name]) 
+                results = test_filter(input_windows) 
+                w[channel_name] = results 
+            
+        
+        
+        #Add data/windows to larger dataframe 
+        big_data = big_data.append(data) 
         windows = windows.append(w)
             
         print("Adding windows with shape:", str(w.shape) + ". Current total size:", str(windows.shape))
@@ -305,6 +343,8 @@ def merge_data(directory, channels, filter_data=True, file_regex='*.txt'):
     
     return big_data, windows
 
+
+
 if __name__ == '__main__':
     #Testing code
     channels = [1,2,3,4,5,6,7,8]
@@ -315,8 +355,9 @@ if __name__ == '__main__':
 #    out = label_window(test)
     
     directory = '../data/2020-02-23/'
-    labelled_raw, good_windows = merge_data(directory, channels)
+    labelled_raw, good_windows = merge_data(directory, channels, filter_data = False)
+    
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
-#     windows.to_pickle('windows-2020-02-23.pkl')
+    good_windows.to_pickle('windows-2020-02-23_real_time_filter.pkl')
 
 #    w = pd.read_pickle('windows-2020-02-23.pkl')
