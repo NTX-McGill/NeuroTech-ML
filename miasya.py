@@ -68,14 +68,14 @@ all_predictions = []
 for win in windows_fixed:   
     all_predictions.append(ML.predict_function(win))
         
-# do a bunch of plots 
+# do several plots of the same style but at different time intervals
 for start_sec in [i*5 for i in range(1, 6)]:
     start = length * start_sec
     end = start + length*5
     #%%
     # now we have the predictions, and we need to plot it against all the channels
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1,figsize=(20,15),sharex=True)
-    
+
     emg = data.to_numpy()
     # for each hand plot spahetti line plot
     ax1 = plt.subplot(5,1,1)
@@ -83,7 +83,7 @@ for start_sec in [i*5 for i in range(1, 6)]:
         ax1.plot(emg[start:end,ch])
     ax1.set_title('hand one')
         
-    ax2 = plt.subplot(5,1,2)
+    ax2 = plt.subplot(5,1,2, sharex=ax1, sharey=ax1)
     for ch in range(4,8):
         ax2.plot(emg[start:end,ch])
     ax2.set_title('hand two')
@@ -113,7 +113,7 @@ for start_sec in [i*5 for i in range(1, 6)]:
     
     # Now make eventplot for predicted values
     # RIGHT FLUSH MEANS THAT THE PREDICTION IS PLACED AT THE END OF THE WINDOW
-    ax3 = plt.subplot(5,1,3)
+    ax3 = plt.subplot(5,1,3,sharex=ax1)
     ax3.set_title('predictions every window - hand one - note:right flush')
     for clas in range(0,5):
         ax3.eventplot(fitted_pred_vals[:,clas][fitted_pred_vals[:,clas] != 0], colors=color[clas])
@@ -125,7 +125,7 @@ for start_sec in [i*5 for i in range(1, 6)]:
         for m in markers:
             ax3.text(int(m),1,str(clas))
             
-    ax4 = plt.subplot(5,1,4)
+    ax4 = plt.subplot(5,1,4,sharex=ax1)
     ax4.set_title('predictions every window - hand two - note:right flush')     
     for clas in range(5,10):
     
@@ -152,7 +152,7 @@ for start_sec in [i*5 for i in range(1, 6)]:
     #%%
     
     # Now plot actual labels
-    ax5 = plt.subplot(5,1,5)
+    ax5 = plt.subplot(5,1,5,sharex=ax1)
     ax5.set_title('actual keypresses')
     
     for row in range(fitted_labels.shape[0]):
@@ -163,6 +163,7 @@ for start_sec in [i*5 for i in range(1, 6)]:
         ax5.text(fitted_labels.iloc[row,0],1,fitted_labels.iloc[row,1])
         ax5.text(fitted_labels.iloc[row,0],1.5,fitted_labels.iloc[row,2])
     
+    plt.tight_layout()
     plt.show()
     #%%
             
