@@ -64,7 +64,6 @@ class RealTimeML():
         computed_features = np.array(computed_features).T
         result = {}
         if computed_features.ndim > 2:
-            print(computed_features)
             for i in range(computed_features.shape[0]):
                 feat = computed_features[i]
                 for channel_name, actual_feat in zip(channel_names, feat):
@@ -72,8 +71,6 @@ class RealTimeML():
                     result[new_name] = actual_feat
                     new_channel_names.append(new_name)
         else:
-            print('computed_features')
-            print(computed_features)
             new_channel_names = [self.get_name(channel_name,feature_name) for channel_name in channel_names]
             result = {self.get_name(channel_name, feature_name): feature
                                   for channel_name, feature in zip(channel_names, computed_features)}
