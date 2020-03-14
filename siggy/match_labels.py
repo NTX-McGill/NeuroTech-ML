@@ -14,7 +14,7 @@ def test_filter(windows, fs=250, order=2, low=20, high=120):
 
     notch_freq = 60.0
     bp_stop = notch_freq + 3.0 * np.array([-1,1])
-    nb, na = signal.iirnotch(notch_freq, notch_freq / 6, fs)
+    nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
     nz = signal.lfilter_zi(nb, na)
 
     for w in windows:
@@ -65,7 +65,7 @@ def butter_filter(low=5.0, high=120.0, order=4, fs=250):
     nyq = fs / 2
     return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
 
-def filter_signal(arr, notch=True):
+def filter_signal(arr, notch=True, f_type='original_filter'):
     """
         Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
         inputs:
@@ -74,14 +74,32 @@ def filter_signal(arr, notch=True):
         outputs:
             (ndarray)
     """
-    if notch:
-        nb, na = notch_filter()
-        arr = signal.lfilter(nb, na, arr)
+    if f_type=='original_filter':
+        if notch:
+            nb, na = notch_filter()
+            arr = signal.lfilter(nb, na, arr)
+        
+        bb, ba = butter_filter()
+        return signal.lfilter(bb, ba, arr)
     
-    bb, ba = butter_filter()
-    return signal.lfilter(bb, ba, arr)
-    
-    
+    elif f_type=='real_time_filter':
+        fs,order,low,high,notch_freq = 250,2,5,120,60.0
+        nyq = fs / 2
+        bb, ba = signal.butter(order, [low/nyq , high/nyq], 'bandpass')
+        bz = signal.lfilter_zi(bb,ba)
+        
+        # bp_stop = notch_freq + s3.0*np.array([-1,1])
+        nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
+        nz = signal.lfilter_zi(nb,na)
+        
+        filtered_signal, nz = signal.lfilter(nb, na, arr, zi=nz)
+        filtered_signal, bz = signal.lfilter(bb, ba, filtered_signal, zi=bz)
+        return filtered_signal
+        
+    else:
+        print('\nfilter type not recognised, enter valid filter type!')
+        raise Exception
+        
 
 def filter_dataframe(df):
     """
@@ -283,11 +301,6 @@ def label_window(data, length=1, shift=0.1, offset=2, take_everything=False):
     
     return windows_df
 
-# takes a channel and filters it like it would be done in merge_data w/ the realtime signal thingy
-def filter_signal_realtime(arr):
-    # break up the signal into little windows, then print all of them 
-    
-
 def merge_data(directory, channels, filter_data=True,filter_by_window=False, file_regex='*.txt'):
     """
     Combines all datasets in 'directory' into a single DataFrame.
@@ -355,9 +368,10 @@ if __name__ == '__main__':
 #    out = label_window(test)
     
     directory = '../data/2020-02-23/'
-    labelled_raw, good_windows = merge_data(directory, channels, filter_data = False)
+    # labelled_raw, good_windows = merge_data(directory, channels, filter_data = False,filter_by_window=True)
+    labelled_raw, good_windows = merge_data(directory, channels, filter_data=True, filter_by_window=False)
     
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
-    good_windows.to_pickle('windows-2020-02-23_real_time_filter.pkl')
+    good_windows.to_pickle('windows-2020-02-23_not_real_time.pkl')
 
 #    w = pd.read_pickle('windows-2020-02-23.pkl')
