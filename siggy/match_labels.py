@@ -92,10 +92,11 @@ def append_labels(data_file, label_file, channels):
     hand_legend = {'left': 1, 'right': 2}
     hand_finger_legend = {'left' : {'thumb': 6, 'index finger': 7, 'middle finger': 8, 'ring finger': 9, 'pinkie': 10},
                           'right': {'thumb': 1, 'index finger': 2, 'middle finger': 3, 'ring finger': 4, 'pinkie': 5}}
-    LABEL_MAP = {'q':10, 'w':9, 'e':8, 'r':7, 't':7, 'y':2, 'u':2, 'i':3, 'o':4, 'p':5,
-                 'a':10, 's':9, 'd':8, 'f':7, 'g':7, 'h':2, 'j':2, 'k':3, 'l':4, ';':5,
-                 'z':10, 'x':9, 'c':8, 'v':7, 'b':7, 'n':2, 'm':2, ',':3, '.':4, '/':5,
-                 '[':5, ']':5, "'":5, '\\':5 }
+    LABEL_MAP = {'1':10, '2':9, '3':8, '4':7, '5':7, '6': 2, '7':2, '8':3, '9':4, '0': 5,
+             'q':10, 'w':9, 'e':8, 'r':7, 't':7, 'y':2, 'u':2, 'i':3, 'o':4, 'p':5,
+             'a':10, 's':9, 'd':8, 'f':7, 'g':7, 'h':2, 'j':2, 'k':3, 'l':4, ';':5,
+             'z':10, 'x':9, 'c':8, 'v':7, 'b':7, 'n':2, 'm':2, ',':3, '.':4, '/':5,
+             '[':5, ']':5, "'":5, '\\':5 , 'space': 1, 'Shift': 10, 'Backspace':5}
     
     #Load data from files
     data = np.loadtxt(data_file,
