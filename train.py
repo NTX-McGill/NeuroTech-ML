@@ -16,9 +16,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import plot_confusion_matrix,confusion_matrix
 import pickle
 from datetime import datetime
+import seaborn as sn
 
 ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
 LABEL_MAP = {'k': 3, ';':5, 'j': 2, 'l': 4, 'p': 5, 'u': 2, 'o':4, '.': 4,
@@ -76,7 +77,7 @@ feature_names = ALL_FEATURES[:]
 
 window_size = 2
 channels = [1,2,3,4,5,6,7,8]
-filename = 'windows-2020-02-23_real_time_filtered.pkl'
+filename = 'windows-2020-02-23_not_real_time.pkl'
 file_prefix = filename.split(".")[0]
 channel_names = ['channel {}'.format(i) for i in channels]
 
@@ -123,28 +124,63 @@ for name, model in models:
 	print(msg)
     
     
-X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, shuffle=False)
+# X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, shuffle=False)
 
-# classifier = svm.SVC(kernel='linear').fit(X_train, Y_train)
-classifier = LinearDiscriminantAnalysis().fit(X_train, Y_train)
-np.set_printoptions(precision=2)
+# # classifier = svm.SVC(kernel='linear').fit(X_train, Y_train)
+# classifier = LinearDiscriminantAnalysis().fit(X_train, Y_train)
+# np.set_printoptions(precision=2)
 
-# Plot non-normalized confusion matrix
-titles_options = [("Confusion matrix, without normalization", None),
-                  ("Normalized confusion matrix", 'true')]
-for title, normalize in titles_options:
-    disp = plot_confusion_matrix(classifier, X_validation, Y_validation,
-                                 # display_labels=[2,3,4,5,'base'], # this might have been false
-                                 cmap=plt.cm.Blues,
-                                 normalize=normalize)
-    disp.ax_.set_title(title)
+# # Plot non-normalized confusion matrix
+# titles_options = [("Confusion matrix, without normalization", None),
+#                   ("Normalized confusion matrix", 'true')]
+# for title, normalize in titles_options:
+#     disp = plot_confusion_matrix(classifier, X_validation, Y_validation,
+#                                  # display_labels=[2,3,4,5,'base'], # this might have been false
+#                                  cmap=plt.cm.Blues,
+#                                  normalize=normalize)
+#     disp.ax_.set_title(title)
 
-    print(title)
-    print(disp.confusion_matrix)
+#     print(title)
+#     print(disp.confusion_matrix)
 
 # output model to pickle file
+# save_model(classifier, file_prefix)
+
+
+size = int(validation_size * X.shape[0])
+confuzzle = []
+kf = model_selection.KFold(n_splits=5)
+i = 0
+for train_index, test_index in kf.split(X):
+    X_train, X_validation = X[train_index], X[test_index]
+    Y_train, Y_validation = Y[train_index], Y[test_index]
+    
+    classifier = LinearDiscriminantAnalysis().fit(X_train, Y_train)
+    np.set_printoptions(precision=2)
+    
+    Y_predict = classifier.predict(X_validation)
+    
+    Y_validation, Y_predict = np.append(Y_validation, np.arange(11)), np.append(Y_predict, np.arange(11))
+    
+    if len(confuzzle) == 0:
+        confuzzle = confusion_matrix(Y_validation, Y_predict)
+    else:
+        confuzzle += confusion_matrix(Y_validation, Y_predict) - np.identity(11, dtype=int)
+
+
+df_cm = pd.DataFrame(confuzzle, index = [i for i in range(11)], columns = [i for i in range(11)])
+df_cm = df_cm.apply(lambda row: row / np.sum(row), axis=1)
+
+plt.figure(figsize = (10,7))
+sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
+plt.show()
+
 save_model(classifier, file_prefix)
 
+#More data <- check
+#Fix labels 
+#Train on good air data, then predict on bad data <- how to find good/bad data?
 
+#Look at in-air thumb vs right index
 
 
