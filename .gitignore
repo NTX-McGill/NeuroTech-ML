@@ -2,7 +2,7 @@
 .DS_Store
 
 # Python cache
-__pycache__
+__pycache__/
 
 # Jupyter notebook checkpoints
-.ipynb_checkpoints
+.ipynb_checkpoints/
