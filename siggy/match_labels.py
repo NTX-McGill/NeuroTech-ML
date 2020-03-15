@@ -65,16 +65,17 @@ def butter_filter(low=5.0, high=120.0, order=4, fs=250):
     nyq = fs / 2
     return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
 
-def filter_signal(arr, notch=True, f_type='original_filter'):
+def filter_signal(arr, notch=True, filter_type='original_filter'):
     """
         Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
         inputs:
             arr   (ndarray)
             notch (boolean)
+            filter_type (string)
         outputs:
             (ndarray)
     """
-    if f_type=='original_filter':
+    if filter_type=='original_filter':
         if notch:
             nb, na = notch_filter()
             arr = signal.lfilter(nb, na, arr)
@@ -82,7 +83,7 @@ def filter_signal(arr, notch=True, f_type='original_filter'):
         bb, ba = butter_filter()
         return signal.lfilter(bb, ba, arr)
     
-    elif f_type=='real_time_filter':
+    elif filter_type=='real_time_filter':
         fs,order,low,high,notch_freq = 250,2,5,120,60.0
         nyq = fs / 2
         bb, ba = signal.butter(order, [low/nyq , high/nyq], 'bandpass')
@@ -99,13 +100,14 @@ def filter_signal(arr, notch=True, f_type='original_filter'):
     else:
         print('\nfilter type not recognised, enter valid filter type!')
         raise Exception
-        
 
-def filter_dataframe(df):
+
+def filter_dataframe(df,filter_type='original_filter'):
     """
         Filters the signals in a dataframe.
         inputs:
             df          (DataFrame)
+            filter_type (String)
         outputs:
             filtered_df (DataFrame)
     """
@@ -113,7 +115,7 @@ def filter_dataframe(df):
     
     for col in df.columns:
         if 'channel' in col:
-            filtered_df[col] = filter_signal(np.array(df[col]))
+            filtered_df[col] = filter_signal(np.array(df[col]),filter_type=filter_type)
         
     return filtered_df
 
@@ -301,7 +303,11 @@ def label_window(data, length=1, shift=0.1, offset=2, take_everything=False):
     
     return windows_df
 
-def merge_data(directory, channels, filter_data=True,filter_by_window=False, file_regex='*.txt'):
+
+
+
+
+def merge_data(directory, channels, filter_type='original_filter', file_regex='*.txt'):
     """
     Combines all datasets in 'directory' into a single DataFrame.
     Optionally filters the data.
@@ -327,26 +333,15 @@ def merge_data(directory, channels, filter_data=True,filter_by_window=False, fil
             continue
         
         # Filter data
-        if filter_data and not filter_by_window: 
-            data = filter_dataframe(data)
+        data = filter_dataframe(data,filter_type=filter_type)
         
         # Window data
         w = label_window(data)
         
-        if filter_by_window:
-            print('w columns',w.columns)#trace 
-            for i in channels: 
-                channel_name = w.columns[i-1] 
-                input_windows = list(w[channel_name]) 
-                results = test_filter(input_windows) 
-                w[channel_name] = results 
-            
-        
-        
         #Add data/windows to larger dataframe 
         big_data = big_data.append(data) 
         windows = windows.append(w)
-            
+        
         print("Adding windows with shape:", str(w.shape) + ". Current total size:", str(windows.shape))
         print("Adding data with shape:", str(data.shape) + ". Current total size:", str(big_data.shape))
     
@@ -355,6 +350,8 @@ def merge_data(directory, channels, filter_data=True,filter_by_window=False, fil
     windows.reset_index(inplace=True)
     
     return big_data, windows
+
+
 
 
 
@@ -368,9 +365,7 @@ if __name__ == '__main__':
 #    out = label_window(test)
     
     directory = '../data/2020-02-23/'
-    # labelled_raw, good_windows = merge_data(directory, channels, filter_data = False,filter_by_window=True)
-    labelled_raw, good_windows = merge_data(directory, channels, filter_data=True, filter_by_window=False)
-    
+    labelled_raw, good_windows = merge_data(directory, channels,filter_type='')    
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
     good_windows.to_pickle('windows-2020-02-23_not_real_time.pkl')
 
