@@ -1,6 +1,12 @@
-name=007
-notes=Both hands, guided.
-mode=1
+{
+    "id": "007",
+    "trial": "1",
+    "mode": "Guided",
+    "datetime": "2020-03-01-18:14:19:063",
+    "timestamp": "1583104467827",
+    "prompts": "left pinkie a , left ring finger s , left middle finger d ,left index finger f ,right index finger j ,right middle finger k ,right ring finger l ,right pinkie semicolon",
+    "notes": ""
+}
 datetime, timestamp, event, hand, finger, key
 2020-03-01-18:14:27:827, 1583104467827, keystroke, , , k
 2020-03-01-18:14:27:941, 1583104467941, prompt_end, right, middle finger, 

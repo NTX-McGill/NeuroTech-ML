@@ -1,6 +1,12 @@
-name=007
-notes=Both hands, in the air.
-mode=1
+{
+    "id": "007",
+    "trial": "3",
+    "mode": "In-the-air",
+    "datetime": "2020-03-01-18:41:12:063",
+    "timestamp": "1583106121250",
+    "prompts": "",
+    "notes": ""
+}
 datetime, timestamp, event, hand, finger, key
 2020-03-01-18:42:01:250, 1583106121250, prompt_end, left, middle finger, 
 2020-03-01-18:42:04:428, 1583106124428, prompt_end, left, ring finger, 
