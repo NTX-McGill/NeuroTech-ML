@@ -7,11 +7,6 @@ Created on Fri Mar  6 09:32:01 2020
 """
 
 import numpy as np
-import pandas as pd
-from scipy import signal
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d, Axes3D
-import seaborn as sns
 import matplotlib.mlab as mlab
 
 def silly(signal):
@@ -53,6 +48,10 @@ def mmav2(signal):
 #Variance
 def var(signal):
     return np.sum(np.square(signal)) / (len(signal) - 1)
+
+# abs value varience
+def var_abs(signal):
+    return np.sum(np.square(np.abs(signal) - np.array(np.mean(np.abs(signal))*len(signal)))) / (len(signal) - 1)
 
 #Root mean square
 def rms(signal):
@@ -112,7 +111,9 @@ def freq_var(signal):
         print('aaaaaaahhhhhhhhh hell : the window is too short')
         return np.asarray([1,2,3])
     psd = get_psd(signal)
-    return np.asarray([np.mean(psd[:40]),np.mean(psd[40:80]),np.mean(psd[80:])])
+    return np.asarray([np.mean(np.abs(psd[:40] - np.array([np.mean(psd[:40])]*40))),
+                       np.mean(np.abs(psd[40:80] - np.array([np.mean(psd[40:80])]*20))),
+                               np.mean(np.abs(psd[80:] - np.array([np.mean(psd[80:])]*len(psd[80:]))))])
 
 # more freq domain features
 def freq_misc(signal):

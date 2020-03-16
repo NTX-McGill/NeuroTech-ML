@@ -305,8 +305,6 @@ def label_window(data, length=1, shift=0.1, offset=2, take_everything=False):
 
 
 
-
-
 def merge_data(directory, channels, filter_type='original_filter', file_regex='*.txt'):
     """
     Combines all datasets in 'directory' into a single DataFrame.
