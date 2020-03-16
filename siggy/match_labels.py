@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from glob import glob
 from scipy import signal
+import json
 
 
 # copied from real_time filter.py
@@ -155,9 +156,10 @@ def append_labels(data_file, label_file, channels):
     
     #Parse metadata at start of file for patient id and mode of data collection
     with open(label_file) as f:
-        meta = f.readlines()[1:8]
-        idx = int(meta[0].split(':')[1].strip(' ",\n'))
-        mode = mode_legend[meta[2].split(':')[1].strip(' ",\n')]
+        meta_string = ''.join(f.readlines()[:9])
+        meta = json.loads(meta_string)
+        idx = int(meta['id'])
+        mode = mode_legend[meta['mode']]
     
     #Get useful columns
     emg = data[:, :-1]
@@ -359,8 +361,8 @@ if __name__ == '__main__':
 #    out = label_window(test)
     
     directory = '../data/2020-02-23/'
-    labelled_raw, good_windows = merge_data(directory, channels,filter_type='')    
+    labelled_raw, good_windows = merge_data(directory, channels)    
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
-    good_windows.to_pickle('windows-2020-02-23_not_real_time.pkl')
+    # good_windows.to_pickle('windows-2020-02-23_not_real_time.pkl')
 
 #    w = pd.read_pickle('windows-2020-02-23.pkl')
