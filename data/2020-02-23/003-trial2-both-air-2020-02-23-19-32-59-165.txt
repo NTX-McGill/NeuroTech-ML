@@ -7,8 +7,6 @@
     "prompts": "left pinkie a , left ring finger s , left middle finger d ,left index finger f ,right index finger j ,right middle finger k ,right ring finger l ,right pinkie semicolon",
     "notes": "Guided in the air, both hands."
 }
-name=003
-notes=003. Trial 2. Both hands. Air.
 datetime, timestamp, event, hand, finger, key
 2020-02-23-19:33:02:260, 1582504382260, prompt_end, left, middle finger, 
 2020-02-23-19:33:05:625, 1582504385625, prompt_end, right, middle finger, 
