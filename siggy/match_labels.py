@@ -168,7 +168,7 @@ def init_labeled_df(data, names):
     """
     
     labeled_data = pd.DataFrame(data=np.full((len(data), len(names)), np.NaN), columns=names)
-    labeled_data.iloc[:, :9] = data
+    labeled_data.iloc[:, :data.shape[1]] = data
     
     return labeled_data
     
@@ -344,7 +344,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     
         #Get all not-null labels in the window (if any) and choose which one to use for the window
         w_labels = labels[i: i + length][labels[i: i + length].notnull()]
-        window_labels.append(get_window_label(labels, w_labels, i, length))
+        window_labels.append(get_window_label(w_labels, i, length))
     
     #Put everything into a DataFrame
     channel_names = [data.columns[i] for i in ch_ind]
