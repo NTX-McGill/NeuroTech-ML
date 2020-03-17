@@ -150,9 +150,9 @@ def get_metadata(label_file):
     
     return meta
 
-def init_labelled_df(data, names):
+def init_labeled_df(data, names):
     """
-    Pre-allocates DataFrame for labelled datapoints, values are by default set to np.NaN.
+    Pre-allocates DataFrame for labeled datapoints, values are by default set to np.NaN.
 
     Parameters
     ----------
@@ -163,16 +163,16 @@ def init_labelled_df(data, names):
 
     Returns
     -------
-    labelled_data : DataFrame
+    labeled_data : DataFrame
         Pandas DataFrame with shape (# of data points, # of channels + # of labels).
     """
     
-    labelled_data = pd.DataFrame(data=np.full((len(data), len(names)), np.NaN), columns=names)
-    labelled_data.iloc[:, :9] = data
+    labeled_data = pd.DataFrame(data=np.full((len(data), len(names)), np.NaN), columns=names)
+    labeled_data.iloc[:, :9] = data
     
-    return labelled_data
+    return labeled_data
     
-def to_hand(inp):
+def to_hand(input_val):
     """
     Computes (uninteresting, cheap math trick) encoding for hand used to press key, given which key was pressed.
 
@@ -188,17 +188,17 @@ def to_hand(inp):
 
     """
 
-    if type(inp) == str:
-        return (LABEL_MAP[inp] - 1) // 5 + 1
-    elif type(inp) == int:
-        return (inp - 1) // 5 + 1
-    elif np.isnan(inp):
-        return inp
+    if type(input_val) == str:
+        return (LABEL_MAP[input_val] - 1) // 5 + 1
+    elif type(input_val) == int:
+        return (input_val - 1) // 5 + 1
+    elif np.isnan(input_val):
+        return input_val
     else:
-        print("Unhandled type:", type(inp))
+        print("Unhandled type:", type(input_val))
         raise Exception
 
-def append_labels(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
+def load_data(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
     """
         Append ASCII values of labels in keyboard markings file to nearest (in terms of time) 
         data point from data set
@@ -206,7 +206,7 @@ def append_labels(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
           data_file     (string)
           labels_file   (string)
         outputs:
-          labelled_data (DataFrame)
+          labeled_data (DataFrame)
     """
     
     #Load data from files
@@ -234,11 +234,11 @@ def append_labels(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
     
     #Pre-allocate new DataFrame
     names = ['channel {}'.format(i) for i in channels] + ['timestamp(ms)', 'hand', 'finger', 'keypressed', 'id', 'mode']
-    labelled_data = init_labelled_df(data, names)
+    labeled_data = init_labeled_df(data, names)
     
     #Initialize values for id, mode
-    labelled_data['id'][:] = subject_id
-    labelled_data['mode'][:] = trial_mode
+    labeled_data['id'][:] = subject_id
+    labeled_data['mode'][:] = trial_mode
     
     #Append each label to nearest timestamp in data
     for i in range(len(label_timestamps)):
@@ -249,14 +249,14 @@ def append_labels(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
         #... keystroke, , , k                  <-- Example of labels in non-"prompt_end" line
         if any(keys.notnull()):
             if keys[i]: 
-                    labelled_data['hand'][ind] = to_hand(keys[i])
-                    labelled_data['finger'][ind] = LABEL_MAP[keys[i]]
-                    labelled_data['keypressed'][ind] = keys[i]
+                    labeled_data['hand'][ind] = to_hand(keys[i])
+                    labeled_data['finger'][ind] = LABEL_MAP[keys[i]]
+                    labeled_data['keypressed'][ind] = keys[i]
         else:
-            labelled_data['hand'][ind] = HAND_MAP[hands[i]]
-            labelled_data['finger'][ind] =  HAND_FINGER_MAP[hands[i]][fingers[i][:-1]]
+            labeled_data['hand'][ind] = HAND_MAP[hands[i]]
+            labeled_data['finger'][ind] =  HAND_FINGER_MAP[hands[i]][fingers[i][:-1]]
 
-    return labelled_data
+    return labeled_data
 
 def get_window_label(labels, win_start, win_len):
     """
@@ -288,9 +288,9 @@ def get_window_label(labels, win_start, win_len):
         
         return labels.iloc[np.argmin(np.abs(indices - mid_ind))]
 
-def label_window(data, length=1, shift=0.1, offset=2, take_everything=False):
+def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     """
-        Combines data points from data into labelled windows
+        Combines data points from data into labeled windows
         inputs:
             data    (DataFrame)indices = np.array([np.where(key_labels.iloc[i:i+length] == l)[0][0] for l in w_key_labels])
             length  (int)
@@ -360,13 +360,13 @@ def label_window(data, length=1, shift=0.1, offset=2, take_everything=False):
         windows_df['finger'] = window_labels_series                         #Kepp labels as they are
         windows_df['keypressed'] = pd.Series(np.full(len(windows), np.NaN)) #No key presses
     
-    #All the windows have the same id and mode as labelled data
+    #All the windows have the same id and mode as labeled data
     windows_df['id'] = pd.Series(np.full(len(windows), data['id'][0]))
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
     
     return windows_df
 
-def merge_data(directory, channels, filter_type='original_filter', file_regex='*.txt'):
+def create_dataset(directory, channels, filter_type='original_filter', file_regex='*.txt'):
     """
     Combines all datasets in 'directory' into a single DataFrame.
     Optionally filters the data.
@@ -385,13 +385,13 @@ def merge_data(directory, channels, filter_type='original_filter', file_regex='*
     windows = pd.DataFrame()
     for i in range(0, len(files), 2):
         print("Appending trial with labels:", files[i])
-        data = append_labels(files[i+1], files[i], channels)
+        data = load_data(files[i+1], files[i], channels)
         
         # Filter data
         data = filter_dataframe(data,filter_type=filter_type)
         
         # Window data
-        w = label_window(data)
+        w = create_windows(data)
         
         #Add data/windows to larger dataframe 
         big_data = big_data.append(data) 
@@ -414,11 +414,11 @@ if __name__ == '__main__':
     
     markers = '../data/2020-02-23/002-trial1-both-guided-2020-02-23-18-16-45-254.txt'
     fname = '../data/2020-02-23/002-trial1-both-guided-OpenBCI-RAW-2020-02-23_18-14-32.txt'
-    test = append_labels(fname, markers, channels)
-    out = label_window(test)
+    test = load_data(fname, markers, channels)
+    out = create_windows(test)
     
     # directory = '../data/2020-02-23/'
-    # labelled_raw, good_windows = merge_data(directory, channels)    
+    # labeled_raw, good_windows = create_dataset(directory, channels)    
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
     # good_windows.to_pickle('windows-2020-02-23_not_real_time.pkl')
 
