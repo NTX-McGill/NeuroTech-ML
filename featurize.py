@@ -29,7 +29,7 @@ def compute_feature(df, channel_names, feature_name, to_df=True):
     Get features from window, non-mutating
     
     Parameters
-    ----------q_40_60_abs(si
+    ----------
     df : pd.DataFrame
         dataframe with windows
     channel_names : list of strings
@@ -53,7 +53,6 @@ def compute_feature(df, channel_names, feature_name, to_df=True):
     computed_features = np.array(computed_features).T
     result = {}
     if computed_features.ndim > 2:
-        print(computed_features)
         for i in range(computed_features.shape[0]):
             feat = computed_features[i]
             for channel_name, actual_feat in zip(channel_names, feat):
@@ -61,14 +60,11 @@ def compute_feature(df, channel_names, feature_name, to_df=True):
                 result[new_name] = actual_feat
                 new_channel_names.append(new_name)
     else:
-        print('compted_features')
-        print(computed_features)
         new_channel_names = [get_name(channel_name,feature_name) for channel_name in channel_names]
         result = {get_name(channel_name, feature_name): feature
                               for channel_name, feature in zip(channel_names, computed_features)}
     if to_df:
         result = pd.DataFrame(result)
-    print(new_channel_names)
     return result,new_channel_names
 
 def compute_features(df, channel_names, feature_names, mutate=False):
