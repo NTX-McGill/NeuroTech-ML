@@ -195,6 +195,8 @@ def to_hand(input_val):
         return (input_val - 1) // 5 + 1
     elif np.isnan(input_val):
         return input_val
+    elif type(input_val) == float:
+        return (int(input_val) - 1) // 5 + 1
     else:
         print("Unhandled type:", type(input_val))
         raise Exception
@@ -517,14 +519,14 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
             selected_files.append((files_data[i], files_log[i]))
             
     # message
-    print('Selected {} trials with the following specifications:\n'.format(len(selected_files)) +
+    print('Selected {} trials with these specifications:\n'.format(len(selected_files)) +
           '\tdates: {}\n'.format(dates if dates else 'all') + 
           '\tsubjects: {}\n'.format(subjects if subjects else 'all') + 
           '\tmodes: {}'.format(modes if modes else 'all'))
     
     return selected_files
 
-
+    
 
 #Can still abstract pre-allocating and initilizing DataFrames, will do that later if time permitting
 
@@ -538,8 +540,7 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    
-    x = select_files(path_data, subjects=['004'])
+    # x = select_files(path_data, dates=['2020-02-23'], subjects=['002'], modes=[1])
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
