@@ -32,8 +32,9 @@ def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
     fingers = df['finger']
     
     # take the maximum of all existing classes (excluding NaN), then multiply by the sample factor
+    # if this maximum exceeds the number of NaN rows, uses all NaN rows
     if method == 'max':
-        n_baseline_samples = np.max(fingers.value_counts()) * baseline_sample_factor
+        n_baseline_samples = min(len(df[np.logical_not(df['finger'].notnull())]), np.max(fingers.value_counts())) * baseline_sample_factor
     
     # other option: take the mean instead
     elif method == 'mean':
@@ -290,9 +291,12 @@ def load_data(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
         #... keystroke, , , k                  <-- Example of labels in non-"prompt_end" line
         if any(keys.notnull()):
             if keys[i]: 
-                    labeled_data.loc[ind, 'hand'] = to_hand(keys[i])
-                    labeled_data.loc[ind, 'finger'] = LABEL_MAP[keys[i]]
-                    labeled_data.loc[ind, 'keypressed'] = keys[i]
+                    try:
+                        labeled_data.loc[ind, 'hand'] = to_hand(keys[i])
+                        labeled_data.loc[ind, 'finger'] = LABEL_MAP[keys[i]]
+                        labeled_data.loc[ind, 'keypressed'] = keys[i]
+                    except KeyError:
+                        pass
         else:
             labeled_data.loc[ind, 'hand'] = HAND_MAP[hands[i]]
             labeled_data.loc[ind, 'finger'] =  HAND_FINGER_MAP[hands[i]][fingers[i][:-1]]
@@ -632,7 +636,7 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
         
         # write pickle file
         with open(filename, 'wb') as f_out:
-            pickle.dump(windows, f_out)
+            pickle.dump(windows_all, f_out)
             print('Saved windows to file {}'.format(filename))
         
     return windows_all
@@ -651,7 +655,8 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    w = get_aggregated_windows(path_data, subjects=['006'], save=True, path_out='windows')
+    # w = get_aggregated_windows(path_data, dates=['2020-03-08'], modes=[1,2])
+    w = get_aggregated_windows(path_data, modes=[1,2], save=True, path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
