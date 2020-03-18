@@ -9,6 +9,43 @@ import os
 import re
 import pickle
 
+# not the same as the one in train.py
+def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
+    """
+    Select a subset of the baseline: convert the selected rows' label from NaN to 0
+    runs in-place
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    labels : list
+    baseline_sample_factor : int
+        default 1 -> same number of baseline samples as single class
+        represents the amount to multiply the number of samples
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    fingers = df['finger']
+    
+    # take the maximum of all existing classes (excluding NaN), then multiply by the sample factor
+    if method == 'max':
+        n_baseline_samples = np.max(fingers.value_counts()) * baseline_sample_factor
+    
+    # other option: take the mean instead
+    elif method == 'mean':
+        n_baseline_samples = int( fingers.count()/fingers.nunique() ) * baseline_sample_factor
+    
+    else:
+        raise ValueError('Invalid method: {}. Accepted methods are \'max\' and \'mean\''.format(method))
+        
+    
+    baseline_samples = df[np.logical_not(df['finger'].notnull())].sample(n=n_baseline_samples, replace=False, random_state=seed)
+    df.loc[baseline_samples.index, ['finger']] = 0
+
 # copied from real_time filter.py
 def test_filter(windows, fs=250, order=2, low=20, high=120):
     result = []
@@ -368,6 +405,9 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     windows_df['id'] = pd.Series(np.full(len(windows), data['id'][0]))
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
     
+    # add finger=0 for random subset of baseline samples
+    sample_baseline(windows_df)
+    
     return windows_df
 
 def create_dataset(directory, channels, filter_type='original_filter', file_regex='*.txt'):
@@ -609,7 +649,7 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    w = get_aggregated_windows(path_data, subjects=['004'], save=True, path_out='windows')
+    w = get_aggregated_windows(path_data, subjects=['006'], save=True, path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
