@@ -1,7 +1,7 @@
 {
     "id": "001",
     "trial": "2",
-    "mode": "In-the-air",
+    "mode": "Guided",
     "datetime": "2020-02-16-19:15:45:254",
     "timestamp": "1581898515972",
     "prompts": "left pinkie a , left ring finger s , left middle finger d ,left index finger f ,right index finger j ,right middle finger k ,right ring finger l ,right pinkie semicolon",
