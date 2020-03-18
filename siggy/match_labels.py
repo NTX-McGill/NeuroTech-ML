@@ -7,6 +7,7 @@ from constants import LABEL_MAP, HAND_MAP, HAND_FINGER_MAP, MODE_MAP, SAMPLING_F
 import json
 import os
 import re
+import pickle
 
 # copied from real_time filter.py
 def test_filter(windows, fs=250, order=2, low=20, high=120):
@@ -526,7 +527,75 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     
     return selected_files
 
+def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8], 
+                           dates=None, subjects=None, modes=None, 
+                           save=False, path_out='.'):
+    """
+    Selects trials based on dates/subjects/modes, 
+    then creates windows and aggregates them together.
+    Optionally saves windows in pickle file.
+
+    Parameters
+    ----------
+    path_data : string
+        Path to data folder.
+    channels : list of integers, optional
+        Channels to include in windows. The default is [1,2,3,4,5,6,7,8].
+    dates, subjects, modes : parameters passed to select_files()
+    path_out : string, optional
+        DESCRIPTION. The default is '.'.
+    save : boolean, optional
+        If True, will save windows as a pickle file in location given by path_out. The default is False.
+
+    Returns
+    -------
+    windows_all : pandas.DataFrame
+        DataFrame with one row per window. Contains one column for each channel, 
+        and also 'hand', 'finger', 'keypressed', 'id', and 'mode'
+
+    """
     
+    # get relevant data/log files
+    selected_files = select_files(path_data, dates=dates, subjects=subjects, modes=modes)
+    
+    # make empty dataframe where windows from each file will be appended
+    windows_all = pd.DataFrame()
+    
+    # for each trial
+    for (file_data, file_log) in selected_files:
+        
+        # add windows
+        print('Adding windows for trial with following files:\n' + 
+          '\tdata: {}\n'.format(file_data) + 
+          '\tlog: {}'.format(file_log))
+        
+        data = load_data(file_data, file_log, channels)
+        windows = create_windows(data)
+        
+        windows_all = windows_all.append(windows)
+        
+    # save windows as pickle file
+    if save:
+        
+        # generate filename based on requested dates/subjects/modes
+        to_add = []
+        for (i, l) in enumerate((dates, subjects, modes)):
+            if l:
+                to_add.append('_'.join(map(str, l)))
+            else:
+                to_add.append('all')
+        filename = 'windows_date_{}_subject_{}_mode_{}.pkl'.format(
+            to_add[0], to_add[1], to_add[2])
+        
+        # get full path to output file
+        filename = os.path.join(path_out, filename)
+        
+        # write pickle file
+        with open(filename, 'wb') as f_out:
+            pickle.dump(windows, f_out)
+            print('Saved windows to file {}'.format(filename))
+        
+    return windows_all
 
 #Can still abstract pre-allocating and initilizing DataFrames, will do that later if time permitting
 
@@ -540,7 +609,7 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    # x = select_files(path_data, dates=['2020-02-23'], subjects=['002'], modes=[1])
+    w = get_aggregated_windows(path_data, subjects=['004'], save=True, path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
