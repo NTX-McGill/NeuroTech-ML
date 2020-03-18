@@ -636,8 +636,10 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
             print('Saved windows to file {}'.format(filename))
         
     return windows_all
-
+    
 #Can still abstract pre-allocating and initilizing DataFrames, will do that later if time permitting
+#Fix real-time filtering
+#Check that nothing is hard coded for mode
 
 if __name__ == '__main__':
     #Testing code
@@ -649,7 +651,7 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    w = get_aggregated_windows(path_data, subjects=['006'], save=False, path_out='windows')
+    w = get_aggregated_windows(path_data, subjects=['006'], save=True, path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
