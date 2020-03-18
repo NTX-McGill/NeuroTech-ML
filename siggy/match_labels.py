@@ -278,8 +278,8 @@ def load_data(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
     labeled_data = init_labeled_df(data, names)
     
     #Initialize values for id, mode
-    labeled_data['id'][:] = subject_id
-    labeled_data['mode'][:] = trial_mode
+    labeled_data.loc[:, 'id'] = subject_id
+    labeled_data.loc[:, 'mode'] = trial_mode
     
     #Append each label to nearest timestamp in data
     for i in range(len(label_timestamps)):
@@ -290,12 +290,12 @@ def load_data(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
         #... keystroke, , , k                  <-- Example of labels in non-"prompt_end" line
         if any(keys.notnull()):
             if keys[i]: 
-                    labeled_data['hand'][ind] = to_hand(keys[i])
-                    labeled_data['finger'][ind] = LABEL_MAP[keys[i]]
-                    labeled_data['keypressed'][ind] = keys[i]
+                    labeled_data.loc[ind, 'hand'] = to_hand(keys[i])
+                    labeled_data.loc[ind, 'finger'] = LABEL_MAP[keys[i]]
+                    labeled_data.loc[ind, 'keypressed'] = keys[i]
         else:
-            labeled_data['hand'][ind] = HAND_MAP[hands[i]]
-            labeled_data['finger'][ind] =  HAND_FINGER_MAP[hands[i]][fingers[i][:-1]]
+            labeled_data.loc[ind, 'hand'] = HAND_MAP[hands[i]]
+            labeled_data.loc[ind, 'finger'] =  HAND_FINGER_MAP[hands[i]][fingers[i][:-1]]
 
     return labeled_data
 
@@ -375,12 +375,12 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
         w = []
         for j in range(emg.shape[1]):
             channel = emg.iloc[i:i+length, j]
+            
             w.append(np.array(channel))
         
         #Only use windows with enough data points
         if len(w[0]) != length: continue
         
-        #
         windows.append(w)
     
         #Get all not-null labels in the window (if any) and choose which one to use for the window
@@ -464,7 +464,7 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     subjects : list of requested subject IDs as strings in 'XXX' format, optional
         If None, no filtering is done for the subjects. The default is None.
     modes : list of requested modes as integers or single digit strings, optional
-        If None, no filterning is done for the modes. The default is None.
+        If None, no filterning is done for the modes5. The default is None.
 
     Returns
     -------
@@ -649,7 +649,7 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    w = get_aggregated_windows(path_data, subjects=['006'], save=True, path_out='windows')
+    w = get_aggregated_windows(path_data, subjects=['006'], save=False, path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
