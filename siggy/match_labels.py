@@ -5,7 +5,46 @@ from glob import glob
 from scipy import signal
 from constants import LABEL_MAP, HAND_MAP, HAND_FINGER_MAP, MODE_MAP, SAMPLING_FREQ
 import json
+import os
+import re
+import pickle
 
+# not the same as the one in train.py
+def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
+    """
+    Select a subset of the baseline: convert the selected rows' label from NaN to 0
+    runs in-place
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    labels : list
+    baseline_sample_factor : int
+        default 1 -> same number of baseline samples as single class
+        represents the amount to multiply the number of samples
+
+    Returns
+    -------
+    None.
+
+    """
+    
+    fingers = df['finger']
+    
+    # take the maximum of all existing classes (excluding NaN), then multiply by the sample factor
+    if method == 'max':
+        n_baseline_samples = np.max(fingers.value_counts()) * baseline_sample_factor
+    
+    # other option: take the mean instead
+    elif method == 'mean':
+        n_baseline_samples = int( fingers.count()/fingers.nunique() ) * baseline_sample_factor
+    
+    else:
+        raise ValueError('Invalid method: {}. Accepted methods are \'max\' and \'mean\''.format(method))
+        
+    
+    baseline_samples = df[np.logical_not(df['finger'].notnull())].sample(n=n_baseline_samples, replace=False, random_state=seed)
+    df.loc[baseline_samples.index, ['finger']] = 0
 
 # copied from real_time filter.py
 def test_filter(windows, fs=250, order=2, low=20, high=120):
@@ -194,6 +233,8 @@ def to_hand(input_val):
         return (input_val - 1) // 5 + 1
     elif np.isnan(input_val):
         return input_val
+    elif type(input_val) == float:
+        return (int(input_val) - 1) // 5 + 1
     else:
         print("Unhandled type:", type(input_val))
         raise Exception
@@ -364,6 +405,9 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     windows_df['id'] = pd.Series(np.full(len(windows), data['id'][0]))
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
     
+    # add finger=0 for random subset of baseline samples
+    sample_baseline(windows_df)
+    
     return windows_df
 
 def create_dataset(directory, channels, filter_type='original_filter', file_regex='*.txt'):
@@ -406,16 +450,206 @@ def create_dataset(directory, channels, filter_type='original_filter', file_rege
     
     return big_data, windows
 
+def select_files(path_data, dates=None, subjects=None, modes=None):
+    """
+    Selects data files according to specifications.
+    Specifically, keeps only files in the intersection of requested dates, subjects and modes
+
+    Parameters
+    ----------
+    path_data : string
+        Path to data directory
+    dates : list of requested dates as strings in 'YYYY-MM-DD' format, optional
+        If None, no filtering is done for the dates. The default is None.
+    subjects : list of requested subject IDs as strings in 'XXX' format, optional
+        If None, no filtering is done for the subjects. The default is None.
+    modes : list of requested modes as integers or single digit strings, optional
+        If None, no filterning is done for the modes. The default is None.
+
+    Returns
+    -------
+    selected_files : list of (file_data, file_log) tuples (of filenames)
+
+    """
+    
+    r_date = '\d{4}-\d{2}-\d{2}'
+    r_subject = '\d{3}'
+    
+    # input validation: check that requested dates/subjects are formatted correctly
+    invalid_dates = []
+    if dates:
+        invalid_dates = [d for d in dates if not re.fullmatch(r_date, d)]
+    invalid_subjects = []
+    if subjects:
+        invalid_subjects = [s for s in subjects if not re.fullmatch(r_subject, s)]
+        
+    # input validation: check that modes are formatted correctly (can be int or numerical string)
+    invalid_modes = []
+    if modes:
+        for i in range(len(modes)):
+            try:
+                modes[i] = int(modes[i])
+                
+                if modes[i] < 1 or modes[i] > len(MODE_MAP.keys()):
+                    invalid_modes.append(modes[i])
+            except ValueError:
+                invalid_modes.append(modes[i])
+            
+    # raise exception if invalid input
+    if invalid_dates:
+        raise ValueError('Invalid date(s): {}. Must be a list of strings in \'YYYY-MM-DD\' format.'.format(invalid_dates))
+    if invalid_subjects:
+        raise ValueError('Invalid subject ID(s): {}. Must be a list of strings in \'XXX\' format (three digits).'.format(invalid_subjects))
+    if invalid_modes:
+        raise ValueError('Invalid modes: {}. Available modes are the following: {}.'.format(
+            invalid_modes, {v:k for k,v in MODE_MAP.items()}))
+        
+    # convert req_subjects into list of strings (ex: '001' -> 1) because of the way get_metadata() works
+    if subjects:
+        subjects_int = [int(s) for s in subjects]
+    
+    # get all available dates
+    dates_all = [f for f in os.listdir(path_data) if re.fullmatch(r_date, f)]
+    
+    # remove 2020-02-09 because log file uses old data format from CLI tool
+    dates_all.remove('2020-02-09')
+    
+    # keep only requested dates
+    if dates:
+        dates_all = [d for d in dates_all if d in dates]
+    
+    # get all data files
+    files_all = []
+    for date in dates_all:
+        files = glob(os.path.join(path_data, date, '*.txt'))
+        files_all.extend(files)
+            
+    # separate files into lists of datafiles and logfiles
+    files_data = []
+    files_log = []
+    for (i, file) in enumerate(files_all):
+        try:
+            get_metadata(file)      # datafiles don't have JSON header so will raise JSONDecodeError (ValueError)
+            files_log.append(file)
+            
+        except ValueError:
+            files_data.append(file)
+            
+    # sort files so that files in same position contain data from same trial
+    # (this assumes consistent file naming)
+    files_data.sort()
+    files_log.sort()
+            
+    # make sure that separation makes sense
+    if not (len(files_data) == len(files_log)):
+        raise Exception('Number of data files ({}) and number of log files ({}) do not match'.format(len(files_data), len(files_log)))
+    
+    # filter files by requested subjects/modes
+    selected_files = []
+    for i in range(len(files_log)):
+        
+        metadata = get_metadata(files_log[i])
+        to_add = True
+        
+        if subjects and not metadata['id'] in subjects_int:
+            to_add = False
+        if modes and not MODE_MAP[metadata['mode']] in modes:
+            to_add = False
+        
+        if to_add:
+            selected_files.append((files_data[i], files_log[i]))
+            
+    # message
+    print('Selected {} trials with these specifications:\n'.format(len(selected_files)) +
+          '\tdates: {}\n'.format(dates if dates else 'all') + 
+          '\tsubjects: {}\n'.format(subjects if subjects else 'all') + 
+          '\tmodes: {}'.format(modes if modes else 'all'))
+    
+    return selected_files
+
+def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8], 
+                           dates=None, subjects=None, modes=None, 
+                           save=False, path_out='.'):
+    """
+    Selects trials based on dates/subjects/modes, 
+    then creates windows and aggregates them together.
+    Optionally saves windows in pickle file.
+
+    Parameters
+    ----------
+    path_data : string
+        Path to data folder.
+    channels : list of integers, optional
+        Channels to include in windows. The default is [1,2,3,4,5,6,7,8].
+    dates, subjects, modes : parameters passed to select_files()
+    path_out : string, optional
+        DESCRIPTION. The default is '.'.
+    save : boolean, optional
+        If True, will save windows as a pickle file in location given by path_out. The default is False.
+
+    Returns
+    -------
+    windows_all : pandas.DataFrame
+        DataFrame with one row per window. Contains one column for each channel, 
+        and also 'hand', 'finger', 'keypressed', 'id', and 'mode'
+
+    """
+    
+    # get relevant data/log files
+    selected_files = select_files(path_data, dates=dates, subjects=subjects, modes=modes)
+    
+    # make empty dataframe where windows from each file will be appended
+    windows_all = pd.DataFrame()
+    
+    # for each trial
+    for (file_data, file_log) in selected_files:
+        
+        # add windows
+        print('Adding windows for trial with following files:\n' + 
+          '\tdata: {}\n'.format(file_data) + 
+          '\tlog: {}'.format(file_log))
+        
+        data = load_data(file_data, file_log, channels)
+        windows = create_windows(data)
+        
+        windows_all = windows_all.append(windows)
+        
+    # save windows as pickle file
+    if save:
+        
+        # generate filename based on requested dates/subjects/modes
+        to_add = []
+        for (i, l) in enumerate((dates, subjects, modes)):
+            if l:
+                to_add.append('_'.join(map(str, l)))
+            else:
+                to_add.append('all')
+        filename = 'windows_date_{}_subject_{}_mode_{}.pkl'.format(
+            to_add[0], to_add[1], to_add[2])
+        
+        # get full path to output file
+        filename = os.path.join(path_out, filename)
+        
+        # write pickle file
+        with open(filename, 'wb') as f_out:
+            pickle.dump(windows, f_out)
+            print('Saved windows to file {}'.format(filename))
+        
+    return windows_all
+
 #Can still abstract pre-allocating and initilizing DataFrames, will do that later if time permitting
 
 if __name__ == '__main__':
     #Testing code
-    channels = [1,2,3,4,5,6,7,8]
+    # channels = [1,2,3,4,5,6,7,8]
     
-    markers = '../data/2020-02-23/002-trial1-both-guided-2020-02-23-18-16-45-254.txt'
-    fname = '../data/2020-02-23/002-trial1-both-guided-OpenBCI-RAW-2020-02-23_18-14-32.txt'
-    test = load_data(fname, markers, channels)
-    out = create_windows(test)
+    # markers = '../data/2020-02-23/002-trial1-both-guided-2020-02-23-18-16-45-254.txt'
+    # fname = '../data/2020-02-23/002-trial1-both-guided-OpenBCI-RAW-2020-02-23_18-14-32.txt'
+    # test = load_data(fname, markers, channels)
+    # out = create_windows(test)
+    
+    path_data = '../data'
+    w = get_aggregated_windows(path_data, subjects=['006'], save=True, path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
