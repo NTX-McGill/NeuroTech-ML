@@ -468,13 +468,13 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     Parameters
     ----------
     path_data : string
-        Path to data directory
+        Path to data directory.
     dates : list of requested dates as strings in 'YYYY-MM-DD' format, optional
         If None, no filtering is done for the dates. The default is None.
     subjects : list of requested subject IDs as strings in 'XXX' format, optional
         If None, no filtering is done for the subjects. The default is None.
     modes : list of requested modes as integers or single digit strings, optional
-        If None, no filterning is done for the modes5. The default is None.
+        If None, no filtering is done for the modes. The default is None.
 
     Returns
     -------
@@ -511,7 +511,7 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     if invalid_subjects:
         raise ValueError('Invalid subject ID(s): {}. Must be a list of strings in \'XXX\' format (three digits).'.format(invalid_subjects))
     if invalid_modes:
-        raise ValueError('Invalid modes: {}. Available modes are the following: {}.'.format(
+        raise ValueError('Invalid mode(s): {}. Available modes are the following: {}.'.format(
             invalid_modes, {v:k for k,v in MODE_MAP.items()}))
         
     # convert req_subjects into list of strings (ex: '001' -> 1) because of the way get_metadata() works
