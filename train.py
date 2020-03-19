@@ -68,6 +68,10 @@ def sample_baseline(df, labels, baseline_sample_factor=1):
     baseline_samples = df[np.logical_not(df['keypressed'].notnull())].sample(n=n_baseline_samples, replace=False, random_state=SEED)
     df.loc[baseline_samples.index, ['keypressed']] = 0
 
+def print_dataset_stats(df):
+    print(df['finger'].value_counts())
+    print(df['mode'].value_counts())
+    
 def test_all_models(X, Y, model_names, scoring='accuracy', n_splits=10):
     results = []
     for name in model_names:
@@ -149,11 +153,12 @@ def generate_model_name(filename=""):
     name = "model_" + filename + "-" + now.strftime("%m_%d_%Y_%H_%M_%S") + ".pkl"
     return name
 
-def save_model(classifier, filename="", name=None):
+def save_model(classifier, feature_names, filename="", name=None):
     if not name:
         name = generate_model_name(filename)
+        print(name)
     with open(name, 'wb') as f:
-        pickle.dump(classifier, f)
+        pickle.dump({'classifier': classifier, 'features': feature_names}, f)
     
 
 # features to use
@@ -167,18 +172,23 @@ validation_size = 0.20
 
 window_size = 2
 channels = [1,2,3,4,5,6,7,8]
-filename='windows-2020-02-23.pkl'
+filename='windows_date_all_subject_all_mode_1_2.pkl'
 file_prefix = filename.split(".")[0].split('/')[-1]
 channel_names = ['channel {}'.format(i) for i in channels]
-
+label_name='finger'
 
 df = load_windows(filename, channels)
-labels = df['keypressed'].unique()
+labels = df[label_name].unique()
 sample_baseline(df, labels)
-subset = df[df['keypressed'].notnull()]
+subset = df[df[label_name].notnull()]
 features, all_ch_names = compute_features(subset, channel_names, feature_names, mutate=True)
-
-cols = all_ch_names + ['keypressed'] 
+# write pickle file
+import pickle
+feat_filename = 'features_' + filename
+with open(feat_filename, 'wb') as f_out:
+    pickle.dump(features, f_out)
+    print('Saved windows to file {}'.format(filename))
+cols = all_ch_names + [label_name] 
 # cols = all_names(channel_names, feature_names) + ['keypressed']
 dataset = features[cols].to_numpy()
 
@@ -193,7 +203,7 @@ results = test_all_models(X,Y, model_names, n_splits=n_splits)
 model_name = 'LDA'
 classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size)
 
-save_model(classifier, file_prefix)
+save_model(classifier, feature_names, file_prefix)
 
 #More data <- check
 #Fix labels 
