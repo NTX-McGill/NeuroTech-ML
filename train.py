@@ -106,7 +106,7 @@ def run_test_confmat_single_fold(X, Y, model_name, validation_size=0.2):
         print(disp.confusion_matrix)
     return classifier, disp.confusion_matrix
 
-def run_test_confmat_folds(X, Y, model_name, validation_size=0.2):
+def run_test_confmat_folds(X, Y, model_name, validation_size=0.2,title=''):
     confuzzle = []
     kf = model_selection.KFold(n_splits=5)
     for train_index, test_index in kf.split(X):
@@ -132,18 +132,19 @@ def run_test_confmat_folds(X, Y, model_name, validation_size=0.2):
     # raw
     plt.figure(figsize = (10,7))
     sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
-    plt.title("Not normalized")
+    plt.title('Not Normalized\n'+title)
     plt.show()
     # normalized
     df_cm = df_cm.apply(lambda row: row / np.sum(row), axis=1)
     plt.figure(figsize = (10,7))
+    plt.title('Normalized\n'+title)
     sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
     
     return classifier, df_cm
 
-def run_test_confmat(X, Y, model_name, validation_size=0.2, test_all_folds=True):
+def run_test_confmat(X, Y, model_name, validation_size=0.2, test_all_folds=True,title=''):
     if test_all_folds:
-        return run_test_confmat_folds(X, Y, model_name, validation_size=validation_size)
+        return run_test_confmat_folds(X, Y, model_name, validation_size=validation_size,title=title)
     return run_test_confmat_single_fold(X, Y, model_name, validation_size=validation_size)
     
 
@@ -161,54 +162,78 @@ def save_model(classifier, feature_names, filename="", name=None):
         pickle.dump({'classifier': classifier, 'features': feature_names}, f)
     
 
-# features to use
-feature_names = ALL_FEATURES[:-1]
-# models to use
-model_names = ['LDA', 'KNN', 'CART', 'SVM']
-test_all_folds=True
-n_splits=10
-validation_size = 0.20
-
-
-window_size = 2
-channels = [1,2,3,4,5,6,7,8]
-filename='windows_date_all_subject_all_mode_1_2.pkl'
-file_prefix = filename.split(".")[0].split('/')[-1]
-channel_names = ['channel {}'.format(i) for i in channels]
-label_name='finger'
-
-df = load_windows(filename, channels)
-labels = df[label_name].unique()
-sample_baseline(df, labels)
-subset = df[df[label_name].notnull()]
-features, all_ch_names = compute_features(subset, channel_names, feature_names, mutate=True)
-# write pickle file
-import pickle
-feat_filename = 'features_' + filename
-with open(feat_filename, 'wb') as f_out:
-    pickle.dump(features, f_out)
-    print('Saved windows to file {}'.format(filename))
-cols = all_ch_names + [label_name] 
-# cols = all_names(channel_names, feature_names) + ['keypressed']
-dataset = features[cols].to_numpy()
-
-# don't shuffle the dataset
-# np.random.shuffle(dataset)
-X = dataset[:,:-1]
-Y = dataset[:,-1]
-print("size of dataset:", X.shape)
-
-results = test_all_models(X,Y, model_names, n_splits=n_splits)
-
-model_name = 'LDA'
-classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size)
-
-save_model(classifier, feature_names, file_prefix)
-
-#More data <- check
-#Fix labels 
-#Train on good air data, then predict on bad data <- how to find good/bad data?
-
-#Look at in-air thumb vs right index
+if __name__ == '__main__':
+    """
+    Here there are two different modes you can run, either you load the windows file and compute the features
+    or you can load the features directly.    
+    """
+    
+    # features to use
+    feature_names = ALL_FEATURES[:-1]
+    # models to use
+    model_names = ['LDA', 'KNN', 'CART', 'SVM']
+    test_all_folds=True
+    n_splits=10
+    validation_size = 0.20
+    
+    
+    window_size = 2
+    channels = [1,2,3,4,5,6,7,8]
+    label_name='finger'
+    
+    mode = 2
+    if mode==1:
+        ### MODE 1 : LOAD THE WINDOWS, COMPUTE THE FEATURES
+        
+        # filename='windows_date_all_subject_all_mode_1_2.pkl'
+        filename='windows-2020-03-03.pkl'
+        file_prefix = filename.split(".")[0].split('/')[-1]
+        channel_names = ['channel {}'.format(i) for i in channels]
+        
+        df = load_windows(filename, channels)
+        labels = df[label_name].unique()
+        sample_baseline(df, labels)
+        subset = df[df[label_name].notnull()]
+        features, all_ch_names = compute_features(subset, channel_names, feature_names, mutate=True)
+        # write pickle file
+        feat_filename = 'features_' + filename
+        with open(feat_filename, 'wb') as f_out:
+            pickle.dump(features, f_out)
+            print('Saved windows to file {}'.format(filename))
+            
+    elif mode==2:
+        ### MODE 2 : LOAD THE FEATURES DIRECTLY
+            
+        filename = 'features_windows-2020-03-03.pkl'
+        file_prefix = filename.split(".")[0].split('/')[-1]
+        features = pd.read_pickle(filename)
+        
+        all_ch_names = [i for i in features.columns if 'channel' in i]
+        all_ch_names = [i for i in all_ch_names if '_' in i]
+    
+    
+    cols = all_ch_names + [label_name] 
+    # cols = all_names(channel_names, feature_names) + ['keypressed']
+    dataset = features[cols].to_numpy()
+    
+    # don't shuffle the dataset
+    # np.random.shuffle(dataset)
+    X = dataset[:,:-1]
+    Y = dataset[:,-1]
+    print("size of dataset:", X.shape)
+    
+    results = test_all_models(X,Y, model_names, n_splits=n_splits)
+    
+    model_name = 'LDA'
+    classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size,
+                                          title='file : '+filename)
+    print()
+    save_model(classifier, feature_names, file_prefix)
+    
+    #More data <- check
+    #Fix labels 
+    #Train on good air data, then predict on bad data <- how to find good/bad data?
+    
+    #Look at in-air thumb vs right index
 
 
