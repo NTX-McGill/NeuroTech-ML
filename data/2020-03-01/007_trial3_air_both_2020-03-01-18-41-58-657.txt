@@ -1,6 +1,6 @@
 {
     "id": "007",
-    "trial": "3",
+    "trial": "3-in-the-air",
     "mode": "Guided",
     "datetime": "2020-03-01-18:41:12:063",
     "timestamp": "1583106121250",
