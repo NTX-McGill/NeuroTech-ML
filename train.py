@@ -106,7 +106,7 @@ def run_test_confmat_single_fold(X, Y, model_name, validation_size=0.2):
         print(disp.confusion_matrix)
     return classifier, disp.confusion_matrix
 
-def run_test_confmat_folds(X, Y, model_name, validation_size=0.2):
+def run_test_confmat_folds(X, Y, model_name, validation_size=0.2,title=''):
     confuzzle = []
     kf = model_selection.KFold(n_splits=5)
     for train_index, test_index in kf.split(X):
@@ -132,18 +132,19 @@ def run_test_confmat_folds(X, Y, model_name, validation_size=0.2):
     # raw
     plt.figure(figsize = (10,7))
     sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
-    plt.title("Not normalized")
+    plt.title('Not Normalized\n'+title)
     plt.show()
     # normalized
     df_cm = df_cm.apply(lambda row: row / np.sum(row), axis=1)
     plt.figure(figsize = (10,7))
+    plt.title('Normalized\n'+title)
     sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
     
     return classifier, df_cm
 
-def run_test_confmat(X, Y, model_name, validation_size=0.2, test_all_folds=True):
+def run_test_confmat(X, Y, model_name, validation_size=0.2, test_all_folds=True,title=''):
     if test_all_folds:
-        return run_test_confmat_folds(X, Y, model_name, validation_size=validation_size)
+        return run_test_confmat_folds(X, Y, model_name, validation_size=validation_size,title=title)
     return run_test_confmat_single_fold(X, Y, model_name, validation_size=validation_size)
     
 
@@ -172,7 +173,8 @@ validation_size = 0.20
 
 window_size = 2
 channels = [1,2,3,4,5,6,7,8]
-filename='windows_date_all_subject_all_mode_1_2.pkl'
+# filename='windows_date_all_subject_all_mode_1_2.pkl'
+filename='windows-2020-03-03.pkl'
 file_prefix = filename.split(".")[0].split('/')[-1]
 channel_names = ['channel {}'.format(i) for i in channels]
 label_name='finger'
@@ -201,8 +203,9 @@ print("size of dataset:", X.shape)
 results = test_all_models(X,Y, model_names, n_splits=n_splits)
 
 model_name = 'LDA'
-classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size)
-
+classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size,
+                                      title='asdf')
+print()
 save_model(classifier, feature_names, file_prefix)
 
 #More data <- check
