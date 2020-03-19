@@ -38,7 +38,7 @@ channels = [1,2,3,4,5,6,7,8,13]
 
 ###### YOU CAN CHANGE FROM HERE ##############
 length = 250
-shift = 0.2
+shift = 0.1
 
 channel_names = ['channel {}'.format(i) for i in channels[:-1]]
 feature_names = ['iemg', 'mav', 'mmav', 'mmav2', 'var','rms', 'zc', 'wamp', 
@@ -50,7 +50,7 @@ feature_names = ['iemg', 'mav', 'mmav', 'mmav2', 'var','rms', 'zc', 'wamp',
 # any actual keypresses
 data_file = 'data/2020-03-08/012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt'
 label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.txt'
-
+model_file= 'model_windows_date_all_subject_all_mode_1_2-03_18_2020_22_33_39.pkl'
 # TO HERE ####################################
 #%%
 res = load_data(data_file, label_file, channels)
@@ -67,7 +67,7 @@ windows = create_windows(data, shift=shift, offset=0, take_everything=True)
 windows = windows[channel_names]
 windows_fixed = windows.to_numpy()
 #%% 
-ML = RealTimeML()
+ML = RealTimeML(model_filename=model_file)
 all_predictions = []
 for win in windows_fixed:   
     all_predictions.append(ML.predict_function(win))

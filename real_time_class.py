@@ -18,12 +18,11 @@ import numpy as np
 #from match_labels import *
 
 class RealTimeML():
-    def __init__(self):
+    def __init__(self, model_filename='model_windows-2020-02-23-03_08_2020_15_48_56.pkl'):
         # model_file = "model_windows-2020-02-23-03_08_2020_15:22:15.pkl"
         # model_file = 'model_windows-2020-02-23-03_08_2020_15:41:37.pkl'
         #model_file = 'model_windows-2020-02-23-03_08_2020_15:46:13.pkl'
-        model_file = 'model_windows-2020-02-23-03_08_2020_15_48_56.pkl'
-        with open(model_file, 'rb') as f:
+        with open(model_filename, 'rb') as f:
             data = pickle.load(f)
             self.clf = data['classifier']
             self.features = data['features']
