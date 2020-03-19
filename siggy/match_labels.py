@@ -10,7 +10,7 @@ import re
 import pickle
 
 # not the same as the one in train.py
-def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
+def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1, seed=7):
     """
     Select a subset of the baseline: convert the selected rows' label from NaN to 0
     runs in-place
@@ -25,15 +25,16 @@ def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
 
     Returns
     -------
-    None.
+    Modified DataFrame
 
     """
     
     fingers = df['finger']
     
     # take the maximum of all existing classes (excluding NaN), then multiply by the sample factor
+    # if this maximum exceeds the number of NaN rows, uses all NaN rows
     if method == 'max':
-        n_baseline_samples = np.max(fingers.value_counts()) * baseline_sample_factor
+        n_baseline_samples = min(len(df[np.logical_not(df['finger'].notnull())]), np.max(fingers.value_counts())) * baseline_sample_factor
     
     # other option: take the mean instead
     elif method == 'mean':
@@ -45,6 +46,12 @@ def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
     
     baseline_samples = df[np.logical_not(df['finger'].notnull())].sample(n=n_baseline_samples, replace=False, random_state=seed)
     df.loc[baseline_samples.index, ['finger']] = 0
+    
+    # drop all rows where 'finger' is NaN
+    if drop_rest:
+        df = df[df['finger'].notnull()]
+    
+    return df
 
 # copied from real_time filter.py
 def test_filter(windows, fs=250, order=2, low=20, high=120):
@@ -297,9 +304,12 @@ def load_data(data_file, label_file, channels=[1,2,3,4,5,6,7,8]):
         #... keystroke, , , k                  <-- Example of labels in non-"prompt_end" line
         if any(keys.notnull()):
             if keys[i]: 
-                    labeled_data.loc[ind, 'hand'] = to_hand(keys[i])
-                    labeled_data.loc[ind, 'finger'] = LABEL_MAP[keys[i]]
-                    labeled_data.loc[ind, 'keypressed'] = keys[i]
+                    try:
+                        labeled_data.loc[ind, 'hand'] = to_hand(keys[i])
+                        labeled_data.loc[ind, 'finger'] = LABEL_MAP[keys[i]]
+                        labeled_data.loc[ind, 'keypressed'] = keys[i]
+                    except KeyError:
+                        pass
         else:
             labeled_data.loc[ind, 'hand'] = HAND_MAP[hands[i]]
             labeled_data.loc[ind, 'finger'] =  HAND_FINGER_MAP[hands[i]][fingers[i][:-1]]
@@ -412,7 +422,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
     
     # add finger=0 for random subset of baseline samples
-    sample_baseline(windows_df)
+    windows_df = sample_baseline(windows_df, drop_rest=True)
     
     return windows_df
 
@@ -464,13 +474,13 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     Parameters
     ----------
     path_data : string
-        Path to data directory
+        Path to data directory.
     dates : list of requested dates as strings in 'YYYY-MM-DD' format, optional
         If None, no filtering is done for the dates. The default is None.
     subjects : list of requested subject IDs as strings in 'XXX' format, optional
         If None, no filtering is done for the subjects. The default is None.
     modes : list of requested modes as integers or single digit strings, optional
-        If None, no filterning is done for the modes5. The default is None.
+        If None, no filtering is done for the modes. The default is None.
 
     Returns
     -------
@@ -507,7 +517,7 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     if invalid_subjects:
         raise ValueError('Invalid subject ID(s): {}. Must be a list of strings in \'XXX\' format (three digits).'.format(invalid_subjects))
     if invalid_modes:
-        raise ValueError('Invalid modes: {}. Available modes are the following: {}.'.format(
+        raise ValueError('Invalid mode(s): {}. Available modes are the following: {}.'.format(
             invalid_modes, {v:k for k,v in MODE_MAP.items()}))
         
     # convert req_subjects into list of strings (ex: '001' -> 1) because of the way get_metadata() works
@@ -639,7 +649,7 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
         
         # write pickle file
         with open(filename, 'wb') as f_out:
-            pickle.dump(windows, f_out)
+            pickle.dump(windows_all, f_out)
             print('Saved windows to file {}'.format(filename))
         
     return windows_all
@@ -654,26 +664,9 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    # w3 = get_aggregated_windows(path_data, subjects=['006'], save=False, path_out='windows')
-    # test_w3 = test_filter(w3['channel 1'])
+    # w = get_aggregated_windows(path_data, modes=[1,2])
+    w = get_aggregated_windows(path_data, modes=[1,2], save=True, path_out='windows')
     
-    # files = select_files(path_data, dates=['2020-02-16'], subjects=['001'], modes=[1])
-    # w3 = get_aggregated_windows(path_data, subjects=['001'], dates=['2020-02-16'], modes=[1])
-    
-    fname = '../data/2020-02-16/001_trial1_right_keyboard_OpenBCI-RAW-2020-02-16_18-59-08.txt'
-    markers = '../data/2020-02-16/001_trial1_right_keyboard_2020-02-16-19-09-10-309.txt'
-    test = load_data(fname, markers)
-    w3 = create_windows(test, shift=1)
-    
-    
-    test_filtered_w3 = test_filter(list(w3.loc[:2, 'channel 1']))
-    plt.plot(test_filtered_w3[0])
-    plt.show()
-    plt.plot(test_filtered_w3[1])
-    plt.show()
-    
-    # filtered_test = filter_dataframe(test, filter_type='original_filter')
-    # test_windows = create_windows(filtered_test)
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
 #     windows.to_csv('windows-2020-02-23.csv', index=False)

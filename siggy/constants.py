@@ -23,7 +23,7 @@ WINDOW_COLS = ['channel 1', 'channel 2', 'channel 3', 'channel 4',
                'hand', 'finger', 'keypressed', 'id', 'mode']
 
 #Mapping of data collection mode to int
-MODE_MAP = {'Guided': 1, 'Self-directed': 2, 'In-the-air': 3}    
+MODE_MAP = {'Guided': 1, 'Self-directed': 2, 'In-the-air': 3, 'Guided-in-the-air':4}    
 
 #Mapping of hand used to press key to int
 HAND_MAP = {'left': 1, 'right': 2}
