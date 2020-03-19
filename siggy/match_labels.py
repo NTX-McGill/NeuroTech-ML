@@ -10,7 +10,7 @@ import re
 import pickle
 
 # not the same as the one in train.py
-def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
+def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1, seed=7):
     """
     Select a subset of the baseline: convert the selected rows' label from NaN to 0
     runs in-place
@@ -25,7 +25,7 @@ def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
 
     Returns
     -------
-    None.
+    Modified DataFrame
 
     """
     
@@ -46,6 +46,12 @@ def sample_baseline(df, method='max', baseline_sample_factor=1, seed=7):
     
     baseline_samples = df[np.logical_not(df['finger'].notnull())].sample(n=n_baseline_samples, replace=False, random_state=seed)
     df.loc[baseline_samples.index, ['finger']] = 0
+    
+    # drop all rows where 'finger' is NaN
+    if drop_rest:
+        df = df[df['finger'].notnull()]
+    
+    return df
 
 # copied from real_time filter.py
 def test_filter(windows, fs=250, order=2, low=20, high=120):
@@ -410,7 +416,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
     
     # add finger=0 for random subset of baseline samples
-    sample_baseline(windows_df)
+    windows_df = sample_baseline(windows_df, drop_rest=True)
     
     return windows_df
 
@@ -655,7 +661,7 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    # w = get_aggregated_windows(path_data, dates=['2020-03-08'], modes=[1,2])
+    # w = get_aggregated_windows(path_data, modes=[1,2])
     w = get_aggregated_windows(path_data, modes=[1,2], save=True, path_out='windows')
     
     # directory = '../data/2020-02-23/'
