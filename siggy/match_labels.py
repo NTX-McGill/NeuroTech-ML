@@ -55,7 +55,7 @@ def test_filter(windows, fs=250, order=2, low=20, high=120):
 
     notch_freq = 60.0
     bp_stop = notch_freq + 3.0 * np.array([-1,1])
-    nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
+    nb, na = signal.iirnotch(notch_freq, notch_freq / 6, fs)
     nz = signal.lfilter_zi(nb, na)
 
     for w in windows:
@@ -106,7 +106,7 @@ def butter_filter(low=5.0, high=120.0, order=4, fs=250):
     nyq = fs / 2
     return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
 
-def filter_signal(arr, notch=True, filter_type='original_filter'):
+def filter_signal(arr, notch=True, filter_type='original_filter', rt_ic=[]):
     """
         Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
         inputs:
@@ -116,32 +116,39 @@ def filter_signal(arr, notch=True, filter_type='original_filter'):
         outputs:
             (ndarray)
     """
+    
+    bb, ba = butter_filter()
+    nb, na = notch_filter() 
+    
     if filter_type=='original_filter':
         if notch:
-            nb, na = notch_filter()
             arr = signal.lfilter(nb, na, arr)
         
-        bb, ba = butter_filter()
         return signal.lfilter(bb, ba, arr)
     
     elif filter_type=='real_time_filter':
-        fs,order,low,high,notch_freq = 250,2,5,120,60.0
-        nyq = fs / 2
-        bb, ba = signal.butter(order, [low/nyq , high/nyq], 'bandpass')
-        bz = signal.lfilter_zi(bb,ba)
+        # fs,order,low,high,notch_freq = 250,2,5,120,60.0
+        # nyq = fs / 2
+        # nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
         
-        # bp_stop = notch_freq + s3.0*np.array([-1,1])
-        nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
-        nz = signal.lfilter_zi(nb,na)
+        nz, bz = rt_ic[0], rt_ic[1]
         
+        #If no initial conditions are given, calculate initial conditions for filters
+        if not (any(nz) or any(bz)):
+            nz = signal.lfilter_zi(nb, na)
+            bz = signal.lfilter_zi(bb, ba)
+        
+        #Filter signal according to initial conditions
         filtered_signal, nz = signal.lfilter(nb, na, arr, zi=nz)
+        # filtered_signal = signal.lfilter(nb, na, arr)
         filtered_signal, bz = signal.lfilter(bb, ba, filtered_signal, zi=bz)
-        return filtered_signal
+        
+        return filtered_signal, [nz, bz]
         
     else:
         print('\nfilter type not recognised, enter valid filter type!')
         raise Exception
-
+        
 
 def filter_dataframe(df,filter_type='original_filter'):
     """
@@ -156,7 +163,7 @@ def filter_dataframe(df,filter_type='original_filter'):
     
     for col in df.columns:
         if 'channel' in col:
-            filtered_df[col] = filter_signal(np.array(df[col]),filter_type=filter_type)
+            filtered_df[col] = filter_signal(np.array(df[col]), filter_type=filter_type)
         
     return filtered_df
 
@@ -356,17 +363,17 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
         end = np.where(data[label_col].notnull())[0][-1]
     
     #Find how many channels are used in the dataframe by looking at the names of the columns
-    ch_ind = []
-    for i in range(len(data.columns)):
-        if 'channel' in data.columns[i]: 
-            ch_ind.append(i)
+    ch_ind = [i for i in range(len(data.columns)) if 'channel' in data.columns[i]]
     
     #Only focus on the part of the emg data between start and end
     emg = data.iloc[start - offset:end + offset, ch_ind]
+    labels = data.loc[start - offset: end + 1 + offset, label_col]
+    
+    #Initialize initial conditions for real-time filters, only used if using real-time filters
+    # rt_initial_conditions = [[[None], [None]] for ch in data.columns if 'channel' in ch]
     
     #Create and label windows
     windows = []
-    labels = data[label_col][start - offset: end + 1 + offset]
     window_labels = []
     for i in range(0, emg.shape[0], shift):
         #Handle windowing the data
@@ -374,9 +381,8 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
         #so w = np.array(emg[i: i+length, :]) doesn't work (it gives array with shape (250, 8))
         w = []
         for j in range(emg.shape[1]):
-            channel = emg.iloc[i:i+length, j]
-            
-            w.append(np.array(channel))
+            channel = np.array(emg.iloc[i:i+length, j])
+            w.append(channel)
         
         #Only use windows with enough data points
         if len(w[0]) != length: continue
@@ -569,7 +575,7 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
 
 def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8], 
                            dates=None, subjects=None, modes=None, 
-                           save=False, path_out='.'):
+                           save=False, path_out='.', filter_type='real_time_filter'):
     """
     Selects trials based on dates/subjects/modes, 
     then creates windows and aggregates them together.
@@ -611,6 +617,7 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
         
         data = load_data(file_data, file_log, channels)
         windows = create_windows(data)
+        filtered_windows = test_filter(windows)
         
         windows_all = windows_all.append(windows)
         
@@ -636,10 +643,6 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
             print('Saved windows to file {}'.format(filename))
         
     return windows_all
-    
-#Can still abstract pre-allocating and initilizing DataFrames, will do that later if time permitting
-#Fix real-time filtering
-#Check that nothing is hard coded for mode
 
 if __name__ == '__main__':
     #Testing code
@@ -651,8 +654,26 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    w = get_aggregated_windows(path_data, subjects=['006'], save=True, path_out='windows')
+    # w3 = get_aggregated_windows(path_data, subjects=['006'], save=False, path_out='windows')
+    # test_w3 = test_filter(w3['channel 1'])
     
+    # files = select_files(path_data, dates=['2020-02-16'], subjects=['001'], modes=[1])
+    # w3 = get_aggregated_windows(path_data, subjects=['001'], dates=['2020-02-16'], modes=[1])
+    
+    fname = '../data/2020-02-16/001_trial1_right_keyboard_OpenBCI-RAW-2020-02-16_18-59-08.txt'
+    markers = '../data/2020-02-16/001_trial1_right_keyboard_2020-02-16-19-09-10-309.txt'
+    test = load_data(fname, markers)
+    w3 = create_windows(test, shift=1)
+    
+    
+    test_filtered_w3 = test_filter(list(w3.loc[:2, 'channel 1']))
+    plt.plot(test_filtered_w3[0])
+    plt.show()
+    plt.plot(test_filtered_w3[1])
+    plt.show()
+    
+    # filtered_test = filter_dataframe(test, filter_type='original_filter')
+    # test_windows = create_windows(filtered_test)
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
 #     windows.to_csv('windows-2020-02-23.csv', index=False)
