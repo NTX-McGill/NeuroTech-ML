@@ -363,7 +363,7 @@ def get_window_label(labels, win_start, win_len):
         
         return labels.iloc[np.argmin(np.abs(indices - mid_ind))]
 
-def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
+def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, filter_type='real_time_filter', drop_rest=True):
     """
         Combines data points from data into labeled windows
         inputs:
@@ -437,10 +437,11 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     
     #Real-time filter dataframe
     # filtered_windows_df = windows_df
-    filtered_windows_df = filter_dataframe(windows_df, filter_type='real_time_filter', start_of_overlap=shift)
+    if filter_type == 'real_time_filter':
+        filtered_windows_df = filter_dataframe(windows_df, filter_type=filter_type, start_of_overlap=shift)
     
     # add finger=0 for random subset of baseline samples
-    filtered_windows_df = sample_baseline(filtered_windows_df, drop_rest=True)
+    filtered_windows_df = sample_baseline(filtered_windows_df, drop_rest=drop_rest)
     
     return filtered_windows_df
 
@@ -466,10 +467,11 @@ def create_dataset(directory, channels, filter_type='original_filter', file_rege
         data = load_data(files[i+1], files[i], channels)
         
         # Filter data
-        data = filter_dataframe(data,filter_type=filter_type)
+        if filter_type == 'original_filter':
+            data = filter_dataframe(data,filter_type=filter_type)
         
         # Window data
-        w = create_windows(data)
+        w = create_windows(data, filter_type=filter_type)
         
         #Add data/windows to larger dataframe 
         big_data = big_data.append(data) 
