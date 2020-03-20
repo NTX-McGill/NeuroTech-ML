@@ -363,7 +363,7 @@ def get_window_label(labels, win_start, win_len):
         
         return labels.iloc[np.argmin(np.abs(indices - mid_ind))]
 
-def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, filter_type='real_time_filter'):
+def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, filter_type='real_time_filter', drop_rest=True):
     """
         Combines data points from data into labeled windows
         inputs:
@@ -441,7 +441,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, f
         filtered_windows_df = filter_dataframe(windows_df, filter_type=filter_type, start_of_overlap=shift)
     
     # add finger=0 for random subset of baseline samples
-    filtered_windows_df = sample_baseline(filtered_windows_df, drop_rest=True)
+    filtered_windows_df = sample_baseline(filtered_windows_df, drop_rest=drop_rest)
     
     return filtered_windows_df
 
