@@ -20,6 +20,7 @@ from sklearn.metrics import plot_confusion_matrix,confusion_matrix
 import pickle
 from datetime import datetime
 import seaborn as sn
+from constants import *
 
 ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
 LABEL_MAP = {'k': 3, ';':5, 'j': 2, 'l': 4, 'p': 5, 'u': 2, 'o':4, '.': 4,
@@ -160,7 +161,129 @@ def save_model(classifier, feature_names, filename="", name=None):
         print(name)
     with open(name, 'wb') as f:
         pickle.dump({'classifier': classifier, 'features': feature_names}, f)
+
+def get_feature_names(df):
+    """
+    Returns a list of unique names of features in a dataframe.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Dataframe containing windows and feature information of said windows
+
+    Returns
+    -------
+    list
+        Unique names of features in df.
+
+    """
     
+    #Get names of features in dataframe, prefixed by 'channel #_'
+    feature_names_with_ch = [col for col in df.columns if '_' in col]
+    
+    #Remove prefix
+    feature_names_no_ch = ['_'.join(name.split('_')[1:]) for name in feature_names_with_ch]
+    
+    #Get unique feature names
+    return list(set(feature_names_no_ch))
+
+def add_ch_to_feature_name(feats):
+    """
+    Appends the names of channels to each feature name in feats, in order to 
+    get the value of the feature in every channel
+
+    Parameters
+    ----------
+    feats : list
+        Names of features.
+
+    Returns
+    -------
+    feat_names_with_ch : list
+        Strings of the form: 'channel i_(feature name)'.
+
+    """
+    
+    channel_names = ['channel {}'.format(i) for i in range(1, 9)]
+    
+    #Prepend 'channel #' to every feature passed
+    feat_names_with_ch = []
+    for f in feats:
+        feat_names_with_ch.extend(['_'.join([ch, f]) for ch in channel_names])
+    
+    return feat_names_with_ch
+
+def get_subset(df, ids=None, modes=None, feats=None):
+    """
+    Returns a subset of df which conatins only subject ids, modes, and features specified.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Dataframe to extract information from.
+    ids : list, optional
+        List of subject ids (ints or strings) to include in new dataframe. 
+        The default is None.
+    modes : list, optional
+        List of modes (ints) to include in new dataframe. 
+        The default is None.
+    feats : list, optional
+        List of feature names (strings) to include in new dataframe. 
+        Feature names should match the name of the function used in their calculation.
+        The default is None.
+
+    Returns
+    -------
+    returned_df : DataFrame
+        Subset of df, containing only subject ids, modes, and features specified
+
+    """
+    
+    #If nothing passed, no need to make a subset - can just use df
+    if not (ids or modes or feats):
+        raise ValueError('No parameters were passed. The DataFrame passed is already a subset of itself.')
+    
+    returned_df = df.copy()
+    
+    if feats:
+        #Error check features
+        feats_in_df = get_feature_names(df)
+        incorrect_feats = [f for f in feats if f not in feats_in_df]
+        if len(incorrect_feats) > 0:
+            raise ValueError('Invalid feature(s): {}. Available features are the following: {}.'.format(
+                incorrect_feats, feats_in_df))
+            
+        #Keep non-feature information and features specified
+        cols = [c for c in df.columns if '_' not in c] + add_ch_to_feature_name(feats)
+        returned_df = returned_df[cols]
+    
+    if ids:
+        #Error check ids
+        ids_in_df = df['id'].unique()
+        incorrect_ids = [subject_id for subject_id in ids if int(subject_id) not in ids_in_df]
+        if len(incorrect_ids) > 0:
+            raise ValueError('Invalid ID(s): {}. Available IDs are the for following: {}'.format(
+                incorrect_ids, ids_in_df))
+        
+        #Keep only rows with speficied ids
+        returned_df = returned_df.loc[returned_df['id'].isin(ids)]
+    
+    if modes:
+        #Error check modes
+        modes_in_df = df['mode'].unique()
+        incorrect_modes = [mode for mode in modes if mode not in modes_in_df]
+        if len(incorrect_modes) > 0:
+            raise ValueError('Invalid mode(s): {}. Available modes are the following: {}.'.format(
+            incorrect_modes, modes_in_df))
+        
+        #Keep only rows with specified modes
+        returned_df = returned_df.loc[returned_df['mode'].isin(modes)]
+    
+    if returned_df.empty:
+        print("***WARNING: The subset you requested is empty!***")
+    
+    returned_df.reset_index(drop=True, inplace=True)
+    return returned_df
 
 if __name__ == '__main__':
     """
@@ -181,8 +304,8 @@ if __name__ == '__main__':
     channels = [1,2,3,4,5,6,7,8]
     label_name='finger'
     
-    # filename='features_windows_date_all_subject_all_mode_1_2.pkl'
-    filename = 'features_windows-2020-03-03.pkl'
+    filename='features_windows_date_all_subject_all_mode_1_2.pkl'
+    # filename = 'features_windows-2020-03-03.pkl'
     
             
     if 'features' in filename:
@@ -227,7 +350,7 @@ if __name__ == '__main__':
     classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size,
                                           title='file : '+filename)
     print()
-    save_model(classifier, feature_names, file_prefix)
+    # save_model(classifier, feature_names, file_prefix)
     
     #More data <- check
     #Fix labels 
