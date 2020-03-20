@@ -235,7 +235,7 @@ def get_subset(df, ids=None, modes=None, feats=None):
     Returns
     -------
     returned_df : DataFrame
-        Subset of df, containing only subject ids, modes, and features specified.
+        Subset of df, containing only subject ids, modes, and features specified
 
     """
     
