@@ -50,6 +50,7 @@ def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1,
     # drop all rows where 'finger' is NaN
     if drop_rest:
         df = df[df['finger'].notnull()]
+        df.reset_index(drop=True, inplace=True)
     
     return df
 
@@ -85,7 +86,7 @@ def closest_time(times, marker_time):
     
     return np.argmin(np.abs(times - marker_time))
 
-def notch_filter(freq=60.0, order=3, fs=250):
+def notch_filter(freq=60.0, fs=250):
     """
         Design notch filter. Outputs numerator and denominator polynomials of iir filter.
         inputs:
@@ -95,9 +96,7 @@ def notch_filter(freq=60.0, order=3, fs=250):
         outputs:
             (ndarray), (ndarray)
     """
-    nyq = fs / 2
-    bp_stop_f = freq + 3.0 * np.array([-1,1])
-    return signal.butter(order, bp_stop_f / nyq, 'bandstop')
+    return signal.iirnotch(freq, freq / 6, fs=fs)
     
 def butter_filter(low=5.0, high=120.0, order=4, fs=250):
     """
@@ -113,7 +112,7 @@ def butter_filter(low=5.0, high=120.0, order=4, fs=250):
     nyq = fs / 2
     return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
 
-def filter_signal(arr, notch=True, filter_type='original_filter', rt_ic=[]):
+def filter_signal(arr, notch=True, filter_type='original_filter', start_of_overlap=25):
     """
         Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
         inputs:
@@ -133,31 +132,49 @@ def filter_signal(arr, notch=True, filter_type='original_filter', rt_ic=[]):
         
         return signal.lfilter(bb, ba, arr)
     
-    elif filter_type=='real_time_filter':
-        # fs,order,low,high,notch_freq = 250,2,5,120,60.0
-        # nyq = fs / 2
-        # nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
+    elif filter_type=='real_time_filter':        
+        #First index at which two subsequent windows overlap, same shift as 
         
-        nz, bz = rt_ic[0], rt_ic[1]
+        #Initial conditions of filters
+        nz = signal.lfilter_zi(nb, na)
+        bz = signal.lfilter_zi(bb, ba)
         
-        #If no initial conditions are given, calculate initial conditions for filters
-        if not (any(nz) or any(bz)):
-            nz = signal.lfilter_zi(nb, na)
-            bz = signal.lfilter_zi(bb, ba)
-        
-        #Filter signal according to initial conditions
-        filtered_signal, nz = signal.lfilter(nb, na, arr, zi=nz)
-        # filtered_signal = signal.lfilter(nb, na, arr)
-        filtered_signal, bz = signal.lfilter(bb, ba, filtered_signal, zi=bz)
-        
-        return filtered_signal, [nz, bz]
+        #Filter each window sample-by-sample
+        results = []
+        for window in arr:
+            #Initialize filtered window
+            w = np.zeros(len(window))
+            
+            #Set intial conditions to those of the start of the window
+            temp_nz, temp_bz = nz, bz
+            
+            #Notch filter
+            for i, datum in enumerate(window):
+                #signal.lfilter returns a list, so we save to a temp list to avoid a list of lists
+                filtered_sample, temp_nz = signal.lfilter(nb, na, [datum], zi=temp_nz)
+                w[i] = (filtered_sample[0]) 
+                
+                #Save initial condition for next window
+                if i == start_of_overlap - 1: nz = temp_nz
+            
+            #Bandpass filter
+            for i, datum in enumerate(w):
+                filtered_sample, temp_bz = signal.lfilter(bb, ba, [datum], zi=temp_bz)
+                w[i] = filtered_sample[0]
+                
+                #Save intial condition for next window
+                if i == start_of_overlap - 1: bz = temp_bz
+                
+            results.append(w)
+            
+        return results
         
     else:
         print('\nfilter type not recognised, enter valid filter type!')
         raise Exception
         
 
-def filter_dataframe(df,filter_type='original_filter'):
+def filter_dataframe(df,filter_type='original_filter', start_of_overlap=25):
     """
         Filters the signals in a dataframe.
         inputs:
@@ -170,7 +187,7 @@ def filter_dataframe(df,filter_type='original_filter'):
     
     for col in df.columns:
         if 'channel' in col:
-            filtered_df[col] = filter_signal(np.array(df[col]), filter_type=filter_type)
+            filtered_df[col] = filter_signal(np.array(df[col]), filter_type=filter_type, start_of_overlap=start_of_overlap)
         
     return filtered_df
 
@@ -379,9 +396,6 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     emg = data.iloc[start - offset:end + offset, ch_ind]
     labels = data.loc[start - offset: end + 1 + offset, label_col]
     
-    #Initialize initial conditions for real-time filters, only used if using real-time filters
-    # rt_initial_conditions = [[[None], [None]] for ch in data.columns if 'channel' in ch]
-    
     #Create and label windows
     windows = []
     window_labels = []
@@ -421,10 +435,14 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     windows_df['id'] = pd.Series(np.full(len(windows), data['id'][0]))
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
     
-    # add finger=0 for random subset of baseline samples
-    windows_df = sample_baseline(windows_df, drop_rest=True)
+    #Real-time filter dataframe
+    # filtered_windows_df = windows_df
+    filtered_windows_df = filter_dataframe(windows_df, filter_type='real_time_filter', start_of_overlap=shift)
     
-    return windows_df
+    # add finger=0 for random subset of baseline samples
+    filtered_windows_df = sample_baseline(filtered_windows_df, drop_rest=True)
+    
+    return filtered_windows_df
 
 def create_dataset(directory, channels, filter_type='original_filter', file_regex='*.txt'):
     """
@@ -461,8 +479,8 @@ def create_dataset(directory, channels, filter_type='original_filter', file_rege
         print("Adding data with shape:", str(data.shape) + ". Current total size:", str(big_data.shape))
     
     #Reindex datarames before returning
-    big_data.reset_index(inplace=True)
-    windows.reset_index(inplace=True)
+    big_data.reset_index(drop=True, inplace=True)
+    windows.reset_index(drop=True, inplace=True)
     
     return big_data, windows
 
