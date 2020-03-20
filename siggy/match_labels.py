@@ -50,6 +50,7 @@ def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1,
     # drop all rows where 'finger' is NaN
     if drop_rest:
         df = df[df['finger'].notnull()]
+        df.reset_index(drop=True, inplace=True)
     
     return df
 
@@ -62,7 +63,7 @@ def test_filter(windows, fs=250, order=2, low=20, high=120):
 
     notch_freq = 60.0
     bp_stop = notch_freq + 3.0 * np.array([-1,1])
-    nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
+    nb, na = signal.iirnotch(notch_freq, notch_freq / 6, fs)
     nz = signal.lfilter_zi(nb, na)
 
     for w in windows:
@@ -85,7 +86,7 @@ def closest_time(times, marker_time):
     
     return np.argmin(np.abs(times - marker_time))
 
-def notch_filter(freq=60.0, order=3, fs=250):
+def notch_filter(freq=60.0, fs=250):
     """
         Design notch filter. Outputs numerator and denominator polynomials of iir filter.
         inputs:
@@ -95,9 +96,7 @@ def notch_filter(freq=60.0, order=3, fs=250):
         outputs:
             (ndarray), (ndarray)
     """
-    nyq = fs / 2
-    bp_stop_f = freq + 3.0 * np.array([-1,1])
-    return signal.butter(order, bp_stop_f / nyq, 'bandstop')
+    return signal.iirnotch(freq, freq / 6, fs=fs)
     
 def butter_filter(low=5.0, high=120.0, order=4, fs=250):
     """
@@ -113,7 +112,7 @@ def butter_filter(low=5.0, high=120.0, order=4, fs=250):
     nyq = fs / 2
     return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
 
-def filter_signal(arr, notch=True, filter_type='original_filter'):
+def filter_signal(arr, notch=True, filter_type='original_filter', start_of_overlap=25):
     """
         Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
         inputs:
@@ -123,34 +122,59 @@ def filter_signal(arr, notch=True, filter_type='original_filter'):
         outputs:
             (ndarray)
     """
+    
+    bb, ba = butter_filter()
+    nb, na = notch_filter() 
+    
     if filter_type=='original_filter':
         if notch:
-            nb, na = notch_filter()
             arr = signal.lfilter(nb, na, arr)
         
-        bb, ba = butter_filter()
         return signal.lfilter(bb, ba, arr)
     
-    elif filter_type=='real_time_filter':
-        fs,order,low,high,notch_freq = 250,2,5,120,60.0
-        nyq = fs / 2
-        bb, ba = signal.butter(order, [low/nyq , high/nyq], 'bandpass')
-        bz = signal.lfilter_zi(bb,ba)
+    elif filter_type=='real_time_filter':        
+        #First index at which two subsequent windows overlap, same shift as 
         
-        # bp_stop = notch_freq + s3.0*np.array([-1,1])
-        nb, na = signal.iirnotch(notch_freq, notch_freq / 10, fs)
-        nz = signal.lfilter_zi(nb,na)
+        #Initial conditions of filters
+        nz = signal.lfilter_zi(nb, na)
+        bz = signal.lfilter_zi(bb, ba)
         
-        filtered_signal, nz = signal.lfilter(nb, na, arr, zi=nz)
-        filtered_signal, bz = signal.lfilter(bb, ba, filtered_signal, zi=bz)
-        return filtered_signal
+        #Filter each window sample-by-sample
+        results = []
+        for window in arr:
+            #Initialize filtered window
+            w = np.zeros(len(window))
+            
+            #Set intial conditions to those of the start of the window
+            temp_nz, temp_bz = nz, bz
+            
+            #Notch filter
+            for i, datum in enumerate(window):
+                #signal.lfilter returns a list, so we save to a temp list to avoid a list of lists
+                filtered_sample, temp_nz = signal.lfilter(nb, na, [datum], zi=temp_nz)
+                w[i] = (filtered_sample[0]) 
+                
+                #Save initial condition for next window
+                if i == start_of_overlap - 1: nz = temp_nz
+            
+            #Bandpass filter
+            for i, datum in enumerate(w):
+                filtered_sample, temp_bz = signal.lfilter(bb, ba, [datum], zi=temp_bz)
+                w[i] = filtered_sample[0]
+                
+                #Save intial condition for next window
+                if i == start_of_overlap - 1: bz = temp_bz
+                
+            results.append(w)
+            
+        return results
         
     else:
         print('\nfilter type not recognised, enter valid filter type!')
         raise Exception
+        
 
-
-def filter_dataframe(df,filter_type='original_filter'):
+def filter_dataframe(df,filter_type='original_filter', start_of_overlap=25):
     """
         Filters the signals in a dataframe.
         inputs:
@@ -163,7 +187,7 @@ def filter_dataframe(df,filter_type='original_filter'):
     
     for col in df.columns:
         if 'channel' in col:
-            filtered_df[col] = filter_signal(np.array(df[col]),filter_type=filter_type)
+            filtered_df[col] = filter_signal(np.array(df[col]), filter_type=filter_type, start_of_overlap=start_of_overlap)
         
     return filtered_df
 
@@ -366,17 +390,14 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
         end = np.where(data[label_col].notnull())[0][-1]
     
     #Find how many channels are used in the dataframe by looking at the names of the columns
-    ch_ind = []
-    for i in range(len(data.columns)):
-        if 'channel' in data.columns[i]: 
-            ch_ind.append(i)
+    ch_ind = [i for i in range(len(data.columns)) if 'channel' in data.columns[i]]
     
     #Only focus on the part of the emg data between start and end
     emg = data.iloc[start - offset:end + offset, ch_ind]
+    labels = data.loc[start - offset: end + 1 + offset, label_col]
     
     #Create and label windows
     windows = []
-    labels = data[label_col][start - offset: end + 1 + offset]
     window_labels = []
     for i in range(0, emg.shape[0], shift):
         #Handle windowing the data
@@ -384,9 +405,8 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
         #so w = np.array(emg[i: i+length, :]) doesn't work (it gives array with shape (250, 8))
         w = []
         for j in range(emg.shape[1]):
-            channel = emg.iloc[i:i+length, j]
-            
-            w.append(np.array(channel))
+            channel = np.array(emg.iloc[i:i+length, j])
+            w.append(channel)
         
         #Only use windows with enough data points
         if len(w[0]) != length: continue
@@ -415,10 +435,14 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False):
     windows_df['id'] = pd.Series(np.full(len(windows), data['id'][0]))
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
     
-    # add finger=0 for random subset of baseline samples
-    windows_df = sample_baseline(windows_df, drop_rest=True)
+    #Real-time filter dataframe
+    # filtered_windows_df = windows_df
+    filtered_windows_df = filter_dataframe(windows_df, filter_type='real_time_filter', start_of_overlap=shift)
     
-    return windows_df
+    # add finger=0 for random subset of baseline samples
+    filtered_windows_df = sample_baseline(filtered_windows_df, drop_rest=True)
+    
+    return filtered_windows_df
 
 def create_dataset(directory, channels, filter_type='original_filter', file_regex='*.txt'):
     """
@@ -455,8 +479,8 @@ def create_dataset(directory, channels, filter_type='original_filter', file_rege
         print("Adding data with shape:", str(data.shape) + ". Current total size:", str(big_data.shape))
     
     #Reindex datarames before returning
-    big_data.reset_index(inplace=True)
-    windows.reset_index(inplace=True)
+    big_data.reset_index(drop=True, inplace=True)
+    windows.reset_index(drop=True, inplace=True)
     
     return big_data, windows
 
@@ -579,7 +603,7 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
 
 def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8], 
                            dates=None, subjects=None, modes=None, 
-                           save=False, path_out='.'):
+                           save=False, path_out='.', filter_type='real_time_filter'):
     """
     Selects trials based on dates/subjects/modes, 
     then creates windows and aggregates them together.
@@ -621,6 +645,7 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
         
         data = load_data(file_data, file_log, channels)
         windows = create_windows(data)
+        filtered_windows = test_filter(windows)
         
         windows_all = windows_all.append(windows)
         
@@ -646,10 +671,6 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
             print('Saved windows to file {}'.format(filename))
         
     return windows_all
-    
-#Can still abstract pre-allocating and initilizing DataFrames, will do that later if time permitting
-#Fix real-time filtering
-#Check that nothing is hard coded for mode
 
 if __name__ == '__main__':
     #Testing code
