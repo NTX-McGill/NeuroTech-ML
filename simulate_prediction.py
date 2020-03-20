@@ -12,28 +12,22 @@ from siggy.match_labels import load_data, filter_dataframe, create_windows, sele
 import numpy as np
 import matplotlib.pyplot as plt
 
-channels = [1,2,3,4,5,6,7,8,13]
-
-###### YOU CAN CHANGE FROM HERE ##############
 length = 250
 shift = 0.1
 visual_length = 5 # in seconds
 
-channel_names = ['channel {}'.format(i) for i in channels[:-1]]
+channel_names = ['channel {}'.format(i) for i in range(1,9)]
 
-# When I try early data I get a list index out of range error in append_labels
-# but these ones seem to work
-# also note that you need to use self directed or guided trials in order to see
-# any actual keypresses
-data_file = 'data/2020-03-08/012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt'
-label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.txt'
+# data_file = 'data/2020-03-08/012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt'
+# label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.txt'
 model_file= 'model_windows_date_all_subject_all_mode_1_2-03_18_2020_22_33_39.pkl'
 
-data_file, label_file = select_files('data', dates=['2020-03-08'], modes=[1])[0]
+# take some data file
+data_file, label_file = select_files('data', dates=['2020-03-03'], modes=[1])[0]
 
 
 raw_data = load_data(data_file, label_file)
-raw_data = filter_dataframe(raw_data, filter_type='original_filter')        # LATER MAKE THIS USING FILTER BY WINDOW
+raw_data = filter_dataframe(raw_data, filter_type='original_filter')
 
 
 windows = create_windows(raw_data, shift=shift, offset=0, take_everything=True, drop_rest=False)
