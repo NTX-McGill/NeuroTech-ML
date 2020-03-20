@@ -104,15 +104,26 @@ def get_psd(signal):
     psd,freqs = mlab.psd(signal,NFFT=256,window=mlab.window_hanning,Fs=250,noverlap=0)
     return psd
 
-# some basic freq domain features
+# get bands returns list of bands that you can use
+def get_bands(psd):
+    return [psd[5:20] , psd[20:40] , psd[40:60] , psd[80:100] , psd[100:120]]
+
+# some basic freq domain features 
 def freq_feats(signal):
     if len(signal) < 250:
         print('we need to fix this : the window is too short')
         return [1,2,3,4,5,6]
     psd = get_psd(signal)
-    return [np.mean(psd[5:20])  , np.mean(psd[20:40]) , 
-            np.mean(psd[40:60]) , np.mean(psd[60:80]) ,
-            np.mean(psd[80:100]) , np.mean(psd[100:120])]    
+    return [np.mean(i) for i in get_bands(psd)] 
+
+# jonathan suggested this would be better
+def freq_feats_relative(signal):
+    if len(signal) < 250:
+        print('we need to fix this : the window is too short')
+        return [1,2,3,4,5,6]
+    psd = get_psd(signal)
+    total = np.sum(psd)
+    return [np.mean(i)/total for i in get_bands(psd)]
 
 # some more freq domain features - michell : take out the high freq stuff
 def freq_var(signal):
