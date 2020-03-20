@@ -270,11 +270,11 @@ def get_subset(df, ids=None, modes=None, feats=None):
     
     if modes:
         #Error check modes
-        modes_in_df = MODE_MAP.values()
+        modes_in_df = df['mode'].unique()
         incorrect_modes = [mode for mode in modes if mode not in modes_in_df]
         if len(incorrect_modes) > 0:
             raise ValueError('Invalid mode(s): {}. Available modes are the following: {}.'.format(
-            incorrect_modes, {v:k for k,v in MODE_MAP.items()}))
+            incorrect_modes, modes_in_df))
         
         #Keep only rows with specified modes
         returned_df = returned_df.loc[returned_df['mode'].isin(modes)]
