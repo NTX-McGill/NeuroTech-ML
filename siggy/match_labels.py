@@ -645,6 +645,7 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
         
         data = load_data(file_data, file_log, channels)
         windows = create_windows(data)
+        filtered_windows = test_filter(windows)
         
         windows_all = windows_all.append(windows)
         

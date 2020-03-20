@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Mar  8 16:49:41 2020
-
 @author: miasya
 """
 
@@ -9,8 +8,6 @@ Created on Sun Mar  8 16:49:41 2020
 ****QUICK USAGE NOTE***
 - This produces several graphs of the same style but at different points
 - You can play with everything within the "CHANGE HERE" box
-
-- note currently the prediction windowing is off - will fix
 """
 
 
@@ -22,7 +19,6 @@ Created on Sun Mar  8 16:49:41 2020
 # plot predictions as markings on the stacked signal windows
 # add actual labels (number and letter)
 # standardize the axes and general increase in readability
-
 # TO DO:
 # Match the colours of finger label to channel
 # When everything works, make the code beautiful
@@ -199,7 +195,6 @@ for start_sec in [i*10 for i in range(20, 26)]:
         ax5.text(time,1,str(fitted_labels[m,1]))
         ax5.text(time,1.5,str(fitted_labels[m,2]))
         
-    
     plt.show()
     #%%
             

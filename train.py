@@ -181,12 +181,22 @@ if __name__ == '__main__':
     channels = [1,2,3,4,5,6,7,8]
     label_name='finger'
     
-    mode = 2
-    if mode==1:
+    # filename='features_windows_date_all_subject_all_mode_1_2.pkl'
+    filename = 'features_windows-2020-03-03.pkl'
+    
+            
+    if 'features' in filename:
+        ### MODE 2 : LOAD THE FEATURES DIRECTLY
+        
+        file_prefix = filename.split(".")[0].split('/')[-1]
+        features = pd.read_pickle(filename)
+        
+        all_ch_names = [i for i in features.columns if 'channel' in i]
+        all_ch_names = [i for i in all_ch_names if '_' in i]
+        
+    else:
         ### MODE 1 : LOAD THE WINDOWS, COMPUTE THE FEATURES
         
-        # filename='windows_date_all_subject_all_mode_1_2.pkl'
-        filename='windows-2020-03-03.pkl'
         file_prefix = filename.split(".")[0].split('/')[-1]
         channel_names = ['channel {}'.format(i) for i in channels]
         
@@ -200,22 +210,11 @@ if __name__ == '__main__':
         with open(feat_filename, 'wb') as f_out:
             pickle.dump(features, f_out)
             print('Saved windows to file {}'.format(filename))
-            
-    elif mode==2:
-        ### MODE 2 : LOAD THE FEATURES DIRECTLY
-            
-        filename = 'features_windows-2020-03-03.pkl'
-        file_prefix = filename.split(".")[0].split('/')[-1]
-        features = pd.read_pickle(filename)
-        
-        all_ch_names = [i for i in features.columns if 'channel' in i]
-        all_ch_names = [i for i in all_ch_names if '_' in i]
-    
     
     cols = all_ch_names + [label_name] 
     # cols = all_names(channel_names, feature_names) + ['keypressed']
     dataset = features[cols].to_numpy()
-    
+            
     # don't shuffle the dataset
     # np.random.shuffle(dataset)
     X = dataset[:,:-1]
