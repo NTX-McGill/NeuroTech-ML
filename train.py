@@ -20,7 +20,7 @@ from sklearn.metrics import plot_confusion_matrix,confusion_matrix
 import pickle
 from datetime import datetime
 import seaborn as sn
-from constants import *
+from siggy.constants import *
 
 ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
 LABEL_MAP = {'k': 3, ';':5, 'j': 2, 'l': 4, 'p': 5, 'u': 2, 'o':4, '.': 4,
@@ -351,11 +351,5 @@ if __name__ == '__main__':
                                           title='file : '+filename)
     print()
     # save_model(classifier, feature_names, file_prefix)
-    
-    #More data <- check
-    #Fix labels 
-    #Train on good air data, then predict on bad data <- how to find good/bad data?
-    
-    #Look at in-air thumb vs right index
 
 
