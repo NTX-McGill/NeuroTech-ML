@@ -285,6 +285,94 @@ def get_subset(df, ids=None, modes=None, feats=None):
     returned_df.reset_index(drop=True, inplace=True)
     return returned_df
 
+def grid_search(df, models, id_params=None, mode_params=None, feature_params=None, scoring='accuracy', n_splits=10):
+    """
+    Exhaustively trains all models passed on all combinations of given parameters.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Dataframe of all the calculated features.
+    models : list
+        List of model names.
+    id_params : list, optional
+        List of combinations (list) of subject ids. 
+        The default is None.
+    mode_params : list, optional
+        List of combinations (list) of modes. 
+        The default is None.
+    feature_params : list, optional
+        List of combinations (list) of features. 
+        The default is None.
+    scoring : string, optional
+        How cross-validation is scored. 
+        The default is 'accuracy'.
+    n_splits : int, optional
+        Number of splits to use in cross-validation. 
+        The default is 10.
+
+    Returns
+    -------
+    results : 
+        Array saving all cross-validation results.
+    """
+    
+    #If no parameters are passed, confirm that user wants to use all the data
+    if not (id_params or mode_params or feature_params):
+        print('***Warning: Test on the entire dataset? (y)***')
+        response = input().lower()
+        
+        if response != 'y':
+            print('Aborting grid search')
+            return
+    
+    #If a parameter is not passed, use all values found in df
+    if not id_params:
+        id_params = [df['id'].unique()]
+    if not mode_params:
+        mode_params = [df['mode'].unique()]
+    if not feature_params:
+        feature_params = [get_feature_names(df)]
+    
+    results = [[[ [] for modes in mode_params] 
+                     for subjs in id_params] 
+                     for model in models]
+    for i, model in enumerate(models):
+        for j, subjs in enumerate(id_params):
+            for k, modes in enumerate(mode_params):
+                for feats in feature_params:
+                    print('Current combination being test:\n',
+                          'model: {}\n'.format(model),
+                          'Subjects: {}\n'.format(subjs),
+                          'modes: {}\n'.format(modes),
+                          'features: {}\n'.format(feats))
+                    
+                    #Get subset of df containing current settings
+                    df_subset = get_subset(df, subjs, modes, feats)
+                    
+                    #Extract features and labels from df
+                    cols = add_ch_to_feature_name(feats) + ['finger']
+                    dataset = df_subset[cols].to_numpy()
+                    
+                    #Split dataset into features and labels
+                    X = dataset[:, :-1]
+                    Y = dataset[:, -1]
+                    
+                    print('Size of dataset:', X.shape)
+                    
+                    #Instantiate model from dictionary
+                    model_name = ALL_MODELS[model]()
+                    
+                    #Do cross-validation
+                    kfold = model_selection.KFold(n_splits=n_splits, random_state=SEED)
+                    cv_results = model_selection.cross_val_score(model_name, X, Y, cv=kfold, scoring=scoring)
+                    
+                    results[i][j][k].append(cv_results)
+                    msg = "%s: %f (%f)" % (model, cv_results.mean(), cv_results.std())
+                    print(msg)
+
+    return results
+
 if __name__ == '__main__':
     """
     Here there are two different modes you can run, either you load the windows file and compute the features
@@ -304,10 +392,9 @@ if __name__ == '__main__':
     channels = [1,2,3,4,5,6,7,8]
     label_name='finger'
     
-    filename='features_windows_date_all_subject_all_mode_1_2.pkl'
-    # filename = 'features_windows-2020-03-03.pkl'
+    # filename='features_windows_date_all_subject_all_mode_1_2.pkl'
+    filename = 'features_windows-2020-03-03.pkl'
     
-            
     if 'features' in filename:
         ### MODE 2 : LOAD THE FEATURES DIRECTLY
         
@@ -350,6 +437,13 @@ if __name__ == '__main__':
     classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size,
                                           title='file : '+filename)
     print()
+    
     # save_model(classifier, feature_names, file_prefix)
+    
+    # models = ['LDA', 'SVM']
+    # ids = [[1]]
+    # modes = [[1], [2]]
+    # feats = [['mav', 'zc', 'ssch', 'wl']]
+    # test_results = grid_search(features, models, id_params=ids, mode_params=modes, feature_params=feats)
 
 
