@@ -18,7 +18,9 @@ import numpy as np
 #from match_labels import *
 
 class Prediction():
-    def __init__(self, shift=0.1, window_length=250, should_filter=True, model_filename=None):
+    def __init__(self, num_channels=8, shift=0.1, order=4, fs=250, 
+                 notch_freq=60.0, low=5.0, high=120.0,
+                 should_filter=True, model_filename=None):
         
         if (model_filename):
             # 'model_windows-2020-02-23-03_08_2020_15_48_56.pkl'
@@ -26,21 +28,59 @@ class Prediction():
                 data = pickle.load(f)
                 self.clf = data['classifier']
                 self.features = data['features']
+                
+        #Parameters for filters
+        self.num_channels = num_channels
         self.shift = shift
         self.shift_samples = int(shift * 250)
-        self.window_length = window_length
-        #self.order
+        self.order = order
+        self.sampling_freq = fs
+        self.notch_freq = notch_freq
+        self.low_pass = low
+        self.high_pass = high
+        
         
         self.channel_names = ['channel {}'.format(i) for i in range(1,9)]
         self.initialize_filters()
         
     def initialize_filters(self):
-        # set up the filters
+        #Set up the filters
+        self.notch_b, self.notch_a = signal.iirnotch(self.notch_freq, self.notch_freq / 6, fs=self.sampling_freq)
+        self.butter_b, self.butter_a = signal.butter(self.order, 
+                                                     [self.low_pass / (self.sampling_freq / 2), self.high_pass / (self.sampling_freq / 2)], 
+                                                     'bandpass')
+        nz = signal.lfilter_zi(self.notch_b, self.notch_a)
+        bz = signal.lfilter_zi(self.butter_b, self.butter_a)
+        self.notch_z = [nz for i in range(self.num_channels)]
+        self.butter_z = [bz for i in range(self.num_channels)]
         return
     
-    def filter(self, arr):
+    def apply_filter(self, arr):
         # [8 x 250]
-        return
+        
+        #Filter each channel
+        for i in range(self.num_channels):
+            channel = arr[i]
+            #Get conditions for channel
+            temp_notch_z, temp_butter_z = self.notch_z[i], self.butter_z[i]
+            
+            #Notch filter
+            for j, datum in enumerate(channel):
+                filtered_sample, temp_notch_z = signal.lfilter(self.notch_b, self.notch_a, [datum], zi=temp_notch_z)
+                channel[j] = filtered_sample[0]
+                
+                if j == self.shift_samples - 1:
+                    self.notch_z[i] = temp_notch_z
+            
+            #Butterworth bandpass
+            for j, datum in enumerate(channel):
+                filtered_sample, temp_butter_z = signal.lfilter(self.butter_b, self.butter_a, [datum], zi=temp_butter_z)
+                channel[j] = filtered_sample[0]
+                
+                if j == self.shift_samples - 1:
+                    self.butter_z[i] = temp_butter_z
+                
+        return arr
 
     def get_name(self, channel_name, feature_name):
         return "{}_{}".format(channel_name, feature_name)
@@ -120,7 +160,7 @@ class Prediction():
         for ch in range(arr.shape[1]):
             arr_filtered[:,ch]= filter_signal(arr[:,ch])
         """
-        filtered_arr = self.filter(arr)
+        filtered_arr = self.apply_filter(arr)
         res, _ = self.compute_features(filtered_arr, self.channel_names, self.features)
         input_arr = np.array(list(res.values()))
         return self.clf.predict_proba(np.squeeze(input_arr).reshape(1, -1))

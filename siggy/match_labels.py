@@ -438,12 +438,12 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, f
     #Real-time filter dataframe
     # filtered_windows_df = windows_df
     if filter_type == 'real_time_filter':
-        filtered_windows_df = filter_dataframe(windows_df, filter_type=filter_type, start_of_overlap=shift)
+        windows_df = filter_dataframe(windows_df, filter_type=filter_type, start_of_overlap=shift)
     
     # add finger=0 for random subset of baseline samples
-    filtered_windows_df = sample_baseline(filtered_windows_df, drop_rest=drop_rest)
+    windows_df = sample_baseline(windows_df, drop_rest=drop_rest)
     
-    return filtered_windows_df
+    return windows_df
 
 def create_dataset(directory, channels, filter_type='original_filter', file_regex='*.txt'):
     """
