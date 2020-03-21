@@ -18,7 +18,7 @@ import numpy as np
 #from match_labels import *
 
 class Prediction():
-    def __init__(self, shift=0.1, order=4, fs=250, 
+    def __init__(self, num_channels=8, shift=0.1, order=4, fs=250, 
                  notch_freq=60.0, low=5.0, high=120.0,
                  should_filter=True, model_filename=None):
         
@@ -30,6 +30,7 @@ class Prediction():
                 self.features = data['features']
                 
         #Parameters for filters
+        self.num_channels = num_channels
         self.shift = shift
         self.shift_samples = int(shift * 250)
         self.order = order
@@ -43,34 +44,41 @@ class Prediction():
         self.initialize_filters()
         
     def initialize_filters(self):
+        #Set up the filters
         self.notch_b, self.notch_a = signal.iirnotch(self.notch_freq, self.notch_freq / 6, fs=self.sampling_freq)
         self.butter_b, self.butter_a = signal.butter(self.order, 
                                                      [self.low_pass / (self.sampling_freq / 2), self.high_pass / (self.sampling_freq / 2)], 
                                                      'bandpass')
-        self.notch_z = signal.lfilter_zi(self.notch_b, self.notch_a)
-        self.butter_z = signal.lfilter_zi(self.butter_b, self.butter_a)
-        # set up the filters
+        nz = signal.lfilter_zi(self.notch_b, self.notch_a)
+        bz = signal.lfilter_zi(self.butter_b, self.butter_a)
+        self.notch_z = [nz for i in range(self.num_channels)]
+        self.butter_z = [bz for i in range(self.num_channels)]
         return
     
     def apply_filter(self, arr):
         # [8 x 250]
-        temp_notch_z, temp_butter_z = self.notch_z, self.butter_z
         
-        #Notch filter
-        for i, datum in enumerate(arr):
-            filtered_sample, temp_notch_z = signal.lfilter(self.notch_b, self.notch_a, [datum], zi=temp_notch_z)
-            arr[i] = filtered_sample[0]
+        #Filter each channel
+        for i in range(self.num_channels):
+            channel = arr[i]
+            #Get conditions for channel
+            temp_notch_z, temp_butter_z = self.notch_z[i], self.butter_z[i]
             
-            if i == self.shift_samples - 1:
-                self.notch_z = temp_notch_z
-        
-        #Butterworth bandpass
-        for i, datum in enumerate(arr):
-            filtered_sample, temp_butter_z = signal.lfilter(self.butter_b, self.butter_a, [datum], zi=temp_butter_z)
-            arr[i] = filtered_sample[0]
+            #Notch filter
+            for j, datum in enumerate(channel):
+                filtered_sample, temp_notch_z = signal.lfilter(self.notch_b, self.notch_a, [datum], zi=temp_notch_z)
+                channel[j] = filtered_sample[0]
+                
+                if j == self.shift_samples - 1:
+                    self.notch_z[i] = temp_notch_z
             
-            if i == self.shift_samples - 1:
-                self.butter_z = temp_butter_z
+            #Butterworth bandpass
+            for j, datum in enumerate(channel):
+                filtered_sample, temp_butter_z = signal.lfilter(self.butter_b, self.butter_a, [datum], zi=temp_butter_z)
+                channel[j] = filtered_sample[0]
+                
+                if j == self.shift_samples - 1:
+                    self.butter_z[i] = temp_butter_z
                 
         return arr
 
