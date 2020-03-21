@@ -334,13 +334,14 @@ def grid_search(df, models, id_params=None, mode_params=None, feature_params=Non
     if not feature_params:
         feature_params = [get_feature_names(df)]
     
-    results = [[[ [] for modes in mode_params] 
-                     for subjs in id_params] 
-                     for model in models]
+    results = [[[[ [] for feats in feature_params] 
+                      for modes in mode_params] 
+                      for subjs in id_params] 
+                      for model in models]
     for i, model in enumerate(models):
         for j, subjs in enumerate(id_params):
             for k, modes in enumerate(mode_params):
-                for feats in feature_params:
+                for l, feats in enumerate(feature_params):
                     print('Current combination being test:\n',
                           'model: {}\n'.format(model),
                           'Subjects: {}\n'.format(subjs),
@@ -361,15 +362,18 @@ def grid_search(df, models, id_params=None, mode_params=None, feature_params=Non
                     print('Size of dataset:', X.shape)
                     
                     #Instantiate model from dictionary
-                    model_name = ALL_MODELS[model]()
+                    classifier = ALL_MODELS[model]()
                     
                     #Do cross-validation
                     kfold = model_selection.KFold(n_splits=n_splits, random_state=SEED)
-                    cv_results = model_selection.cross_val_score(model_name, X, Y, cv=kfold, scoring=scoring)
+                    cv_results = model_selection.cross_val_score(classifier, X, Y, cv=kfold, scoring=scoring)
                     
-                    results[i][j][k].append(cv_results)
+                    results[i][j][k][l].append(cv_results)
                     msg = "%s: %f (%f)" % (model, cv_results.mean(), cv_results.std())
                     print(msg)
+                    
+                    clf, confmat = run_test_confmat(X, Y, model, validation_size=validation_size, test_all_folds=test_all_folds)
+                    results[i][j][k][l].append(confmat)
 
     return results
 
@@ -438,7 +442,7 @@ if __name__ == '__main__':
                                           title='file : '+filename)
     print()
     
-    # save_model(classifier, feature_names, file_prefix)
+    save_model(classifier, feature_names, file_prefix)
     
     # models = ['LDA', 'SVM']
     # ids = [[1]]
