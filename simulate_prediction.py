@@ -7,19 +7,17 @@ Created on Thu Mar 19 22:00:46 2020
 """
 
 from real_time_class import RealTimeML
-# import from siggy directory
 from siggy.match_labels import load_data, filter_dataframe, create_windows, select_files
 import numpy as np
 import matplotlib.pyplot as plt
 
 length = 250
 shift = 0.1
-visual_length = 5 # in seconds
+plot_length = 5 # in seconds
 
 channel_names = ['channel {}'.format(i) for i in range(1,9)]
 
-# data_file = 'data/2020-03-08/012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt'
-# label_file = 'data/2020-03-08/012_trial2_self-directed_2020-03-08-19-06-09-042.txt'
+
 model_file= 'model_windows_date_all_subject_all_mode_1_2-03_18_2020_22_33_39.pkl'
 
 # take some data file
@@ -61,9 +59,9 @@ labels = windows['finger'].to_numpy().astype(int)
 labels_onehot = np.zeros((labels.size, labels.max()+1))
 labels_onehot[np.arange(labels.size),labels] = 1
 #%% 
-for i in range(1,min([20, len(windows)*shift/visual_length])):
+for i in range(1,min([20, len(windows)*shift/plot_length])):
     plt.figure(figsize=(24,18))
-    s, e = np.array([i, i+1]) * (visual_length *250)
+    s, e = np.array([i, i+1]) * (plot_length *250)
     signal_segment = data[s:e]
     # for each hand plot spahetti line plot
     ax1 = plt.subplot(5,1,1)
@@ -81,7 +79,7 @@ for i in range(1,min([20, len(windows)*shift/visual_length])):
     ax2.set_title('hand two')
     
     plt.subplot(5,1,3)
-    s, e = np.array([i, i+1]) * int(visual_length/shift) - int(1/shift)
+    s, e = np.array([i, i+1]) * int(plot_length/shift)
     segment = predictions[s:e]
     plt.imshow(segment.T, cmap=plt.cm.Blues, aspect='auto')
     
