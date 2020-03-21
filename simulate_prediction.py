@@ -6,7 +6,7 @@ Created on Thu Mar 19 22:00:46 2020
 @author: marley
 """
 
-from real_time_class import RealTimeML
+from real_time_class import Prediction
 from siggy.match_labels import load_data, filter_dataframe, create_windows, select_files
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,7 +47,7 @@ for i in range(n_windows):
 
 windows_fixed = windows[channel_names].to_numpy()
 
-ML = RealTimeML(model_filename=model_file)
+ML = Prediction(model_filename=model_file)
 all_predictions = []
 for win in windows_fixed:   
     all_predictions.append(ML.predict_function(win))

@@ -17,21 +17,30 @@ import numpy as np
 # New: requires match_labels.py for filtering the data
 #from match_labels import *
 
-class RealTimeML():
-    def __init__(self, model_filename='model_windows-2020-02-23-03_08_2020_15_48_56.pkl'):
-        # model_file = "model_windows-2020-02-23-03_08_2020_15:22:15.pkl"
-        # model_file = 'model_windows-2020-02-23-03_08_2020_15:41:37.pkl'
-        #model_file = 'model_windows-2020-02-23-03_08_2020_15:46:13.pkl'
-        with open(model_filename, 'rb') as f:
-            data = pickle.load(f)
-            self.clf = data['classifier']
-            self.features = data['features']
-            
+class Prediction():
+    def __init__(self, shift=0.1, window_length=250, should_filter=True, model_filename=None):
         
-        channels = [1,2,3,4,5,6,7,8]
-        self.channel_names = ['channel {}'.format(i) for i in channels]
-        #sample = np.zeros([len(channels), 250])
-        #predict_function(sample)
+        if (model_filename):
+            # 'model_windows-2020-02-23-03_08_2020_15_48_56.pkl'
+            with open(model_filename, 'rb') as f:
+                data = pickle.load(f)
+                self.clf = data['classifier']
+                self.features = data['features']
+        self.shift = shift
+        self.shift_samples = int(shift * 250)
+        self.window_length = window_length
+        #self.order
+        
+        self.channel_names = ['channel {}'.format(i) for i in range(1,9)]
+        self.initialize_filters()
+        
+    def initialize_filters(self):
+        # set up the filters
+        return
+    
+    def filter(self, arr):
+        # [8 x 250]
+        return
 
     def get_name(self, channel_name, feature_name):
         return "{}_{}".format(channel_name, feature_name)
@@ -41,7 +50,7 @@ class RealTimeML():
         Get features from window, non-mutating
         
         Parameters
-        ----------q_40_60_abs(si
+        ----------
         df : pd.DataFrame
             dataframe with windows
         channel_names : list of strings
@@ -111,8 +120,10 @@ class RealTimeML():
         for ch in range(arr.shape[1]):
             arr_filtered[:,ch]= filter_signal(arr[:,ch])
         """
-        res, _ = self.compute_features(arr, self.channel_names, self.features)
+        filtered_arr = self.filter(arr)
+        res, _ = self.compute_features(filtered_arr, self.channel_names, self.features)
         input_arr = np.array(list(res.values()))
         return self.clf.predict_proba(np.squeeze(input_arr).reshape(1, -1))
+    
    
     
