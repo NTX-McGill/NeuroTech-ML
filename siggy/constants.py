@@ -5,6 +5,13 @@ Created on Sun Mar  8 15:54:39 2020
 
 @author: roland
 """
+from sklearn import model_selection
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
 
 #Sampling frequency of the OpenBCI
 SAMPLING_FREQ = 250
@@ -40,4 +47,21 @@ LABEL_MAP = {'1':10, '2':9, '3':8, '4':7, '5':7, '6': 2, '7':2, '8':3, '9':4, '0
              'q':10, 'w':9, 'e':8, 'r':7, 't':7, 'y':2, 'u':2, 'i':3, 'o':4, 'p':5,
              'a':10, 's':9, 'd':8, 'f':7, 'g':7, 'h':2, 'j':2, 'k':3, 'l':4, ';':5,
              'z':10, 'x':9, 'c':8, 'v':7, 'b':7, 'n':2, 'm':2, ',':3, '.':4, '/':5,
-             '[':5, ']':5, "'":5, '\\':5 , 'space': 1, 'Shift': 10, 'Backspace':5}
+             '[':5, ']':5, "'":5, '\\':5 , 'space': 1, 'Shift': 10, 'Backspace':5, '`': 10,
+             '=': 5}
+
+#All features currently implemented
+ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
+
+#All models used for training
+ALL_MODELS = {
+          'LR': LogisticRegression,
+          'LDA': LinearDiscriminantAnalysis,
+          'KNN': KNeighborsClassifier,
+          'CART': DecisionTreeClassifier,
+          'NB' : GaussianNB,
+          'SVM': SVC
+          }
+
+#Random seed used for training
+SEED = 7
