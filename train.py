@@ -22,7 +22,7 @@ from datetime import datetime
 import seaborn as sn
 from siggy.constants import *
 
-ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
+ALL_FEATURES = ['iemg','mav','mmav','var', 'var_abs', 'rms','rms_3', 'wl', 'zc','ssc', 'wamp','wfl','freq_feats','freq_var']
 LABEL_MAP = {'k': 3, ';':5, 'j': 2, 'l': 4, 'p': 5, 'u': 2, 'o':4, '.': 4,
           'm':2, 'n': 2, '[':5, ']': 5, "'": 5, 'h': 2, '/':5, '\\':5,
           'a':10, 'c': 8, 'f': 7, 's': 9, 'd':8, 'e':8, 'g':7, 'q':10, 'r':7, 't':7, 'v':7, 'w':9, 'x':9, 'z':10
