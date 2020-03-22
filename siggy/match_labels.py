@@ -55,7 +55,7 @@ def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1,
     return df
 
 # copied from real_time filter.py
-def test_filter(windows, fs=250, order=2, low=20, high=120):
+def test_filter(windows, fs=250, order=2, low=5.0, high=50.0):
     result = []
     nyq = fs / 2
     bb, ba = signal.butter(order, [low/nyq, high/nyq], 'bandpass')
@@ -98,7 +98,7 @@ def notch_filter(freq=60.0, fs=250):
     """
     return signal.iirnotch(freq, freq / 6, fs=fs)
     
-def butter_filter(low=5.0, high=120.0, order=4, fs=250):
+def butter_filter(low=5.0, high=50.0, order=4, fs=250):
     """
         Design butterworth filter. Outputs numerator and denominator polynomials of iir filter.
         inputs:
@@ -363,7 +363,7 @@ def get_window_label(labels, win_start, win_len):
         
         return labels.iloc[np.argmin(np.abs(indices - mid_ind))]
 
-def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, filter_type='real_time_filter', drop_rest=True):
+def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, filter_type='real_time_filter', drop_rest=True, sample=True):
     """
         Combines data points from data into labeled windows
         inputs:
@@ -441,7 +441,8 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, f
         windows_df = filter_dataframe(windows_df, filter_type=filter_type, start_of_overlap=shift)
     
     # add finger=0 for random subset of baseline samples
-    windows_df = sample_baseline(windows_df, drop_rest=drop_rest)
+    if sample:
+        windows_df = sample_baseline(windows_df, drop_rest=drop_rest)
     
     return windows_df
 

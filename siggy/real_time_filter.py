@@ -73,7 +73,7 @@ def filter_sbs(n=10000, split=5000):
 
 #     return signal.lfilter(b, a, arr, zi=z)
 
-def test_filter(windows, shift, fs=250, order=2, low=20, high=120):
+def test_filter(windows, shift, fs=250, order=2, low=5.0, high=50.0):
     num_shifted = int(shift * fs)
     splits = [i for i in range(0, 250, num_shifted)]
     result = []
@@ -127,20 +127,29 @@ if __name__ == '__main__':
     
     # load the raw info 
     labelled_raw = load_data(fname, markers)
-    out = create_windows(labelled_raw, shift=0.25, offset=2, take_everything=False)
     
-    # plt.plot(labelled_raw.iloc[:,0])
+    out = create_windows(labelled_raw, shift=0.1, offset=0, filter_type='original_filter', take_everything=False, sample=False)
+    input_windows = np.copy(out.loc[:14, 'channel 1'].to_numpy())
+    results_low_20_high_120 = test_filter(input_windows, 0.1, low=20.0, high=120.0)
+    
+    out = create_windows(labelled_raw, shift=0.1, offset=0, filter_type='original_filter', take_everything=True, sample=False)
+    input_windows = np.copy(out.loc[:14, 'channel 1'].to_numpy())
+    results_low_5_high_50 = test_filter(input_windows, 0.1, low=5.0, high=50.0)
+
+    
+    #Offline filter
+    # filtered_all = filter_signal(labelled_raw['channel 1'])
     
     
-    filtered_all = filter_signal(labelled_raw['channel 1'])
-    input_windows = list(out.loc[:1,'channel 1'])
+    # results_low_5_high_120 = test_filter(input_windows, 0.1, low=5.0)
     
-    results = test_filter(input_windows, 0.25)
-    for num, window in enumerate(results):
+    num_plots = 10
+    for i in range(num_plots):
         plt.figure()
-        plt.plot(filtered_all[num * 250:(num+1)*250],label='og filter')
-        plt.plot(window,label='real time filter')
-        plt.title('window number '+str(num))
+        plt.plot(filtered_all[i * 250:(i+1)*250],label='OG filter Low: 20, High: 120')
+        plt.plot(results_low_20_high_120[i], label='Low: 20, High: 120')
+        plt.plot(results_low_5_high_50[i], label='Low: 5, High: 50')
+        plt.title('window number ' + str(i))
         plt.legend()
         plt.show()
 
