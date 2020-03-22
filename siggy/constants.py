@@ -40,7 +40,7 @@ HAND_FINGER_MAP = {'left' : {'thumb': 6, 'index finger': 7, 'middle finger': 8, 
                    'right': {'thumb': 1, 'index finger': 2, 'middle finger': 3, 'ring finger': 4, 'pinkie': 5}}
 
 #List of all features currently coded
-ALL_FEATURES = ['iemg','mav','mmav','mmav2','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
+ALL_FEATURES = ['iemg','mav','mmav','var','rms','rms_3','zc','wamp','wl','ssch','wfl','freq_feats','freq_var']
 
 #Mapping of keys to finger (same as in HAND_FINGER_MAP)
 LABEL_MAP = {'1':10, '2':9, '3':8, '4':7, '5':7, '6': 2, '7':2, '8':3, '9':4, '0': 5,
