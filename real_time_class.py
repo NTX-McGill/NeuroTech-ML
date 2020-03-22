@@ -18,8 +18,8 @@ import numpy as np
 #from match_labels import *
 
 class Prediction():
-    def __init__(self, num_channels=8, shift=0.1, order=4, fs=250, 
-                 notch_freq=60.0, low=5.0, high=120.0,
+    def __init__(self, num_channels=8, shift=0.1, order=2, fs=250, 
+                 notch_freq=60.0, low=5.0, high=50.0,
                  should_filter=True, model_filename=None):
         
         if (model_filename):
