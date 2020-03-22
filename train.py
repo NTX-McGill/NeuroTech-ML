@@ -441,11 +441,11 @@ if __name__ == '__main__':
     label_name='finger'
     
     # filename= 'windows_date_all_subject_all_mode_1_2.pkl'
-    filename='features_windows_date_all_subject_all_mode_1_2.pkl'
+    filename='siggy/windows/windows_date_2020-03-08_subject_all_mode_4.pkl'
     # filename = 'features_windows-2020-03-03.pkl'
-    
+
     if 'features' in filename:
-        ### MODE 2 : LOAD THE FEATURES DIRECTLY
+        ### MODE 1 : LOAD THE FEATURES DIRECTLY
         
         file_prefix = filename.split(".")[0].split('/')[-1]
         features = pd.read_pickle(filename)
@@ -454,7 +454,7 @@ if __name__ == '__main__':
         all_ch_names = [i for i in all_ch_names if '_' in i]
         
     else:
-        ### MODE 1 : LOAD THE WINDOWS, COMPUTE THE FEATURES
+        ### MODE 2 : LOAD THE WINDOWS, COMPUTE THE FEATURES
         
         file_prefix = filename.split(".")[0].split('/')[-1]
         channel_names = ['channel {}'.format(i) for i in channels]

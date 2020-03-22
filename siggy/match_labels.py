@@ -549,7 +549,8 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     dates_all = [f for f in os.listdir(path_data) if re.fullmatch(r_date, f)]
     
     # remove 2020-02-09 because log file uses old data format from CLI tool
-    dates_all.remove('2020-02-09')
+    try:dates_all.remove('2020-02-09')
+    except:pass
     
     # keep only requested dates
     if dates:
@@ -640,17 +641,21 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
     
     # for each trial
     for (file_data, file_log) in selected_files:
-        
-        # add windows
-        print('Adding windows for trial with following files:\n' + 
-          '\tdata: {}\n'.format(file_data) + 
-          '\tlog: {}'.format(file_log))
-        
-        data = load_data(file_data, file_log, channels)
-        windows = create_windows(data)
-        filtered_windows = test_filter(windows)
-        
-        windows_all = windows_all.append(windows)
+        try:
+            # add windows
+            print('\nAdding windows for trial with following files:\n' + 
+              '\tdata: {}\n'.format(file_data) + 
+              '\tlog: {}'.format(file_log))
+            
+            data = load_data(file_data, file_log, channels)
+            windows = create_windows(data)# returns filtered windows
+            # filtered_windows = test_filter(windows,shift=1.0)
+            
+            windows_all = windows_all.append(windows)
+        except ValueError as e:
+            print('An error occured while adding the windows from this file')
+            print(e)
+            print('moving on to the next one...\n')
         
     # save windows as pickle file
     if save:
