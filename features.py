@@ -44,7 +44,9 @@ def rms(signal):
 
 #Root mean squared subwindows
 def rms_3(signal):
-    return [rms(subsig) for subsig in np.split(signal, 3)]
+    N = len(signal)
+    one_third, two_thirds = int(N / 3), int(2 * N / 3)
+    return [rms(signal[:one_third]), rms(signal[one_third: two_thirds]), rms(signal[two_thirds:])]
 
 #In what follows, thresholds: 10-100mV
     
