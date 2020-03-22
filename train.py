@@ -84,30 +84,54 @@ def test_all_models(X, Y, model_names, scoring='accuracy', n_splits=10):
         print(msg)
     return results
 
-def run_test_confmat_single_fold(X, Y, model_name, validation_size=0.2):
-    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, shuffle=False)
+def extract(df, cols, shuffle=False):
+    # extract X and Y numpy arrays
+    dataset = df[cols].to_numpy()
+    if shuffle:
+        np.random.shuffle(dataset)
+    X = dataset[:,:-1]
+    Y = dataset[:,-1]
+    return X, Y
 
-    # classifier = svm.SVC(kernel='linear').fit(X_train, Y_train)
-    
-    classifier = ALL_MODELS[model_name]()
-    classifier.fit(X_train, Y_train)
-    np.set_printoptions(precision=2)
-    
+def plot_confmat(classifier, X_validation, Y_validation, plot_counts=True, title="", ax=None):
     # Plot non-normalized confusion matrix
-    titles_options = [("Confusion matrix, without normalization", None),
-                      ("Normalized confusion matrix", 'true')]
+    titles_options = [ (title + ", normalized", 'true')]
+    if plot_counts:   
+        titles_options.append((title + ", without normalization", None))
+        
     for title, normalize in titles_options:
         disp = plot_confusion_matrix(classifier, X_validation, Y_validation,
                                       # display_labels=[2,3,4,5,'base'], # this might have been false
                                       cmap=plt.cm.Blues,
-                                      normalize=normalize)
+                                      normalize=normalize,
+                                      ax=ax)
         disp.ax_.set_title(title)
     
         print(title)
         print(disp.confusion_matrix)
-    return classifier, disp.confusion_matrix
+    return disp.confusion_matrix
 
-def run_test_confmat_folds(X, Y, model_name, validation_size=0.2,title=''):
+def train_and_plot_confmat(model_name, X_train, Y_train, X_validation, Y_validation, plot_counts=True, title="", ax=None):
+    
+    classifier = ALL_MODELS[model_name]()
+    classifier.fit(X_train, Y_train)
+    np.set_printoptions(precision=2)
+    confusion_matrix = plot_confmat(classifier, X_validation, Y_validation, plot_counts=plot_counts, title=title, ax=ax)
+    return classifier, confusion_matrix
+
+def run_test_confmat_split(train, test, model_name, cols, plot_counts=False, title="", ax=None):
+    # when the train/test split is provided
+    X_train, Y_train = extract(train, cols)
+    X_validation, Y_validation = extract(test, cols)
+    return train_and_plot_confmat(model_name, X_train, Y_train, X_validation, Y_validation, plot_counts=plot_counts, title=title, ax=ax)
+    
+def run_test_confmat_single_fold(X, Y, model_name, validation_size=0.2, plot_counts=True, title="", ax=None):
+    X_train, X_validation, Y_train, Y_validation = model_selection.train_test_split(X, Y, test_size=validation_size, shuffle=False)
+
+    # classifier = svm.SVC(kernel='linear').fit(X_train, Y_train)
+    return train_and_plot_confmat(model_name, X_train, Y_train, X_validation, Y_validation,plot_counts=plot_counts, title=title, ax=ax)
+
+def run_test_confmat_folds(X, Y, model_name, validation_size=0.2,plot_counts=True, title='', ax=None):
     confuzzle = []
     kf = model_selection.KFold(n_splits=5)
     for train_index, test_index in kf.split(X):
@@ -130,24 +154,44 @@ def run_test_confmat_folds(X, Y, model_name, validation_size=0.2,title=''):
     
     df_cm = pd.DataFrame(confuzzle, index = [i for i in range(11)], columns = [i for i in range(11)])
     print(df_cm)
-    # raw
-    plt.figure(figsize = (10,7))
-    sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
-    plt.title('Not Normalized\n'+title)
-    plt.show()
+    if plot_counts:
+        # raw
+        plt.figure(figsize = (10,7))
+        sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
+        plt.title('Not Normalized\n'+title)
+        plt.show()
     # normalized
     df_cm = df_cm.apply(lambda row: row / np.sum(row), axis=1)
-    plt.figure(figsize = (10,7))
-    plt.title('Normalized\n'+title)
-    sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues)
+    if ax:
+        ax.set_title(title + ", normalized")
+    else: 
+        plt.figure(figsize = (10,7))
+        plt.title(title + ', normalized')
+    sn.heatmap(df_cm, annot=True, cmap=plt.cm.Blues, ax=ax)
     
     return classifier, df_cm
 
-def run_test_confmat(X, Y, model_name, validation_size=0.2, test_all_folds=True,title=''):
+def run_test_confmat(X, Y, model_name, validation_size=0.2, test_all_folds=True, plot_counts=True, title='', ax=None):
     if test_all_folds:
-        return run_test_confmat_folds(X, Y, model_name, validation_size=validation_size,title=title)
-    return run_test_confmat_single_fold(X, Y, model_name, validation_size=validation_size)
-    
+        return run_test_confmat_folds(X, Y, model_name, validation_size=validation_size,plot_counts=plot_counts, title=title, ax=ax)
+    return run_test_confmat_single_fold(X, Y, model_name, validation_size=validation_size,plot_counts=plot_counts, title=title, ax=ax)
+
+def leave_subject_out_crossval(features, cols, model_name='LDA'):
+    plt.figure(figsize=(48,20))
+    for subject in features['id'].unique():
+        ax = plt.subplot(2,6,subject)
+        train = features[features.id != subject]
+        test = features[features.id == subject]
+        run_test_confmat_split(train, test, model_name, cols, title="Subject {}".format(subject), ax=ax)
+
+def within_subject(features, cols, validation_size=0.2, test_all_folds=False):
+    plt.figure(figsize=(48,20))
+    for subject in features['id'].unique():
+        ax = plt.subplot(2,6,subject)
+        single_subject = features[features.id == subject]
+        X, Y = extract(single_subject, cols)
+        classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size,plot_counts=False,
+                                              title="Subject {}".format(subject), ax=ax)
 
 # output model to pickle file
 def generate_model_name(filename=""):
@@ -372,7 +416,7 @@ def grid_search(df, models, id_params=None, mode_params=None, feature_params=Non
                     print(msg)
 
     return results
-
+ #%% 
 if __name__ == '__main__':
     """
     Here there are two different modes you can run, either you load the windows file and compute the features
@@ -392,8 +436,9 @@ if __name__ == '__main__':
     channels = [1,2,3,4,5,6,7,8]
     label_name='finger'
     
-    # filename='features_windows_date_all_subject_all_mode_1_2.pkl'
-    filename = 'features_windows-2020-03-03.pkl'
+    # filename= 'windows_date_all_subject_all_mode_1_2.pkl'
+    filename='features_windows_date_all_subject_all_mode_1_2.pkl'
+    # filename = 'features_windows-2020-03-03.pkl'
     
     if 'features' in filename:
         ### MODE 2 : LOAD THE FEATURES DIRECTLY
@@ -414,6 +459,7 @@ if __name__ == '__main__':
         labels = df[label_name].unique()
         sample_baseline(df, labels)
         subset = df[df[label_name].notnull()]
+        #%% 
         features, all_ch_names = compute_features(subset, channel_names, feature_names, mutate=True)
         # write pickle file
         feat_filename = 'features_' + filename
@@ -421,23 +467,22 @@ if __name__ == '__main__':
             pickle.dump(features, f_out)
             print('Saved windows to file {}'.format(filename))
     
+    print_dataset_stats(features)
     cols = all_ch_names + [label_name] 
-    # cols = all_names(channel_names, feature_names) + ['keypressed']
-    dataset = features[cols].to_numpy()
-            
-    # don't shuffle the dataset
-    # np.random.shuffle(dataset)
-    X = dataset[:,:-1]
-    Y = dataset[:,-1]
-    print("size of dataset:", X.shape)
+    X, Y = extract(features, cols)
     
     results = test_all_models(X,Y, model_names, n_splits=n_splits)
-    
+    #%% 
     model_name = 'LDA'
     classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size,
                                           title='file : '+filename)
-    print()
     
+    #%% 
+    
+    subset = features[features['mode'] == 1]
+
+    leave_subject_out_crossval(subset, cols)
+    within_subject(features, cols)
     # save_model(classifier, feature_names, file_prefix)
     
     # models = ['LDA', 'SVM']
