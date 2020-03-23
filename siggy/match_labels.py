@@ -691,7 +691,7 @@ if __name__ == '__main__':
     
     path_data = '../data'
     # w = get_aggregated_windows(path_data, modes=[1,2])
-    w = get_aggregated_windows(path_data, modes=[1,2], save=True, path_out='windows')
+    w = get_aggregated_windows(path_data, modes=[3], save=True, path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
