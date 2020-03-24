@@ -1,0 +1,62 @@
+{
+    "id": "006",
+    "trial": "4",
+    "mode": "Guided-in-the-air",
+    "datetime": "2020-03-22-20:24:38:814",
+    "timestamp": "1584923078814",
+    "prompts": "Hello, I collected data this week and this is my demo.",
+    "notes": ""
+}
+datetime, timestamp, event, hand, finger, key
+2020-03-22-20:24:40:657, 1584923080657, prompt_end, right, index finger, h
+2020-03-22-20:24:42:878, 1584923082878, prompt_end, left, middle finger, e
+2020-03-22-20:24:45:083, 1584923085083, prompt_end, right, ring finger, l
+2020-03-22-20:24:47:294, 1584923087294, prompt_end, right, ring finger, l
+2020-03-22-20:24:49:498, 1584923089498, prompt_end, right, ring finger, o
+2020-03-22-20:24:51:715, 1584923091715, prompt_end, right, thumb, space
+2020-03-22-20:24:53:932, 1584923093932, prompt_end, right, middle finger, i
+2020-03-22-20:24:56:149, 1584923096149, prompt_end, right, thumb, space
+2020-03-22-20:24:58:354, 1584923098354, prompt_end, left, middle finger, c
+2020-03-22-20:25:00:572, 1584923100572, prompt_end, right, ring finger, o
+2020-03-22-20:25:02:790, 1584923102790, prompt_end, right, ring finger, l
+2020-03-22-20:25:05:010, 1584923105010, prompt_end, right, ring finger, l
+2020-03-22-20:25:07:217, 1584923107217, prompt_end, left, middle finger, e
+2020-03-22-20:25:09:437, 1584923109437, prompt_end, left, middle finger, c
+2020-03-22-20:25:11:654, 1584923111654, prompt_end, left, index finger, t
+2020-03-22-20:25:13:872, 1584923113872, prompt_end, left, middle finger, e
+2020-03-22-20:25:16:091, 1584923116091, prompt_end, left, middle finger, d
+2020-03-22-20:25:18:307, 1584923118307, prompt_end, right, thumb, space
+2020-03-22-20:25:20:526, 1584923120526, prompt_end, left, middle finger, d
+2020-03-22-20:25:22:744, 1584923122744, prompt_end, left, pinkie, a
+2020-03-22-20:25:24:961, 1584923124961, prompt_end, left, index finger, t
+2020-03-22-20:25:27:164, 1584923127164, prompt_end, left, pinkie, a
+2020-03-22-20:25:29:373, 1584923129373, prompt_end, right, thumb, space
+2020-03-22-20:25:31:585, 1584923131585, prompt_end, left, index finger, t
+2020-03-22-20:25:33:814, 1584923133814, prompt_end, right, index finger, h
+2020-03-22-20:25:36:030, 1584923136030, prompt_end, right, middle finger, i
+2020-03-22-20:25:38:244, 1584923138244, prompt_end, left, ring finger, s
+2020-03-22-20:25:40:475, 1584923140475, prompt_end, right, thumb, space
+2020-03-22-20:25:42:699, 1584923142699, prompt_end, left, ring finger, w
+2020-03-22-20:25:44:913, 1584923144913, prompt_end, left, middle finger, e
+2020-03-22-20:25:47:121, 1584923147121, prompt_end, left, middle finger, e
+2020-03-22-20:25:49:339, 1584923149339, prompt_end, right, middle finger, k
+2020-03-22-20:25:51:550, 1584923151550, prompt_end, right, thumb, space
+2020-03-22-20:25:53:764, 1584923153764, prompt_end, left, pinkie, a
+2020-03-22-20:25:55:988, 1584923155988, prompt_end, right, index finger, n
+2020-03-22-20:25:58:211, 1584923158211, prompt_end, left, middle finger, d
+2020-03-22-20:26:00:440, 1584923160440, prompt_end, right, thumb, space
+2020-03-22-20:26:02:653, 1584923162653, prompt_end, left, index finger, t
+2020-03-22-20:26:04:881, 1584923164881, prompt_end, right, index finger, h
+2020-03-22-20:26:07:101, 1584923167101, prompt_end, right, middle finger, i
+2020-03-22-20:26:09:323, 1584923169323, prompt_end, left, ring finger, s
+2020-03-22-20:26:11:551, 1584923171551, prompt_end, right, thumb, space
+2020-03-22-20:26:13:761, 1584923173761, prompt_end, right, middle finger, i
+2020-03-22-20:26:15:991, 1584923175991, prompt_end, left, ring finger, s
+2020-03-22-20:26:18:226, 1584923178226, prompt_end, right, thumb, space
+2020-03-22-20:26:20:464, 1584923180464, prompt_end, right, index finger, m
+2020-03-22-20:26:22:685, 1584923182685, prompt_end, right, index finger, y
+2020-03-22-20:26:24:904, 1584923184904, prompt_end, right, thumb, space
+2020-03-22-20:26:27:129, 1584923187129, prompt_end, left, middle finger, d
+2020-03-22-20:26:29:364, 1584923189364, prompt_end, left, middle finger, e
+2020-03-22-20:26:31:586, 1584923191586, prompt_end, right, index finger, m
+2020-03-22-20:26:33:811, 1584923193811, prompt_end, right, ring finger, o
