@@ -7,6 +7,7 @@ Created on Sun Mar 22 17:06:02 2020
 @author: miasya
 
 """
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -49,14 +50,14 @@ data = data[data['keypressed'].isin(counts[counts >= 3000].index)]
 grouped = data.groupby(['keypressed', 'id'])
 
 #%%
-n_bins = 15 # for the histogram
+n_bins = 20 # for the histogram
 keypresses = data['keypressed'].unique() # all possible keys with sufficient data
 
 # We go feature by feature, showing all channels for every type of keypress, for every different person
 for f, feature in enumerate(SCALAR_FEATURES):
     for kp in keypresses:
         
-        fig, axs = plt.subplots(len(SUBJECT_IDS), len(channels),figsize=(len(channels)*2,len(SUBJECT_IDS)*2), sharex=True, sharey=True)    
+        fig, axs = plt.subplots(len(SUBJECT_IDS), len(channels),figsize=(len(channels)*3,len(SUBJECT_IDS)*2), sharex=True, sharey=True)    
         fig.suptitle('feature: {}, keypress: {}'.format(feature, kp))
 
         # Each row of the subplot will be all 8 channels for a specific subject id
@@ -89,8 +90,8 @@ for f, feature in enumerate(SCALAR_FEATURES):
                 axs[n, fc].set_title('id: {}, ch: {}'.format(str(name[1]), fc+1))         
             n += 1
             
-        plt.savefig('feature_{}_keypress_{}.png'.format(feature, kp))
-        plt.show()
+        plt.savefig(os.path.join('histograms','feature_{}_keypress_{}.png'.format(feature, kp)))
+        #plt.show()
 
 #%%
 
