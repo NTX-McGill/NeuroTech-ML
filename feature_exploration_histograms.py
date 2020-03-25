@@ -92,6 +92,7 @@ for f, feature in enumerate(SCALAR_FEATURES):
             
         plt.savefig(os.path.join('histograms','feature_{}_keypress_{}.png'.format(feature, kp)))
         #plt.show()
+        plt.close()
 
 #%%
 
