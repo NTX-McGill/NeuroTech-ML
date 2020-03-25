@@ -96,7 +96,8 @@ def compute_features(df, channel_names, feature_names, mutate=False):
         return df, all_ch_names
     df_result = pd.DataFrame(all_results)
     # TODO: extract other 'labels' from df?
-    df_result['keypressed'] = df['keypressed']
+    for col in ['keypressed', 'finger', 'mode', 'id']:
+        df_result[col] = df.reset_index()[col]
     # print('\n\nall chnames',all_ch_names)
     return df_result,all_ch_names
 
