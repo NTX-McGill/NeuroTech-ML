@@ -34,7 +34,7 @@ Location: Building 21
         - l: left swipe (with curled fingers)
         - ;: left wrist roll
         - h: start/stop for meaningless movement
-- Trial 5: Artifacts
+- Trial 6: Artifacts
     - Participant execuated gestures with right hand while pressing down a key with the left hand
     - Keys:
         - f: right fist clench

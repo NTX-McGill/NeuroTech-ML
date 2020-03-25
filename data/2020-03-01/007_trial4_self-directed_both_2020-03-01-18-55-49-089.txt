@@ -1,6 +1,12 @@
-name=007
-notes=Both hands, self-directed.
-mode=0
+{
+    "id": "007",
+    "trial": "4",
+    "mode": "Self-directed",
+    "datetime": "2020-03-01-18:55:12:063",
+    "timestamp": "1583106951495",
+    "prompts": "",
+    "notes": ""
+}
 datetime, timestamp, event, hand, finger, key
 2020-03-01-18:55:51:495, 1583106951495, keystroke, , , h
 2020-03-01-18:55:51:960, 1583106951960, keystroke, , , e
