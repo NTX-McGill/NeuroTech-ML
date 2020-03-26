@@ -102,7 +102,7 @@ def get_psd(signal):
 #Returns list of bands that you can use
 def get_bands(psd):
     # return [psd[5:20] , psd[20:40] , psd[40:80] , psd[80:100], psd[100:120]]
-    return [psd[5:11] , psd[11,15] , psd[21:29] , psd[29:36] , psd[36:43] , psd[43:50]]# , psd[80:100] , psd[100:120]]
+    return [psd[5:11] , psd[11:15] , psd[21:29] , psd[29:36] , psd[36:43] , psd[43:50]]# , psd[80:100] , psd[100:120]]
 
 ###
 
@@ -128,7 +128,7 @@ def freq_var(signal):
 def freq_misc(signal):
     psd = get_psd(signal)
     return [ssc(psd),mav(psd),mmav(psd),zc(psd-[.5]*len(psd))]
-
+    
     
 ## Unhelpful feature: power spectral density
 """ # FIX DIMENSIONS LATER
