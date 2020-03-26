@@ -101,10 +101,9 @@ def get_psd(signal):
 
 #Returns list of bands that you can use
 def get_bands(psd):
-    # return [psd[5:20] , psd[20:40] , psd[40:80] , psd[80:100], psd[100:120]]
-    return [psd[5:11] , psd[11:15] , psd[21:29] , psd[29:36] , psd[36:43] , psd[43:50]]# , psd[80:100] , psd[100:120]]
-
-###
+    # return [psd[5:20] , psd[20:40] , ,psd[40:60], psd[60:80] , psd[80:100], psd[100:120]]
+    # return [psd[5:11] , psd[11:15] , psd[21:29] , psd[29:36] , psd[36:43] , psd[43:50]]# , psd[80:100] , psd[100:120]]
+    return [psd[5:10],psd[10:15],psd[15:20],psd[20:25],psd[25:30],psd[30:35],psd[35:40],psd[40:45],psd[45:50]]
 
 # some basic freq domain features 
 def freq_feats(signal):
@@ -117,12 +116,16 @@ def freq_feats_relative(signal):
     total = np.sum(psd)
     return [np.mean(i)/total for i in get_bands(psd)]
 
-# some more freq domain features - michell : take out the high freq stuff
+# more basic features : the min and the max from each frequency band
+def freq_feats_min_max(signal):
+    psd = get_psd(signal)
+    return [np.max(i) for i in get_bands(psd)]+[np.min(i) for i in get_bands(psd)]
+
+
+# some more freq domain features
 def freq_var(signal):
     psd = get_psd(signal)
-    return np.asarray([np.mean(np.abs(psd[:40] - np.array([np.mean(psd[:40])]*40))) ,
-                       np.mean(np.abs(psd[40:80] - np.array([np.mean(psd[40:80])]*40))) ,
-                               np.mean(np.abs(psd[80:] - np.array([np.mean(psd[80:])]*len(psd[80:])))) ])
+    return [np.mean(np.square(i - np.array([np.mean(i)]*len(i)))) for i in get_bands(psd)]
 
 # more freq domain features
 def freq_misc(signal):
