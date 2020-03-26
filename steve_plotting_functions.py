@@ -231,29 +231,29 @@ if __name__ == '__main__':
 	display_by_subject_id(df=baseline,fn=var,str_fn='var',fig=fig,thresh=700)
 	
 	plt.subplot(3,3,3)
-	display_by_subject_id(df=baseline,fn=rms,str_fn='rms',fig=fig,thresh=15)
+	display_by_subject_id(df=baseline,fn=rms,str_fn='rms',fig=fig,thresh=5)
 	
 	plt.subplot(3,3,4)
-	display_by_subject_id(df=baseline,fn=freq_band_0,str_fn='freq band 0',fig=fig,thresh=15)
+	display_by_subject_id(df=baseline,fn=freq_band_0,str_fn='freq band 0',fig=fig,thresh=5)
 	
 	plt.subplot(3,3,5)
-	display_by_subject_id(df=baseline,fn=freq_band_1,str_fn='freq band 1',fig=fig,thresh=15)
+	display_by_subject_id(df=baseline,fn=freq_band_1,str_fn='freq band 1',fig=fig,thresh=5)
 	
 	plt.subplot(3,3,6)
 	display_by_subject_id(df=baseline,fn=freq_band_2,
-		                  str_fn='freq band 2',fig=fig,thresh=15)
+		                  str_fn='freq band 2',fig=fig,thresh=5)
 	
 	plt.subplot(3,3,7)
 	display_by_subject_id(df=baseline,fn=freq_band_3,
-		                  str_fn='freq band 3',fig=fig,thresh=15)
+		                  str_fn='freq band 3',fig=fig,thresh=5)
 	
 	plt.subplot(3,3,8)
 	display_by_subject_id(df=baseline,fn=freq_band_4,
-		                  str_fn='freq band 4',fig=fig,thresh=15)
+		                  str_fn='freq band 4',fig=fig,thresh=5)
 	
 	plt.subplot(3,3,9)
 	display_by_subject_id(df=baseline,fn=freq_band_5,
-		                  str_fn='freq band 5',fig=fig,thresh=15)
+		                  str_fn='freq band 5',fig=fig,thresh=5)
 	
 	
 	fig.tight_layout()
