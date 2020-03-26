@@ -40,6 +40,14 @@ def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1,
     elif method == 'mean':
         n_baseline_samples = int( fingers.count()/fingers.nunique() ) * baseline_sample_factor
     
+    # other option : take a fixed amount of baseline samples
+    elif method == 'determined amount':
+        n_baseline_samples = 5000
+    
+    # other option : take the entire baseline
+    elif method == 'everything':
+        n_baseline_samples = len(df[df['finger'].isnull()])
+    
     else:
         raise ValueError('Invalid method: {}. Accepted methods are \'max\' and \'mean\''.format(method))
         
@@ -363,7 +371,9 @@ def get_window_label(labels, win_start, win_len):
         
         return labels.iloc[np.argmin(np.abs(indices - mid_ind))]
 
-def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, filter_type='real_time_filter', drop_rest=True, sample=True):
+def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, 
+                   filter_type='real_time_filter', drop_rest=True, sample=True,
+                   baseline_sample_factor=1,method='max'):
     """
         Combines data points from data into labeled windows
         inputs:
@@ -442,7 +452,10 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, f
     
     # add finger=0 for random subset of baseline samples
     if sample:
-        windows_df = sample_baseline(windows_df, drop_rest=drop_rest)
+        windows_df = sample_baseline(windows_df, 
+                                     drop_rest=drop_rest,
+                                     baseline_sample_factor=baseline_sample_factor,
+                                     method=method)
     
     return windows_df
 
@@ -605,9 +618,86 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     
     return selected_files
 
+def get_aggregate_baseline_windows(path_data,channels=[1,2,3,4,5,6,7,8],
+                         dates=None,subjects=None,modes=None,
+                         save=False,path_out='.',filter_type='real_time_filter'):
+    """
+    Selects trials based on dates/subjects/modes, 
+    then creates windows and aggregates them together, only selects baseline windows.
+    Optionally saves windows in pickle file.
+
+    Parameters
+    ----------
+    path_data : string
+        Path to data folder.
+    channels : list of integers, optional
+        Channels to include in windows. The default is [1,2,3,4,5,6,7,8].
+    dates, subjects, modes : parameters passed to select_files()
+    path_out : string, optional
+        DESCRIPTION. The default is '.'.
+    save : boolean, optional
+        If True, will save windows as a pickle file in location given by path_out. The default is False.
+
+    Returns
+    -------
+    windows_all : pandas.DataFrame
+        DataFrame with one row per window. Contains one column for each channel, 
+        and also 'hand', 'finger', 'keypressed', 'id', and 'mode'
+
+    """
+    
+    # get relevant data/log files
+    selected_files = select_files(path_data, dates=dates, subjects=subjects, modes=modes)
+    # notes : hopefully the modes sholud not affect the baseline, perhaps investigate this
+    
+    # make empty dataframe where windows from each file will be appended
+    baseline_all = pd.DataFrame()
+    
+    # for each trial 
+    for (file_data, file_log) in selected_files:
+        try:
+            # add windows
+            print('\nAdding windows for trial with following files:\n' + 
+              '\tdata: {}\n'.format(file_data) + 
+              '\tlog: {}'.format(file_log))
+            data = load_data(file_data, file_log, channels)
+            baseline = create_windows(data,method='everything')# the baseline sample factor determines how much of the baseline you sample
+            
+            # drop everthing that is not the baseline
+            baseline = baseline[baseline['finger']==0]
+            
+            baseline_all = baseline_all.append(baseline)
+        except ValueError as e:
+            print('An error occured while adding the windows from this file')
+            print(e)
+            print('moving on to the next one...\n')
+            
+    # save baseline windows to a pickle file
+    if save:
+        # generate filename based on requested dates/subjects/modes
+        to_add = []
+        for (i,l) in enumerate((dates,subjects,modes)):
+            if l:
+                to_add.append('_'.join(map(str,l)))
+            else:
+                to_add.append('all')
+        filename = 'baseline_windows_date_{}_subject_{}_mode_{}.pkl'.format(
+            to_add[0],to_add[1],to_add[2])
+        
+        # get full path to output file
+        filename = os.path.join(path_out,filename)
+        
+        # write pickle file
+        with open(filename,'wb') as f_out:
+            pickle.dump(baseline_all, f_out)
+            print('Saved baseline windows to file {}'.format(filename))
+            
+    return baseline_all
+
 def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8], 
                            dates=None, subjects=None, modes=None, 
-                           save=False, path_out='.', filter_type='real_time_filter'):
+                           save=False, path_out='.', filter_type='real_time_filter',
+                           method='max'):
     """
     Selects trials based on dates/subjects/modes, 
     then creates windows and aggregates them together.
@@ -648,8 +738,7 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
               '\tlog: {}'.format(file_log))
             
             data = load_data(file_data, file_log, channels)
-            windows = create_windows(data)# returns filtered windows
-            # filtered_windows = test_filter(windows,shift=1.0)
+            windows = create_windows(data,method=method)# returns filtered windows
             
             windows_all = windows_all.append(windows)
         except ValueError as e:
@@ -690,8 +779,10 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    # w = get_aggregated_windows(path_data, modes=[1,2])
-    w = get_aggregated_windows(path_data, modes=[3], save=True, path_out='windows')
+    
+    # w = get_aggregated_windows(path_data, modes=[1,2,4], save=True, path_out='windows')
+
+    b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
