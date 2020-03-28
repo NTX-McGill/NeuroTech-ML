@@ -23,10 +23,7 @@ Location: Building 21
 - Trial 3: Self-directed
     - Participant typed whatever they wanted on the keyboard
     - All fingers used (both hands)
-- Trial 4: Guided, keyboard
-    - Participant typed on keyboard, following dashboard prompts
-    - 4 fingers used (right hand, no thumb)
-- Trial 5: Artifacts
+- Trial 4: Artifacts
     - Participant execuated gestures with left hand while pressing down a key with the right hand
     - Keys:
         - j: left fist clench
@@ -34,7 +31,7 @@ Location: Building 21
         - l: left swipe (with curled fingers)
         - ;: left wrist roll
         - h: start/stop for meaningless movement
-- Trial 6: Artifacts
+- Trial 5: Artifacts
     - Participant execuated gestures with right hand while pressing down a key with the left hand
     - Keys:
         - f: right fist clench
@@ -63,10 +60,7 @@ Location: Building 21
 - Trial 3: Self-directed
     - Participant typed whatever they wanted on the keyboard
     - All fingers used (both hands)
-- Trial 4: Guided, keyboard
-    - Participant typed on keyboard, following dashboard prompts
-    - 4 fingers used (right hand, no thumb)
-- Trial 5: Artifacts
+- Trial 4: Artifacts
     - Participant execuated gestures with one hand while pressing down a key with the other hand
     - Keys:
         - j: left fist clench
