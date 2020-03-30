@@ -500,7 +500,7 @@ def create_dataset(directory, channels, filter_type='original_filter', file_rege
     
     return big_data, windows
 
-def select_files(path_data, dates=None, subjects=None, modes=None):
+def select_files(path_data, path_trials_json='.', dates=None, subjects=None, modes=None, trial_groups=None):
     """
     Selects data files according to specifications.
     Specifically, keeps only files in the intersection of requested dates, subjects and modes
@@ -509,6 +509,8 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     ----------
     path_data : string
         Path to data directory.
+    path_trials_json: string
+        Path to directory containing trials.json file
     dates : list of requested dates as strings in 'YYYY-MM-DD' format, optional
         If None, no filtering is done for the dates. The default is None.
     subjects : list of requested subject IDs as strings in 'XXX' format, optional
@@ -544,6 +546,11 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
                     invalid_modes.append(modes[i])
             except ValueError:
                 invalid_modes.append(modes[i])
+                
+    # input validation: check that trial_groups has only accepted values
+    valid_groups = ['bad', 'ok', 'good']
+    if trial_groups:
+        invalid_groups = [g for g in trial_groups if g not in valid_groups]
             
     # raise exception if invalid input
     if invalid_dates:
@@ -553,11 +560,28 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     if invalid_modes:
         raise ValueError('Invalid mode(s): {}. Available modes are the following: {}.'.format(
             invalid_modes, {v:k for k,v in MODE_MAP.items()}))
+    if invalid_groups:
+        raise ValueError('Invalid trial group(s): {}. Available trial groups are the following: {}'.format(
+            invalid_groups, valid_groups))
         
     # convert req_subjects into list of strings (ex: '001' -> 1) because of the way get_metadata() works
     if subjects:
         subjects_int = [int(s) for s in subjects]
-    
+        
+    # get lists of good/bad/ok trials
+    if trial_groups:
+        with open(os.path.join(path_trials_json, 'trials.json')) as file_json:
+            trials = json.load(file_json)
+            
+        included_trials = []
+        
+        for trial_group in trials.keys():
+            
+            # add trial (full path)
+            if trial_group in trial_groups:
+                for trial_name in trials[trial_group]:
+                    included_trials.append(os.path.join(path_data, trial_name))
+                        
     # get all available dates
     dates_all = [f for f in os.listdir(path_data) if re.fullmatch(r_date, f)]
     
@@ -606,6 +630,8 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
             to_add = False
         if modes and not MODE_MAP[metadata['mode']] in modes:
             to_add = False
+        if trial_groups and not files_data[i] in included_trials:
+            to_add = False
         
         if to_add:
             selected_files.append((files_data[i], files_log[i]))
@@ -614,7 +640,8 @@ def select_files(path_data, dates=None, subjects=None, modes=None):
     print('Selected {} trials with these specifications:\n'.format(len(selected_files)) +
           '\tdates: {}\n'.format(dates if dates else 'all') + 
           '\tsubjects: {}\n'.format(subjects if subjects else 'all') + 
-          '\tmodes: {}'.format(modes if modes else 'all'))
+          '\tmodes: {}\n'.format(modes if modes else 'all') + 
+          '\ttrial groups: {}'.format(trial_groups if trial_groups else 'all'))
     
     return selected_files
 
@@ -694,8 +721,8 @@ def get_aggregate_baseline_windows(path_data,channels=[1,2,3,4,5,6,7,8],
             
     return baseline_all
 
-def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8], 
-                           dates=None, subjects=None, modes=None, 
+def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,6,7,8], 
+                           dates=None, subjects=None, modes=None, trial_groups=None,
                            save=False, path_out='.', filter_type='real_time_filter',
                            method='max'):
     """
@@ -707,9 +734,11 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
     ----------
     path_data : string
         Path to data folder.
+    path_trials_json : string
+        Path to JSON file for good/bad/ok trials. The default is '.'.
     channels : list of integers, optional
         Channels to include in windows. The default is [1,2,3,4,5,6,7,8].
-    dates, subjects, modes : parameters passed to select_files()
+    dates, subjects, modes, trial_groups : parameters passed to select_files()
     path_out : string, optional
         DESCRIPTION. The default is '.'.
     save : boolean, optional
@@ -724,7 +753,7 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
     """
     
     # get relevant data/log files
-    selected_files = select_files(path_data, dates=dates, subjects=subjects, modes=modes)
+    selected_files = select_files(path_data, path_trials_json=path_trials_json, dates=dates, subjects=subjects, modes=modes, trial_groups=trial_groups)
     
     # make empty dataframe where windows from each file will be appended
     windows_all = pd.DataFrame()
@@ -749,15 +778,15 @@ def get_aggregated_windows(path_data, channels=[1,2,3,4,5,6,7,8],
     # save windows as pickle file
     if save:
         
-        # generate filename based on requested dates/subjects/modes
+        # generate filename based on requested dates/subjects/modes/groups
         to_add = []
-        for (i, l) in enumerate((dates, subjects, modes)):
+        for (i, l) in enumerate((dates, subjects, modes, trial_groups)):
             if l:
                 to_add.append('_'.join(map(str, l)))
             else:
                 to_add.append('all')
-        filename = 'windows_date_{}_subject_{}_mode_{}.pkl'.format(
-            to_add[0], to_add[1], to_add[2])
+        filename = 'windows_date_{}_subject_{}_mode_{}_groups.pkl'.format(
+            to_add[0], to_add[1], to_add[2], to_add[3])
         
         # get full path to output file
         filename = os.path.join(path_out, filename)
@@ -779,10 +808,9 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    
-    # w = get_aggregated_windows(path_data, modes=[1,2,4], save=True, path_out='windows')
+    w = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['good'], save=True, path_out='windows')
 
-    b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
+    # b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
     
     # directory = '../data/2020-02-23/'
     # labeled_raw, good_windows = create_dataset(directory, channels)    
