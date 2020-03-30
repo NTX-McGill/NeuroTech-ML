@@ -8,7 +8,6 @@
     "notes": ""
 }
 datetime, timestamp, event, hand, finger, key
-2020-03-22-20:01:05:987, 1584921665987, prompt_end, left, middle finger, d
 2020-03-22-20:01:08:227, 1584921668227, prompt_end, left, middle finger, e
 2020-03-22-20:01:10:466, 1584921670466, prompt_end, left, pinkie, a
 2020-03-22-20:01:12:686, 1584921672686, prompt_end, left, index finger, r
