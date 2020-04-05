@@ -549,6 +549,7 @@ def select_files(path_data, path_trials_json='.', dates=None, subjects=None, mod
                 
     # input validation: check that trial_groups has only accepted values
     valid_groups = ['bad', 'ok', 'good']
+    invalid_groups = []
     if trial_groups:
         invalid_groups = [g for g in trial_groups if g not in valid_groups]
             
@@ -785,7 +786,7 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
                 to_add.append('_'.join(map(str, l)))
             else:
                 to_add.append('all')
-        filename = 'windows_date_{}_subject_{}_mode_{}_groups.pkl'.format(
+        filename = 'windows_date_{}_subject_{}_mode_{}_groups_{}.pkl'.format(
             to_add[0], to_add[1], to_add[2], to_add[3])
         
         # get full path to output file
@@ -808,7 +809,8 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    w = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['good'], save=True, path_out='windows')
+    filenames = select_files(path_data, modes=[1,2,4])
+    # w_ok = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['good'], save=True, path_out='windows')
 
     # b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
     
