@@ -9,13 +9,13 @@ import pandas as pd
 import pickle
 from real_time_class import Prediction
 
-model_filename = 'model_features_2020-03-22_windows_date_all_subject_all_mode_1_2_4-03_26_2020_09_38_43.pkl'
-features_filename = 'features_2020-03-22_windows_date_all_subject_all_mode_1_2_4.pkl'
-destination_filename = 'features_with_prediction_2020-03-22_windows_date_all_subject_all_mode_1_2_4.pkl'
+model_filename = 'model_windows_date_all_subject_all_mode_1_2_4_groups_ok_good.pkl'
+features_filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good.pkl'
+destination_filename = 'predictions_features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good.pkl'
 
 with open(features_filename, 'rb') as f:
     df = pickle.load(f)
-
+    
 Model = Prediction(model_filename=model_filename)
 #%%
 
@@ -23,7 +23,7 @@ labels = []
 for index, row in df.iterrows():
 
     x = row
-    x = x.drop(['keypressed', 'hand', 'finger', 'id', 'mode',
+    x = x.drop(['index','keypressed', 'hand', 'finger', 'id', 'mode',
                 'channel 1', 'channel 2', 'channel 3', 'channel 4',
                 'channel 5', 'channel 6', 'channel 7', 'channel 8'])
     
