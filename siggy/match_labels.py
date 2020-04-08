@@ -580,8 +580,8 @@ def select_files(path_data, path_trials_json='.', dates=None, subjects=None, mod
             
             # add trial (full path)
             if trial_group in trial_groups:
-                for trial_name in trials[trial_group]:
-                    included_trials.append(os.path.join(path_data, trial_name))
+                for trial_path in trials[trial_group]:
+                    included_trials.append(os.path.join(path_data, trial_path[0], trial_path[1]))
                         
     # get all available dates
     dates_all = [f for f in os.listdir(path_data) if re.fullmatch(r_date, f)]
@@ -809,7 +809,7 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    filenames = select_files(path_data, modes=[1,2,4])
+    filenames = select_files(path_data, trial_groups=["ok", "good"])
     # w_ok = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['good'], save=True, path_out='windows')
 
     # b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
