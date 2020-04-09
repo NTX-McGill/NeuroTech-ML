@@ -35,6 +35,7 @@ selected_files = select_files(path_data='data', path_trials_json='siggy', trial_
 #%%
 for data_file, label_file in selected_files:
     
+    
     raw_data = load_data(data_file, label_file)
     raw_data = filter_dataframe(raw_data, filter_type='original_filter')
     
@@ -97,3 +98,5 @@ for data_file, label_file in selected_files:
         plt.subplot(5,1,4)
         segment = labels_onehot[s:e]
         plt.imshow(segment.T, cmap=plt.cm.Blues, aspect='auto')
+        
+    break
