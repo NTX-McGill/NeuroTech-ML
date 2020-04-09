@@ -18,10 +18,8 @@ plot_length = 5 # in seconds
 
 channel_names = ['channel {}'.format(i) for i in range(1,9)]
 
-
 #model_file= 'model_windows_date_all_subject_all_mode_1_2-03_18_2020_22_33_39.pkl'
 model_file = 'model_windows_date_all_subject_all_mode_1_2_4_groups_ok_good.pkl'
-
 
 """
 ****** This is if you're doing by file -- which is preferred since you can know
