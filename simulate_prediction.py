@@ -81,6 +81,9 @@ for data_file, label_file in selected_files:
         s, e = np.array([i, i+1]) * (plot_length *250)
         signal_segment = data[s:e]
         
+        if (len(signal_segment) < 10):
+            continue
+        
         print("from", str((start+s)/length))
         print("to", str((start+e)/length))
         
