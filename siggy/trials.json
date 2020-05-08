@@ -8,7 +8,9 @@
             ["2020-03-01", "007_trial1_guided_both_OpenBCI-RAW-2020-03-01_18-13-46.txt"],
             ["2020-03-05", "011_trial1_guided_standing_OpenBCI-RAW-2020-03-05_17-28-36.txt"],
             ["2020-03-29", "006_trial1_guided_air_OpenBCI-RAW-2020-03-29_21-29-43.txt"],
-            ["2020-03-29", "006_trial2_guided_air_OpenBCI-RAW-2020-03-29_22-17-29.txt"]],
+            ["2020-03-29", "006_trial2_guided_air_OpenBCI-RAW-2020-03-29_22-17-29.txt"],
+            ["2020-05-08", "013_trial2_guided_air_OpenBCI-RAW-2020-05-08_17-14-42.txt"],
+            ["2020-05-08", "013_trial3_guided_air_OpenBCI-RAW-2020-05-08_17-32-15.txt"]],
     "bad":[["2020-02-16", "001_trial2_right_air_OpenBCI-RAW-2020-02-16_19-14-29.txt"],
            ["2020-02-16", "001_trial5_right_air_standing_OpenBCI-RAW-2020-02-16_19-38-42.txt"],
            ["2020-02-16", "001_trial7_right_air_standing_OpenBCI-RAW-2020-02-16_19-54-02.txt"],
@@ -25,7 +27,8 @@
            ["2020-03-03", "009-trial2-guided-OpenBCI-RAW-2020-03-03_17-40-58.txt"],
            ["2020-03-05", "010_trial3_self-directed_OpenBCI-RAW-2020-03-05_14-58-19.txt"],
            ["2020-03-05", "011_trial2_self-directed_OpenBCI-RAW-2020-03-05_17-37-30.txt"],
-           ["2020-03-08", "012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt"]],
+           ["2020-03-08", "012_trial2_self-directed_OpenBCI-RAW-2020-03-08_19-02-54.txt"],
+           ["2020-04-05", "013_trial1_guided_air_OpenBCI-RAW-2020-04-05_19-51-42.txt"]],
     "ok":[["2020-02-16", "001_trial1_right_keyboard_OpenBCI-RAW-2020-02-16_18-59-08.txt"],
           ["2020-02-16", "001_trial3_right_freestyle_OpenBCI-RAW-2020-02-16_19-27-55.txt"],
           ["2020-02-16", "001_trial4_right_keyboard_OpenBCI-RAW-2020-02-16_19-32-59.txt"],
@@ -40,5 +43,6 @@
           ["2020-03-05", "010_trial1_guided_air_OpenBCI-RAW-2020-03-05_14-42-31.txt"],
           ["2020-03-05", "010_trial2_guided_air_standing_OpenBCI-RAW-2020-03-05_14-48-59.txt"],
           ["2020-03-08", "012_trial1_guided_air_OpenBCI-RAW-2020-03-08_18-25-20.txt"],
-          ["2020-03-08", "012_trial3_guided_standing_OpenBCI-RAW-2020-03-08_19-24-54.txt"]]
+          ["2020-03-08", "012_trial3_guided_standing_OpenBCI-RAW-2020-03-08_19-24-54.txt"],
+          ["2020-05-08", "013_trial1_guided_air_OpenBCI-RAW-2020-05-08_16-42-16.txt"]]
 }
