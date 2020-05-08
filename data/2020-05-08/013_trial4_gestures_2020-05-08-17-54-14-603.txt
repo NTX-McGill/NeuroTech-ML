@@ -1,0 +1,117 @@
+{
+    "id": "013",
+    "trial": "4",
+    "mode": "In-the-air",
+    "datetime": "2020-05-08-17:54:14:603",
+    "timestamp": "1588974854603",
+    "prompts": "left clench,right clench,left swipe,right swipe,left roll,right roll,right movement,left movement",
+    "notes": ""
+}
+datetime, timestamp, event, hand, finger, key
+2020-05-08-17:54:17:541, 1588974857541, prompt_end, right roll
+2020-05-08-17:54:20:779, 1588974860779, prompt_end, right swipe
+2020-05-08-17:54:24:000, 1588974864000, prompt_end, right clench
+2020-05-08-17:54:27:248, 1588974867248, prompt_end, right roll
+2020-05-08-17:54:30:493, 1588974870493, prompt_end, left swipe
+2020-05-08-17:54:33:782, 1588974873782, prompt_end, left swipe
+2020-05-08-17:54:37:081, 1588974877081, prompt_end, left clench
+2020-05-08-17:54:40:304, 1588974880304, prompt_end, left swipe
+2020-05-08-17:54:43:546, 1588974883546, prompt_end, left roll
+2020-05-08-17:54:46:761, 1588974886761, prompt_end, left roll
+2020-05-08-17:54:50:011, 1588974890011, prompt_end, right clench
+2020-05-08-17:54:53:269, 1588974893269, prompt_end, right clench
+2020-05-08-17:54:56:521, 1588974896521, prompt_end, left clench
+2020-05-08-17:54:59:741, 1588974899741, prompt_end, right roll
+2020-05-08-17:55:02:966, 1588974902966, prompt_end, right swipe
+2020-05-08-17:55:06:210, 1588974906210, prompt_end, right clench
+2020-05-08-17:55:09:441, 1588974909441, prompt_end, left roll
+2020-05-08-17:55:12:658, 1588974912658, prompt_end, left clench
+2020-05-08-17:55:15:882, 1588974915882, prompt_end, right swipe
+2020-05-08-17:55:19:130, 1588974919130, prompt_end, right swipe
+2020-05-08-17:55:22:368, 1588974922368, prompt_end, left movement
+2020-05-08-17:55:25:600, 1588974925600, prompt_end, left clench
+2020-05-08-17:55:28:819, 1588974928819, prompt_end, left swipe
+2020-05-08-17:55:32:045, 1588974932045, prompt_end, left swipe
+2020-05-08-17:55:35:337, 1588974935337, prompt_end, left movement
+2020-05-08-17:55:38:605, 1588974938605, prompt_end, left swipe
+2020-05-08-17:55:41:836, 1588974941836, prompt_end, right movement
+2020-05-08-17:55:45:083, 1588974945083, prompt_end, left clench
+2020-05-08-17:55:48:320, 1588974948320, prompt_end, right swipe
+2020-05-08-17:55:51:549, 1588974951549, prompt_end, left movement
+2020-05-08-17:55:54:779, 1588974954779, prompt_end, left swipe
+2020-05-08-17:55:58:000, 1588974958000, prompt_end, left clench
+2020-05-08-17:56:01:213, 1588974961213, prompt_end, left roll
+2020-05-08-17:56:04:451, 1588974964451, prompt_end, left roll
+2020-05-08-17:56:07:682, 1588974967682, prompt_end, left movement
+2020-05-08-17:56:10:912, 1588974970912, prompt_end, left roll
+2020-05-08-17:56:14:134, 1588974974134, prompt_end, right roll
+2020-05-08-17:56:17:361, 1588974977361, prompt_end, left clench
+2020-05-08-17:56:20:592, 1588974980592, prompt_end, left swipe
+2020-05-08-17:56:23:818, 1588974983818, prompt_end, left roll
+2020-05-08-17:56:27:045, 1588974987045, prompt_end, left clench
+2020-05-08-17:56:30:261, 1588974990261, prompt_end, right movement
+2020-05-08-17:56:33:496, 1588974993496, prompt_end, left swipe
+2020-05-08-17:56:36:728, 1588974996728, prompt_end, right movement
+2020-05-08-17:56:39:947, 1588974999947, prompt_end, right swipe
+2020-05-08-17:56:43:171, 1588975003171, prompt_end, right movement
+2020-05-08-17:56:46:378, 1588975006378, prompt_end, left clench
+2020-05-08-17:56:49:620, 1588975009620, prompt_end, left swipe
+2020-05-08-17:56:52:846, 1588975012846, prompt_end, left clench
+2020-05-08-17:56:56:062, 1588975016062, prompt_end, left swipe
+2020-05-08-17:56:59:290, 1588975019290, prompt_end, left roll
+2020-05-08-17:57:02:527, 1588975022527, prompt_end, left movement
+2020-05-08-17:57:05:748, 1588975025748, prompt_end, right swipe
+2020-05-08-17:57:08:971, 1588975028971, prompt_end, left swipe
+2020-05-08-17:57:12:204, 1588975032204, prompt_end, right clench
+2020-05-08-17:57:15:435, 1588975035435, prompt_end, right roll
+2020-05-08-17:57:18:662, 1588975038662, prompt_end, right movement
+2020-05-08-17:57:21:895, 1588975041895, prompt_end, left roll
+2020-05-08-17:57:25:125, 1588975045125, prompt_end, left movement
+2020-05-08-17:57:28:348, 1588975048348, prompt_end, right roll
+2020-05-08-17:57:31:579, 1588975051579, prompt_end, right swipe
+2020-05-08-17:57:34:822, 1588975054822, prompt_end, left swipe
+2020-05-08-17:57:38:055, 1588975058055, prompt_end, right swipe
+2020-05-08-17:57:41:288, 1588975061288, prompt_end, left swipe
+2020-05-08-17:57:44:519, 1588975064519, prompt_end, right roll
+2020-05-08-17:57:47:755, 1588975067755, prompt_end, left movement
+2020-05-08-17:57:51:006, 1588975071006, prompt_end, right roll
+2020-05-08-17:57:54:318, 1588975074318, prompt_end, right clench
+2020-05-08-17:57:57:561, 1588975077561, prompt_end, left swipe
+2020-05-08-17:58:00:797, 1588975080797, prompt_end, right swipe
+2020-05-08-17:58:04:036, 1588975084036, prompt_end, left roll
+2020-05-08-17:58:07:267, 1588975087267, prompt_end, left movement
+2020-05-08-17:58:10:501, 1588975090501, prompt_end, right clench
+2020-05-08-17:58:13:758, 1588975093758, prompt_end, left movement
+2020-05-08-17:58:17:040, 1588975097040, prompt_end, right roll
+2020-05-08-17:58:20:309, 1588975100309, prompt_end, left clench
+2020-05-08-17:58:23:574, 1588975103574, prompt_end, right swipe
+2020-05-08-17:58:26:823, 1588975106823, prompt_end, right roll
+2020-05-08-17:58:30:116, 1588975110116, prompt_end, right roll
+2020-05-08-17:58:33:350, 1588975113350, prompt_end, right clench
+2020-05-08-17:58:36:591, 1588975116591, prompt_end, right roll
+2020-05-08-17:58:39:830, 1588975119830, prompt_end, left swipe
+2020-05-08-17:58:43:105, 1588975123105, prompt_end, left movement
+2020-05-08-17:58:46:396, 1588975126396, prompt_end, right clench
+2020-05-08-17:58:49:683, 1588975129683, prompt_end, right roll
+2020-05-08-17:58:52:950, 1588975132950, prompt_end, right swipe
+2020-05-08-17:58:56:192, 1588975136192, prompt_end, left roll
+2020-05-08-17:58:59:451, 1588975139451, prompt_end, left roll
+2020-05-08-17:59:02:690, 1588975142690, prompt_end, right movement
+2020-05-08-17:59:05:943, 1588975145943, prompt_end, right roll
+2020-05-08-17:59:09:179, 1588975149179, prompt_end, right roll
+2020-05-08-17:59:12:442, 1588975152442, prompt_end, right movement
+2020-05-08-17:59:15:688, 1588975155688, prompt_end, right clench
+2020-05-08-17:59:19:072, 1588975159072, prompt_end, left swipe
+2020-05-08-17:59:22:455, 1588975162455, prompt_end, left roll
+2020-05-08-17:59:25:828, 1588975165828, prompt_end, left roll
+2020-05-08-17:59:29:219, 1588975169219, prompt_end, left clench
+2020-05-08-17:59:32:613, 1588975172613, prompt_end, right movement
+2020-05-08-17:59:35:988, 1588975175988, prompt_end, left movement
+2020-05-08-17:59:39:404, 1588975179404, prompt_end, right roll
+2020-05-08-17:59:42:777, 1588975182777, prompt_end, right movement
+2020-05-08-17:59:46:155, 1588975186155, prompt_end, right clench
+2020-05-08-17:59:49:522, 1588975189522, prompt_end, right clench
+2020-05-08-17:59:52:887, 1588975192887, prompt_end, left swipe
+2020-05-08-17:59:56:280, 1588975196280, prompt_end, left movement
+2020-05-08-17:59:59:646, 1588975199646, prompt_end, left movement
+2020-05-08-18:00:03:013, 1588975203013, prompt_end, right swipe

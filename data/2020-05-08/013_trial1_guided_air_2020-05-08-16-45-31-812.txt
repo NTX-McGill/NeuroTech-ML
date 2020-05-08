@@ -1,0 +1,319 @@
+{
+    "id": "013",
+    "trial": "1",
+    "mode": "Guided-in-the-air",
+    "datetime": "2020-05-08-16:45:31:812",
+    "timestamp": "1588970731812",
+    "prompts": "Abstract\u2014 Wheelchairs controlled using electroencephalog- raphy (EEG) have been proposed to facilitate independent mobility for people with motor disabilities. To date, the majority of these systems have relied on distracting external stimuli such as flashing lights and expensive, medical-grade EEG amplifiers. We propose a wheelchair prototype that uses hand motor imagery (MI) and jaw clench data collected with a consumer-grade EEG system to generate left, right, forward, and stop commands. The signal is classified with logistic regression, and using only two scalp electrodes and a two- second window size, we obtained a mean subject accuracy of 60\u00b15% and a peak subject accuracy of 82\u00b13%. We introduce a novel control-flow paradigm relying on an intermediate control state, engaged by jaw clenching, to reduce the complexity of our classification problem, as well as real-time spectrograms for neurofeedback training. Additionally, we supplement our system with automated driving features, a location tracker, and a heart-rate monitor to increase usability and safety.",
+    "notes": ""
+}
+datetime, timestamp, event, hand, finger, key
+2020-05-08-16:45:33:813, 1588970733813, prompt_end, left, pinkie, a
+2020-05-08-16:45:36:086, 1588970736086, prompt_end, left, index finger, b
+2020-05-08-16:45:38:324, 1588970738324, prompt_end, left, ring finger, s
+2020-05-08-16:45:40:587, 1588970740587, prompt_end, left, index finger, t
+2020-05-08-16:45:42:805, 1588970742805, prompt_end, left, index finger, r
+2020-05-08-16:45:45:020, 1588970745020, prompt_end, left, pinkie, a
+2020-05-08-16:45:47:239, 1588970747239, prompt_end, left, middle finger, c
+2020-05-08-16:45:49:437, 1588970749437, prompt_end, left, index finger, t
+2020-05-08-16:45:51:631, 1588970751631, prompt_end, right, thumb, space
+2020-05-08-16:45:53:845, 1588970753845, prompt_end, left, ring finger, w
+2020-05-08-16:45:56:054, 1588970756054, prompt_end, right, index finger, h
+2020-05-08-16:45:58:279, 1588970758279, prompt_end, left, middle finger, e
+2020-05-08-16:46:00:491, 1588970760491, prompt_end, left, middle finger, e
+2020-05-08-16:46:02:713, 1588970762713, prompt_end, right, ring finger, l
+2020-05-08-16:46:04:926, 1588970764926, prompt_end, left, middle finger, c
+2020-05-08-16:46:07:141, 1588970767141, prompt_end, right, index finger, h
+2020-05-08-16:46:09:352, 1588970769352, prompt_end, left, pinkie, a
+2020-05-08-16:46:11:644, 1588970771644, prompt_end, right, middle finger, i
+2020-05-08-16:46:13:970, 1588970773970, prompt_end, left, index finger, r
+2020-05-08-16:46:16:314, 1588970776314, prompt_end, left, ring finger, s
+2020-05-08-16:46:18:727, 1588970778727, prompt_end, right, thumb, space
+2020-05-08-16:46:20:955, 1588970780955, prompt_end, left, middle finger, c
+2020-05-08-16:46:23:183, 1588970783183, prompt_end, right, ring finger, o
+2020-05-08-16:46:25:380, 1588970785380, prompt_end, right, index finger, n
+2020-05-08-16:46:27:581, 1588970787581, prompt_end, left, index finger, t
+2020-05-08-16:46:29:803, 1588970789803, prompt_end, left, index finger, r
+2020-05-08-16:46:32:067, 1588970792067, prompt_end, right, ring finger, o
+2020-05-08-16:46:34:281, 1588970794281, prompt_end, right, ring finger, l
+2020-05-08-16:46:36:504, 1588970796504, prompt_end, right, ring finger, l
+2020-05-08-16:46:38:725, 1588970798725, prompt_end, left, middle finger, e
+2020-05-08-16:46:40:957, 1588970800957, prompt_end, left, middle finger, d
+2020-05-08-16:46:43:186, 1588970803186, prompt_end, right, thumb, space
+2020-05-08-16:46:45:419, 1588970805419, prompt_end, right, index finger, u
+2020-05-08-16:46:47:631, 1588970807631, prompt_end, left, ring finger, s
+2020-05-08-16:46:49:858, 1588970809858, prompt_end, right, middle finger, i
+2020-05-08-16:46:52:073, 1588970812073, prompt_end, right, index finger, n
+2020-05-08-16:46:54:320, 1588970814320, prompt_end, left, index finger, g
+2020-05-08-16:46:56:575, 1588970816575, prompt_end, right, thumb, space
+2020-05-08-16:46:58:810, 1588970818810, prompt_end, left, middle finger, e
+2020-05-08-16:47:01:035, 1588970821035, prompt_end, right, ring finger, l
+2020-05-08-16:47:03:243, 1588970823243, prompt_end, left, middle finger, e
+2020-05-08-16:47:05:473, 1588970825473, prompt_end, left, middle finger, c
+2020-05-08-16:47:07:700, 1588970827700, prompt_end, left, index finger, t
+2020-05-08-16:47:09:935, 1588970829935, prompt_end, left, index finger, r
+2020-05-08-16:47:12:167, 1588970832167, prompt_end, right, ring finger, o
+2020-05-08-16:47:14:389, 1588970834389, prompt_end, left, middle finger, e
+2020-05-08-16:47:16:606, 1588970836606, prompt_end, right, index finger, n
+2020-05-08-16:47:18:848, 1588970838848, prompt_end, left, middle finger, c
+2020-05-08-16:47:21:089, 1588970841089, prompt_end, left, middle finger, e
+2020-05-08-16:47:23:333, 1588970843333, prompt_end, right, pinkie, p
+2020-05-08-16:47:25:594, 1588970845594, prompt_end, right, index finger, h
+2020-05-08-16:47:27:822, 1588970847822, prompt_end, left, pinkie, a
+2020-05-08-16:47:30:028, 1588970850028, prompt_end, right, ring finger, l
+2020-05-08-16:47:32:227, 1588970852227, prompt_end, right, ring finger, o
+2020-05-08-16:47:34:441, 1588970854441, prompt_end, left, index finger, g
+2020-05-08-16:47:36:686, 1588970856686, prompt_end, right, thumb, space
+2020-05-08-16:47:38:925, 1588970858925, prompt_end, left, index finger, r
+2020-05-08-16:47:41:156, 1588970861156, prompt_end, left, pinkie, a
+2020-05-08-16:47:43:381, 1588970863381, prompt_end, right, pinkie, p
+2020-05-08-16:47:45:627, 1588970865627, prompt_end, right, index finger, h
+2020-05-08-16:47:47:891, 1588970867891, prompt_end, right, index finger, y
+2020-05-08-16:47:50:144, 1588970870144, prompt_end, right, thumb, space
+2020-05-08-16:47:52:390, 1588970872390, prompt_end, left, middle finger, e
+2020-05-08-16:47:54:627, 1588970874627, prompt_end, left, middle finger, e
+2020-05-08-16:47:56:857, 1588970876857, prompt_end, left, index finger, g
+2020-05-08-16:47:59:058, 1588970879058, prompt_end, right, thumb, space
+2020-05-08-16:48:01:266, 1588970881266, prompt_end, right, index finger, h
+2020-05-08-16:48:03:468, 1588970883468, prompt_end, left, pinkie, a
+2020-05-08-16:48:05:665, 1588970885665, prompt_end, left, index finger, v
+2020-05-08-16:48:07:873, 1588970887873, prompt_end, left, middle finger, e
+2020-05-08-16:48:10:094, 1588970890094, prompt_end, right, thumb, space
+2020-05-08-16:48:12:324, 1588970892324, prompt_end, left, index finger, b
+2020-05-08-16:48:14:570, 1588970894570, prompt_end, left, middle finger, e
+2020-05-08-16:48:16:806, 1588970896806, prompt_end, left, middle finger, e
+2020-05-08-16:48:19:051, 1588970899051, prompt_end, right, index finger, n
+2020-05-08-16:48:21:295, 1588970901295, prompt_end, right, thumb, space
+2020-05-08-16:48:23:537, 1588970903537, prompt_end, right, pinkie, p
+2020-05-08-16:48:25:767, 1588970905767, prompt_end, left, index finger, r
+2020-05-08-16:48:28:005, 1588970908005, prompt_end, right, ring finger, o
+2020-05-08-16:48:30:247, 1588970910247, prompt_end, right, pinkie, p
+2020-05-08-16:48:32:490, 1588970912490, prompt_end, right, ring finger, o
+2020-05-08-16:48:34:732, 1588970914732, prompt_end, left, ring finger, s
+2020-05-08-16:48:36:979, 1588970916979, prompt_end, left, middle finger, e
+2020-05-08-16:48:39:220, 1588970919220, prompt_end, left, middle finger, d
+2020-05-08-16:48:41:446, 1588970921446, prompt_end, right, thumb, space
+2020-05-08-16:48:43:676, 1588970923676, prompt_end, left, index finger, t
+2020-05-08-16:48:45:933, 1588970925933, prompt_end, right, ring finger, o
+2020-05-08-16:48:48:165, 1588970928165, prompt_end, right, thumb, space
+2020-05-08-16:48:50:409, 1588970930409, prompt_end, left, index finger, f
+2020-05-08-16:48:52:669, 1588970932669, prompt_end, left, pinkie, a
+2020-05-08-16:48:54:910, 1588970934910, prompt_end, left, middle finger, c
+2020-05-08-16:49:05:502, 1588970945502, prompt_end, right, middle finger, i
+2020-05-08-16:49:08:291, 1588970948291, prompt_end, right, ring finger, l
+2020-05-08-16:49:10:594, 1588970950594, prompt_end, right, middle finger, i
+2020-05-08-16:49:12:851, 1588970952851, prompt_end, left, index finger, t
+2020-05-08-16:49:15:084, 1588970955084, prompt_end, left, pinkie, a
+2020-05-08-16:49:17:299, 1588970957299, prompt_end, left, index finger, t
+2020-05-08-16:49:19:548, 1588970959548, prompt_end, left, middle finger, e
+2020-05-08-16:49:21:778, 1588970961778, prompt_end, right, thumb, space
+2020-05-08-16:49:24:030, 1588970964030, prompt_end, right, middle finger, i
+2020-05-08-16:49:26:276, 1588970966276, prompt_end, right, index finger, n
+2020-05-08-16:49:28:534, 1588970968534, prompt_end, left, middle finger, d
+2020-05-08-16:49:30:804, 1588970970804, prompt_end, left, middle finger, e
+2020-05-08-16:49:33:044, 1588970973044, prompt_end, right, pinkie, p
+2020-05-08-16:49:35:285, 1588970975285, prompt_end, left, middle finger, e
+2020-05-08-16:49:37:539, 1588970977539, prompt_end, right, index finger, n
+2020-05-08-16:49:39:785, 1588970979785, prompt_end, left, middle finger, d
+2020-05-08-16:49:42:044, 1588970982044, prompt_end, left, middle finger, e
+2020-05-08-16:49:44:300, 1588970984300, prompt_end, right, index finger, n
+2020-05-08-16:49:46:548, 1588970986548, prompt_end, left, index finger, t
+2020-05-08-16:49:48:778, 1588970988778, prompt_end, right, thumb, space
+2020-05-08-16:49:51:001, 1588970991001, prompt_end, right, index finger, m
+2020-05-08-16:49:53:222, 1588970993222, prompt_end, right, ring finger, o
+2020-05-08-16:49:55:442, 1588970995442, prompt_end, left, index finger, b
+2020-05-08-16:49:57:659, 1588970997659, prompt_end, right, middle finger, i
+2020-05-08-16:49:59:894, 1588970999894, prompt_end, right, ring finger, l
+2020-05-08-16:50:02:203, 1588971002203, prompt_end, right, middle finger, i
+2020-05-08-16:50:04:452, 1588971004452, prompt_end, left, index finger, t
+2020-05-08-16:50:06:698, 1588971006698, prompt_end, right, index finger, y
+2020-05-08-16:50:08:950, 1588971008950, prompt_end, right, thumb, space
+2020-05-08-16:50:11:214, 1588971011214, prompt_end, left, index finger, f
+2020-05-08-16:50:13:444, 1588971013444, prompt_end, right, ring finger, o
+2020-05-08-16:50:15:670, 1588971015670, prompt_end, left, index finger, r
+2020-05-08-16:50:17:917, 1588971017917, prompt_end, right, thumb, space
+2020-05-08-16:50:20:176, 1588971020176, prompt_end, right, pinkie, p
+2020-05-08-16:50:22:428, 1588971022428, prompt_end, left, middle finger, e
+2020-05-08-16:50:24:688, 1588971024688, prompt_end, right, ring finger, o
+2020-05-08-16:50:26:952, 1588971026952, prompt_end, right, pinkie, p
+2020-05-08-16:50:29:202, 1588971029202, prompt_end, right, ring finger, l
+2020-05-08-16:50:31:444, 1588971031444, prompt_end, left, middle finger, e
+2020-05-08-16:50:33:691, 1588971033691, prompt_end, right, thumb, space
+2020-05-08-16:50:35:978, 1588971035978, prompt_end, left, ring finger, w
+2020-05-08-16:50:38:274, 1588971038274, prompt_end, right, middle finger, i
+2020-05-08-16:50:40:543, 1588971040543, prompt_end, left, index finger, t
+2020-05-08-16:50:42:835, 1588971042835, prompt_end, right, index finger, h
+2020-05-08-16:50:45:168, 1588971045168, prompt_end, right, thumb, space
+2020-05-08-16:50:47:503, 1588971047503, prompt_end, right, index finger, m
+2020-05-08-16:50:49:827, 1588971049827, prompt_end, right, ring finger, o
+2020-05-08-16:50:52:154, 1588971052154, prompt_end, left, index finger, t
+2020-05-08-16:50:54:381, 1588971054381, prompt_end, right, ring finger, o
+2020-05-08-16:50:56:647, 1588971056647, prompt_end, left, index finger, r
+2020-05-08-16:50:58:958, 1588971058958, prompt_end, right, thumb, space
+2020-05-08-16:51:01:290, 1588971061290, prompt_end, left, middle finger, d
+2020-05-08-16:51:03:602, 1588971063602, prompt_end, right, middle finger, i
+2020-05-08-16:51:05:928, 1588971065928, prompt_end, left, ring finger, s
+2020-05-08-16:51:08:246, 1588971068246, prompt_end, left, pinkie, a
+2020-05-08-16:51:10:593, 1588971070593, prompt_end, left, index finger, b
+2020-05-08-16:51:12:928, 1588971072928, prompt_end, right, middle finger, i
+2020-05-08-16:51:15:269, 1588971075269, prompt_end, right, ring finger, l
+2020-05-08-16:51:17:602, 1588971077602, prompt_end, right, middle finger, i
+2020-05-08-16:51:19:935, 1588971079935, prompt_end, left, index finger, t
+2020-05-08-16:51:22:180, 1588971082180, prompt_end, right, middle finger, i
+2020-05-08-16:51:24:402, 1588971084402, prompt_end, left, middle finger, e
+2020-05-08-16:51:26:636, 1588971086636, prompt_end, left, ring finger, s
+2020-05-08-16:51:28:887, 1588971088887, prompt_end, right, thumb, space
+2020-05-08-16:51:31:163, 1588971091163, prompt_end, left, index finger, t
+2020-05-08-16:51:33:469, 1588971093469, prompt_end, right, ring finger, o
+2020-05-08-16:51:35:805, 1588971095805, prompt_end, right, thumb, space
+2020-05-08-16:51:38:145, 1588971098145, prompt_end, left, middle finger, d
+2020-05-08-16:51:40:478, 1588971100478, prompt_end, left, pinkie, a
+2020-05-08-16:51:42:819, 1588971102819, prompt_end, left, index finger, t
+2020-05-08-16:51:45:145, 1588971105145, prompt_end, left, middle finger, e
+2020-05-08-16:51:47:478, 1588971107478, prompt_end, right, thumb, space
+2020-05-08-16:51:49:812, 1588971109812, prompt_end, left, index finger, t
+2020-05-08-16:51:52:093, 1588971112093, prompt_end, right, index finger, h
+2020-05-08-16:51:54:384, 1588971114384, prompt_end, left, middle finger, e
+2020-05-08-16:51:56:705, 1588971116705, prompt_end, right, thumb, space
+2020-05-08-16:51:58:969, 1588971118969, prompt_end, right, index finger, m
+2020-05-08-16:52:01:233, 1588971121233, prompt_end, left, pinkie, a
+2020-05-08-16:52:03:481, 1588971123481, prompt_end, right, index finger, j
+2020-05-08-16:52:05:736, 1588971125736, prompt_end, right, ring finger, o
+2020-05-08-16:52:07:999, 1588971127999, prompt_end, left, index finger, r
+2020-05-08-16:52:10:274, 1588971130274, prompt_end, right, middle finger, i
+2020-05-08-16:52:12:565, 1588971132565, prompt_end, left, index finger, t
+2020-05-08-16:52:14:864, 1588971134864, prompt_end, right, index finger, y
+2020-05-08-16:52:17:137, 1588971137137, prompt_end, right, thumb, space
+2020-05-08-16:52:19:448, 1588971139448, prompt_end, right, ring finger, o
+2020-05-08-16:52:21:748, 1588971141748, prompt_end, left, index finger, f
+2020-05-08-16:52:24:048, 1588971144048, prompt_end, right, thumb, space
+2020-05-08-16:52:26:361, 1588971146361, prompt_end, left, index finger, t
+2020-05-08-16:52:28:675, 1588971148675, prompt_end, right, index finger, h
+2020-05-08-16:52:30:971, 1588971150971, prompt_end, left, middle finger, e
+2020-05-08-16:52:33:291, 1588971153291, prompt_end, left, ring finger, s
+2020-05-08-16:52:35:611, 1588971155611, prompt_end, left, middle finger, e
+2020-05-08-16:52:37:924, 1588971157924, prompt_end, right, thumb, space
+2020-05-08-16:52:40:231, 1588971160231, prompt_end, left, ring finger, s
+2020-05-08-16:52:42:539, 1588971162539, prompt_end, right, index finger, y
+2020-05-08-16:52:44:837, 1588971164837, prompt_end, left, ring finger, s
+2020-05-08-16:52:47:139, 1588971167139, prompt_end, left, index finger, t
+2020-05-08-16:52:49:446, 1588971169446, prompt_end, left, middle finger, e
+2020-05-08-16:52:51:708, 1588971171708, prompt_end, right, index finger, m
+2020-05-08-16:52:54:009, 1588971174009, prompt_end, left, ring finger, s
+2020-05-08-16:52:56:304, 1588971176304, prompt_end, right, thumb, space
+2020-05-08-16:52:58:624, 1588971178624, prompt_end, right, index finger, h
+2020-05-08-16:53:00:932, 1588971180932, prompt_end, left, pinkie, a
+2020-05-08-16:53:03:241, 1588971183241, prompt_end, left, index finger, v
+2020-05-08-16:53:05:559, 1588971185559, prompt_end, left, middle finger, e
+2020-05-08-16:53:07:861, 1588971187861, prompt_end, right, thumb, space
+2020-05-08-16:53:10:165, 1588971190165, prompt_end, left, index finger, r
+2020-05-08-16:53:12:528, 1588971192528, prompt_end, left, middle finger, e
+2020-05-08-16:53:14:840, 1588971194840, prompt_end, right, ring finger, l
+2020-05-08-16:53:17:150, 1588971197150, prompt_end, right, middle finger, i
+2020-05-08-16:53:19:456, 1588971199456, prompt_end, left, middle finger, e
+2020-05-08-16:53:21:783, 1588971201783, prompt_end, left, middle finger, d
+2020-05-08-16:53:24:090, 1588971204090, prompt_end, right, thumb, space
+2020-05-08-16:53:26:422, 1588971206422, prompt_end, right, ring finger, o
+2020-05-08-16:53:28:738, 1588971208738, prompt_end, right, index finger, n
+2020-05-08-16:53:31:064, 1588971211064, prompt_end, right, thumb, space
+2020-05-08-16:53:33:394, 1588971213394, prompt_end, left, middle finger, d
+2020-05-08-16:53:35:710, 1588971215710, prompt_end, right, middle finger, i
+2020-05-08-16:53:38:013, 1588971218013, prompt_end, left, ring finger, s
+2020-05-08-16:53:40:335, 1588971220335, prompt_end, left, index finger, t
+2020-05-08-16:53:42:656, 1588971222656, prompt_end, left, index finger, r
+2020-05-08-16:53:44:987, 1588971224987, prompt_end, left, pinkie, a
+2020-05-08-16:53:47:306, 1588971227306, prompt_end, left, middle finger, c
+2020-05-08-16:53:49:632, 1588971229632, prompt_end, left, index finger, t
+2020-05-08-16:53:51:956, 1588971231956, prompt_end, right, middle finger, i
+2020-05-08-16:53:54:280, 1588971234280, prompt_end, right, index finger, n
+2020-05-08-16:53:56:602, 1588971236602, prompt_end, left, index finger, g
+2020-05-08-16:53:58:911, 1588971238911, prompt_end, right, thumb, space
+2020-05-08-16:54:01:240, 1588971241240, prompt_end, left, middle finger, e
+2020-05-08-16:54:03:576, 1588971243576, prompt_end, left, ring finger, x
+2020-05-08-16:54:05:881, 1588971245881, prompt_end, left, index finger, t
+2020-05-08-16:54:08:219, 1588971248219, prompt_end, left, middle finger, e
+2020-05-08-16:54:10:546, 1588971250546, prompt_end, left, index finger, r
+2020-05-08-16:54:12:882, 1588971252882, prompt_end, right, index finger, n
+2020-05-08-16:54:15:211, 1588971255211, prompt_end, left, pinkie, a
+2020-05-08-16:54:17:550, 1588971257550, prompt_end, right, ring finger, l
+2020-05-08-16:54:19:871, 1588971259871, prompt_end, right, thumb, space
+2020-05-08-16:54:22:201, 1588971262201, prompt_end, left, ring finger, s
+2020-05-08-16:54:24:508, 1588971264508, prompt_end, left, index finger, t
+2020-05-08-16:54:26:833, 1588971266833, prompt_end, right, middle finger, i
+2020-05-08-16:54:29:172, 1588971269172, prompt_end, right, index finger, m
+2020-05-08-16:54:31:492, 1588971271492, prompt_end, right, index finger, u
+2020-05-08-16:54:33:811, 1588971273811, prompt_end, right, ring finger, l
+2020-05-08-16:54:36:197, 1588971276197, prompt_end, right, middle finger, i
+2020-05-08-16:54:38:538, 1588971278538, prompt_end, right, thumb, space
+2020-05-08-16:54:40:870, 1588971280870, prompt_end, left, ring finger, s
+2020-05-08-16:54:43:205, 1588971283205, prompt_end, right, index finger, u
+2020-05-08-16:54:45:534, 1588971285534, prompt_end, left, middle finger, c
+2020-05-08-16:54:47:866, 1588971287866, prompt_end, right, index finger, h
+2020-05-08-16:54:50:211, 1588971290211, prompt_end, right, thumb, space
+2020-05-08-16:54:52:549, 1588971292549, prompt_end, left, pinkie, a
+2020-05-08-16:54:54:894, 1588971294894, prompt_end, left, ring finger, s
+2020-05-08-16:54:57:222, 1588971297222, prompt_end, right, thumb, space
+2020-05-08-16:54:59:548, 1588971299548, prompt_end, left, index finger, f
+2020-05-08-16:55:01:935, 1588971301935, prompt_end, right, ring finger, l
+2020-05-08-16:55:04:251, 1588971304251, prompt_end, left, pinkie, a
+2020-05-08-16:55:06:596, 1588971306596, prompt_end, left, ring finger, s
+2020-05-08-16:55:08:932, 1588971308932, prompt_end, right, index finger, h
+2020-05-08-16:55:11:257, 1588971311257, prompt_end, right, middle finger, i
+2020-05-08-16:55:13:663, 1588971313663, prompt_end, right, index finger, n
+2020-05-08-16:55:15:994, 1588971315994, prompt_end, left, index finger, g
+2020-05-08-16:55:18:335, 1588971318335, prompt_end, right, thumb, space
+2020-05-08-16:55:20:673, 1588971320673, prompt_end, right, ring finger, l
+2020-05-08-16:55:23:019, 1588971323019, prompt_end, right, middle finger, i
+2020-05-08-16:55:25:348, 1588971325348, prompt_end, left, index finger, g
+2020-05-08-16:55:27:686, 1588971327686, prompt_end, right, index finger, h
+2020-05-08-16:55:30:025, 1588971330025, prompt_end, left, index finger, t
+2020-05-08-16:55:32:371, 1588971332371, prompt_end, left, ring finger, s
+2020-05-08-16:55:34:715, 1588971334715, prompt_end, right, thumb, space
+2020-05-08-16:55:37:063, 1588971337063, prompt_end, left, pinkie, a
+2020-05-08-16:55:39:400, 1588971339400, prompt_end, right, index finger, n
+2020-05-08-16:55:41:736, 1588971341736, prompt_end, left, middle finger, d
+2020-05-08-16:55:44:087, 1588971344087, prompt_end, right, thumb, space
+2020-05-08-16:55:46:435, 1588971346435, prompt_end, left, middle finger, e
+2020-05-08-16:55:48:794, 1588971348794, prompt_end, left, ring finger, x
+2020-05-08-16:55:51:127, 1588971351127, prompt_end, right, pinkie, p
+2020-05-08-16:55:53:466, 1588971353466, prompt_end, left, middle finger, e
+2020-05-08-16:55:55:821, 1588971355821, prompt_end, right, index finger, n
+2020-05-08-16:55:58:161, 1588971358161, prompt_end, left, ring finger, s
+2020-05-08-16:56:00:506, 1588971360506, prompt_end, right, middle finger, i
+2020-05-08-16:56:02:860, 1588971362860, prompt_end, left, index finger, v
+2020-05-08-16:56:05:209, 1588971365209, prompt_end, left, middle finger, e
+2020-05-08-16:56:07:563, 1588971367563, prompt_end, right, thumb, space
+2020-05-08-16:56:09:912, 1588971369912, prompt_end, right, index finger, m
+2020-05-08-16:56:12:268, 1588971372268, prompt_end, left, middle finger, e
+2020-05-08-16:56:14:626, 1588971374626, prompt_end, left, middle finger, d
+2020-05-08-16:56:16:975, 1588971376975, prompt_end, right, middle finger, i
+2020-05-08-16:56:19:310, 1588971379310, prompt_end, left, middle finger, c
+2020-05-08-16:56:21:663, 1588971381663, prompt_end, left, pinkie, a
+2020-05-08-16:56:24:014, 1588971384014, prompt_end, right, ring finger, l
+2020-05-08-16:56:26:379, 1588971386379, prompt_end, left, index finger, g
+2020-05-08-16:56:28:729, 1588971388729, prompt_end, left, index finger, r
+2020-05-08-16:56:31:082, 1588971391082, prompt_end, left, pinkie, a
+2020-05-08-16:56:33:432, 1588971393432, prompt_end, left, middle finger, d
+2020-05-08-16:56:35:791, 1588971395791, prompt_end, left, middle finger, e
+2020-05-08-16:56:38:137, 1588971398137, prompt_end, right, thumb, space
+2020-05-08-16:56:40:499, 1588971400499, prompt_end, left, middle finger, e
+2020-05-08-16:56:42:864, 1588971402864, prompt_end, left, middle finger, e
+2020-05-08-16:56:45:213, 1588971405213, prompt_end, left, index finger, g
+2020-05-08-16:56:47:578, 1588971407578, prompt_end, right, thumb, space
+2020-05-08-16:56:49:932, 1588971409932, prompt_end, left, pinkie, a
+2020-05-08-16:56:52:293, 1588971412293, prompt_end, right, index finger, m
+2020-05-08-16:56:54:646, 1588971414646, prompt_end, right, pinkie, p
+2020-05-08-16:56:57:012, 1588971417012, prompt_end, right, ring finger, l
+2020-05-08-16:56:59:361, 1588971419361, prompt_end, right, middle finger, i
+2020-05-08-16:57:01:694, 1588971421694, prompt_end, left, index finger, f
+2020-05-08-16:57:04:088, 1588971424088, prompt_end, right, middle finger, i
+2020-05-08-16:57:06:486, 1588971426486, prompt_end, left, middle finger, e
+2020-05-08-16:57:08:879, 1588971428879, prompt_end, left, index finger, r
+2020-05-08-16:57:11:278, 1588971431278, prompt_end, left, ring finger, s
+2020-05-08-16:57:13:687, 1588971433687, prompt_end, right, thumb, space
+2020-05-08-16:57:16:077, 1588971436077, prompt_end, left, ring finger, w
+2020-05-08-16:57:18:445, 1588971438445, prompt_end, left, middle finger, e
+2020-05-08-16:57:20:812, 1588971440812, prompt_end, right, thumb, space
+2020-05-08-16:57:23:176, 1588971443176, prompt_end, right, pinkie, p
+2020-05-08-16:57:25:521, 1588971445521, prompt_end, left, index finger, r
+2020-05-08-16:57:27:814, 1588971447814, prompt_end, right, ring finger, o
