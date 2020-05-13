@@ -27,12 +27,14 @@ from siggy.constants import *
 from featurize import compute_features,all_names
 
 #ALL_FEATURES = ['iemg','mav','mmav','var', 'var_abs', 'rms','rms_3', 'wl', 'zc','ssc', 'wamp','freq_feats','freq_var']
-ALL_FEATURES = ['iemg', 'mav', 'mmav', 'var', 'var_abs', 'rms', 'rms_3', 'wl', 'zc', 'ssc', 'wamp', 'freq_feats', 'freq_feats_min_max', 'freq_var', 'freq_misc'] 
+ALL_FEATURES = ['iemg', 'mav','mmav', 'var', 'var_abs', 'rms', 'rms_3', 'wl', 'zc', 'ssc', 'wamp', 'freq_feats', 'freq_feats_min_max', 'freq_var', 'freq_misc'] 
 
 LABEL_MAP = {'k': 3, ';':5, 'j': 2, 'l': 4, 'p': 5, 'u': 2, 'o':4, '.': 4,
           'm':2, 'n': 2, '[':5, ']': 5, "'": 5, 'h': 2, '/':5, '\\':5,
           'a':10, 'c': 8, 'f': 7, 's': 9, 'd':8, 'e':8, 'g':7, 'q':10, 'r':7, 't':7, 'v':7, 'w':9, 'x':9, 'z':10
           }
+
+ # Don't use LR, SVC, NB. They have all data accuracies around: LR-40%. SVC-15%. NB-10%
 ALL_MODELS = {
           'LR': LogisticRegression,
           'LDA': LinearDiscriminantAnalysis,
@@ -445,23 +447,21 @@ if __name__ == '__main__':
     or you can load the features directly.    
     """
     
-    # features to use
+    # Features, models, and parameters to use
     feature_names = ALL_FEATURES[:-1]
-    # models to use
-    model_names = ['LDA', 'CART', 'LR', 'KNN', 'SVM', 'NB']
+    #model_names = ['LDA', 'CART', 'KNN']
+    model_names = ['KNN']
     test_all_folds=True
     n_splits=10
     validation_size = 0.20
-    
     
     window_size = 2
     channels = [1,2,3,4,5,6,7,8]
     label_name='finger'
     
-    # filename = 'windows_date_all_subject_all_mode_1_2.pkl'
-    # filename ='siggy/windows/windows_date_2020-03-08_subject_all_mode_4.pkl'
-    # filename = 'features_windows-2020-03-03.pkl'
-    filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good.pkl'
+    # filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good.pkl'
+    # filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_good_1000ms.pkl'    
+    filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good_1000ms.pkl'
 
     if 'features' in filename:
         ### MODE 1 : LOAD THE FEATURES DIRECTLY
@@ -493,8 +493,9 @@ if __name__ == '__main__':
     print_dataset_stats(features)
     cols = all_ch_names + [label_name] 
     
-    # Add grouping and shuffle so that folds are more randomized
-    # Hoping to lower standard deviation between folds
+    # Shuffle so that folds are more randomized lowering standard deviation between folds
+    # Grouping per finger is done first, as to minimize potential data leakage
+    # By avoiding data from the same event to appear in both the train and valid set
     groups = [df for _,df in features.groupby([(features.finger != features.finger.shift()).cumsum()])]
     random.shuffle(groups)
     features_shuffled = pd.concat(groups).reset_index(drop=True)
@@ -502,25 +503,20 @@ if __name__ == '__main__':
     X, Y = extract(features_shuffled, cols)
     results = test_all_models(X,Y, model_names, n_splits=n_splits)
     
-    """ UNCOMMENT TO RUN AND SAVE LDA
     #%% 
-    model_name = 'LDA'
+    model_name = 'KNN'
     classifier, result = run_test_confmat(X,Y, model_name, test_all_folds=test_all_folds, validation_size=validation_size,
                                           title='file : '+filename)
     
+    # Save model earlier in case of issues with plotting
+    save_model(classifier, feature_names, file_prefix)
     #%% 
-    
     subset = features[features['mode'] == 1]
 
     leave_subject_out_crossval(subset, cols)
     within_subject(features, cols)
     
-    save_model(classifier, feature_names, file_prefix)
-    
-    # models = ['LDA', 'SVM']
     # ids = [[1]]
     # modes = [[1], [2]]
     # feats = [['mav', 'zc', 'ssch', 'wl']]
     # test_results = grid_search(features, models, id_params=ids, mode_params=modes, feature_params=feats)
-    """
-
