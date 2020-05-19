@@ -373,7 +373,7 @@ def get_window_label(labels, win_start, win_len):
 
 def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, 
                    filter_type='real_time_filter', drop_rest=True, sample=True,
-                   baseline_sample_factor=1,method='max'):
+                   baseline_sample_factor=1, method='max'):
     """
         Combines data points from data into labeled windows
         inputs:
@@ -408,11 +408,6 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     
     #Create and label windows
     windows = []
-    window_labels = []
-    
-    # margin for labels
-    margin = min(0, SAMPLING_FREQ - length) // 2
-    print(margin)
     
     for i in range(0, emg.shape[0], shift):
         #Handle windowing the data
@@ -428,13 +423,35 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
         
         windows.append(w)
     
-        #Get all not-null labels in the window (if any) and choose which one to use for the window
-        w_labels = labels[i: i + length][labels[i: i + length].notnull()] # TODO: change this
-        window_labels.append(get_window_label(w_labels, i, length))
-    
     #Put everything into a DataFrame
     channel_names = [data.columns[i] for i in ch_ind]
     windows_df = pd.DataFrame(windows, columns=channel_names)
+    
+    #Real-time filter dataframe
+    if filter_type == 'real_time_filter':
+        windows_df = filter_dataframe(windows_df, filter_type=filter_type, start_of_overlap=shift)
+    else:
+        print('Not filtering!')
+        
+    # label windows
+    window_labels = []
+    
+    # margin for labels
+    # margin = max(0, SAMPLING_FREQ - length) // 2
+    # print(margin)
+    
+    for i_window, window in windows_df.iterrows():
+        
+        # TODO: label like this
+        # - if window is baseline, add label = 0
+        # - else find a label using 1s range centered around window
+        # note: sample_baseline will have to be done differently, just take a subset of rows where 'finger' is already 0
+        
+        i = i_window * shift
+        
+        #Get all not-null labels in the window (if any) and choose which one to use for the window
+        w_labels = labels[i: i + length][labels[i: i + length].notnull()] # TODO: increase range using margin
+        window_labels.append(get_window_label(w_labels, i, length))
     
     window_labels_series = pd.Series(window_labels)
     if label_col == 'keypressed':
@@ -449,11 +466,6 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     #All the windows have the same id and mode as labeled data
     windows_df['id'] = pd.Series(np.full(len(windows), data['id'][0]))
     windows_df['mode'] = pd.Series(np.full(len(windows), data['mode'][0]))
-    
-    #Real-time filter dataframe
-    # filtered_windows_df = windows_df
-    if filter_type == 'real_time_filter':
-        windows_df = filter_dataframe(windows_df, filter_type=filter_type, start_of_overlap=shift)
     
     # add finger=0 for random subset of baseline samples
     if sample:
@@ -730,7 +742,8 @@ def get_aggregate_baseline_windows(path_data,channels=[1,2,3,4,5,6,7,8],
 def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,6,7,8], 
                            dates=None, subjects=None, modes=None, trial_groups=None,
                            length=1, shift=0.1,
-                           save=False, path_out='.', filter_type='real_time_filter',
+                           save=False, path_out='.', append='',
+                           filter_type='real_time_filter',
                            method='max'):
     """
     Selects trials based on dates/subjects/modes, 
@@ -766,16 +779,19 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
     # make empty dataframe where windows from each file will be appended
     windows_all = pd.DataFrame()
     
+    n_files = len(selected_files)
+    
     # for each trial
-    for (file_data, file_log) in selected_files:
+    for i_file, (file_data, file_log) in enumerate(selected_files):
         try:
             # add windows
-            print('\nAdding windows for trial with following files:\n' + 
+            print('\nAdding windows for trial {} of {}:\n'.format(i_file+1, n_files) + 
               '\tdata: {}\n'.format(file_data) + 
               '\tlog: {}'.format(file_log))
             
             data = load_data(file_data, file_log, channels)
-            windows = create_windows(data, length=length, shift=shift, method=method)# returns filtered windows
+            windows = create_windows(data, length=length, shift=shift,
+                                     method=method, filter_type=filter_type)# returns filtered windows
             
             windows_all = windows_all.append(windows)
         except ValueError as e:
@@ -793,8 +809,12 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
                 to_add.append('_'.join(map(str, l)))
             else:
                 to_add.append('all')
-        filename = 'windows_date_{}_subject_{}_mode_{}_groups_{}_{}ms.pkl'.format(
-            to_add[0], to_add[1], to_add[2], to_add[3], int(length*1000))
+                
+        filename = 'windows_date_{}_subject_{}_mode_{}_groups_{}_{}ms{}{}.pkl'.format(
+            to_add[0], to_add[1], to_add[2], to_add[3],
+            int(length*1000),
+            '_unfiltered' if not (filter_type == 'real_time_filter') else '',
+            append)
         
         # get full path to output file
         filename = os.path.join(path_out, filename)
@@ -817,9 +837,10 @@ if __name__ == '__main__':
     
     path_data = '../data'
     # filenames = select_files(path_data, modes=[4])
-    w = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['good'], 
-                               length=1, shift=0.1,
-                               save=True, path_out='windows')
+    w = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['ok', 'good'], 
+                               length=0.2, shift=0.1,
+                               save=True, path_out='windows', append='_test',
+                               filter_type='real_time_filter')
 
     # b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
     
