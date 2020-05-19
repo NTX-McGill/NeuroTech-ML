@@ -409,6 +409,11 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     #Create and label windows
     windows = []
     window_labels = []
+    
+    # margin for labels
+    margin = min(0, SAMPLING_FREQ - length) // 2
+    print(margin)
+    
     for i in range(0, emg.shape[0], shift):
         #Handle windowing the data
         #Want w to be a list of ndarrays representing channels, 
@@ -424,7 +429,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
         windows.append(w)
     
         #Get all not-null labels in the window (if any) and choose which one to use for the window
-        w_labels = labels[i: i + length][labels[i: i + length].notnull()]
+        w_labels = labels[i: i + length][labels[i: i + length].notnull()] # TODO: change this
         window_labels.append(get_window_label(w_labels, i, length))
     
     #Put everything into a DataFrame
@@ -724,6 +729,7 @@ def get_aggregate_baseline_windows(path_data,channels=[1,2,3,4,5,6,7,8],
 
 def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,6,7,8], 
                            dates=None, subjects=None, modes=None, trial_groups=None,
+                           length=1, shift=0.1,
                            save=False, path_out='.', filter_type='real_time_filter',
                            method='max'):
     """
@@ -740,6 +746,7 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
     channels : list of integers, optional
         Channels to include in windows. The default is [1,2,3,4,5,6,7,8].
     dates, subjects, modes, trial_groups : parameters passed to select_files()
+    length, shift: parameters passed to create_windows()
     path_out : string, optional
         DESCRIPTION. The default is '.'.
     save : boolean, optional
@@ -768,7 +775,7 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
               '\tlog: {}'.format(file_log))
             
             data = load_data(file_data, file_log, channels)
-            windows = create_windows(data,method=method)# returns filtered windows
+            windows = create_windows(data, length=length, shift=shift, method=method)# returns filtered windows
             
             windows_all = windows_all.append(windows)
         except ValueError as e:
@@ -786,8 +793,8 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
                 to_add.append('_'.join(map(str, l)))
             else:
                 to_add.append('all')
-        filename = 'windows_date_{}_subject_{}_mode_{}_groups_{}.pkl'.format(
-            to_add[0], to_add[1], to_add[2], to_add[3])
+        filename = 'windows_date_{}_subject_{}_mode_{}_groups_{}_{}ms.pkl'.format(
+            to_add[0], to_add[1], to_add[2], to_add[3], int(length*1000))
         
         # get full path to output file
         filename = os.path.join(path_out, filename)
@@ -809,8 +816,10 @@ if __name__ == '__main__':
     # out = create_windows(test)
     
     path_data = '../data'
-    filenames = select_files(path_data, trial_groups=["ok", "good"])
-    # w_ok = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['good'], save=True, path_out='windows')
+    # filenames = select_files(path_data, modes=[4])
+    w = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['good'], 
+                               length=1, shift=0.1,
+                               save=True, path_out='windows')
 
     # b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
     
