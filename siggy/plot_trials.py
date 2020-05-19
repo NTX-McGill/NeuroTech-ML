@@ -15,6 +15,7 @@ from itertools import groupby
 import os
 from pathlib import Path
 import re
+import pickle
 
 from match_labels import select_files, load_data, create_windows
 from constants import MODE_MAP
@@ -32,6 +33,11 @@ seed = 3791
 
 channels = [1, 2, 3, 4, 5, 6, 7, 8]
 fingers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+size_axis_title = 36
+size_axis_labels = 24
+size_axis_ticks = 18
+size_fig_title = 'xx-large'
 
 def sample_df(df, column_name, value, n):
     '''
@@ -96,8 +102,8 @@ def plot_window(ax, row_data, channel_names):
     # add legend of channel names
     ax.legend(legend, ncol=2)
     
-    # add labels and set x/y-axis limits
-    ax.set_xlabel('Time sample')
+    # set x/y-axis limits
+    # ax.set_xlabel('Time sample', fontsize=size_axis_labels)
     ax.set_xlim(left=0, right=len(data))
     ax.set_ylim(bottom=ylim[0], top=ylim[1])
         
@@ -125,11 +131,10 @@ def plot_windows(df, channel_names, col_titles, title=None):
 
     '''
     
-    # get number of samples for each finger
-    n_samples = np.unique(np.array(df['finger']), return_counts=True)
-    
-    # get list of used fingers
-    used_fingers = np.unique(df['finger'])
+    # get list of used fingers and of associated number of samples
+    used_fingers = np.unique(np.array(df['finger']), return_counts=True)
+    n_samples = used_fingers[1]
+    used_fingers = used_fingers[0]
     n_fingers = len(used_fingers)
             
     # start figure
@@ -160,15 +165,19 @@ def plot_windows(df, channel_names, col_titles, title=None):
             ax = axes[i_row]
         else:
             ax = axes[i_row][i_col]
+            
+        ax.tick_params(axis='both', which='major', labelsize=size_axis_ticks)
         
         # plot window
         plot_window(ax, row_data, channel_names)
         
         # add subplot title for first row
         if i_row == 0:
-            ax.set_title(col_titles[finger])
+            ax.set_title(col_titles[finger], fontsize=size_axis_title)
         if i_col == 0:
-            ax.set_ylabel('Amplitude (\u03BCV)')
+            ax.set_ylabel('Amplitude (\u03BCV)', fontsize=size_axis_labels)
+        if i_row == n_rows - 1:
+            ax.set_xlabel('Time sample', fontsize=size_axis_labels)
     
     # 'turn off' subplots that are empty
     for i_col in range(n_cols):
@@ -180,8 +189,8 @@ def plot_windows(df, channel_names, col_titles, title=None):
     # add figure title
     if title is not None:
         left_space = 0.20/fig.get_size_inches()[0]
-        top_space = 0.25/fig.get_size_inches()[1]
-        fig.suptitle(title, fontsize='x-large',
+        top_space = 0.4/fig.get_size_inches()[1]
+        fig.suptitle(title, fontsize=size_fig_title,
                      x=0.5+left_space, y=(1-top_space/2))
     else:
         left_space = 0
@@ -191,7 +200,22 @@ def plot_windows(df, channel_names, col_titles, title=None):
         
     return fig
 
-def plot_trials(path_data, n, dates=None, subjects=None, modes=None, path_out='.', save=False, overwrite=False):
+def generate_col_titles(df_windows):
+    # get total number of keypresses per finger
+    finger_sequence = [g[0] for g in groupby(df_windows['finger'])]
+    dict_finger_count = {f:finger_sequence.count(f) for f in np.unique(finger_sequence)}
+
+    # generate column titles
+    col_titles = {}
+    for finger in np.unique(finger_sequence):
+        if finger == 0:
+            col_titles[finger] = fingers_map[finger] # baseline
+        else:
+            # col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
+            col_titles[finger] = '{}'.format(fingers_map[finger])
+    return col_titles
+
+def plot_trials(path_data, n, dates=None, subjects=None, modes=None, trial_groups=None, path_out='.', save=False, add_title=True, overwrite=False):
     '''
     Plots subset of windows for all trials with specific date/subject/mode.
     Optionally saves figure as .png file.
@@ -202,12 +226,14 @@ def plot_trials(path_data, n, dates=None, subjects=None, modes=None, path_out='.
         Path to data directory
     n : int
         Maximnum number of samples for each finger.
-    dates, subjects, mode : lists, optional
+    dates, subjects, mode, trial_groups : lists, optional
         Parameters for trial selection, passed to select_files()
     path_out : string, optional
         Path to output directory. The default is '.'.
     save : boolean, optional
         If True, plot is saved as .png file inside a subject directory. The default is False.
+    add_title : boolean, optional
+        If True, generates and adds a title for each trial, otherwise no title. The default is True.
     overwrite : boolean, optional
         If True, overwrites existing figures. The default is False.
 
@@ -217,7 +243,7 @@ def plot_trials(path_data, n, dates=None, subjects=None, modes=None, path_out='.
 
     '''
 
-    filenames = select_files(path_data=path_data, dates=dates, subjects=subjects, modes=modes)
+    filenames = select_files(path_data=path_data, dates=dates, subjects=subjects, modes=modes, trial_groups=trial_groups)
 
     for (filename_data, filename_log) in filenames:
 
@@ -263,19 +289,25 @@ def plot_trials(path_data, n, dates=None, subjects=None, modes=None, path_out='.
         mode_id = np.array(df_windows['mode'])[0]
         mode = mode_id_map[mode_id]
 
-        # get total number of keypresses per finger
-        finger_sequence = [g[0] for g in groupby(df_windows_all['finger'])]
-        dict_finger_count = {f:finger_sequence.count(f) for f in np.unique(finger_sequence)}
+        # # get total number of keypresses per finger
+        # finger_sequence = [g[0] for g in groupby(df_windows_all['finger'])]
+        # dict_finger_count = {f:finger_sequence.count(f) for f in np.unique(finger_sequence)}
 
-        # generate column titles
-        col_titles = {}
-        for finger in np.unique(finger_sequence):
-            if finger == 0:
-                col_titles[finger] = fingers_map[finger] # baseline
-            else:
-                col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
+        # # generate column titles
+        # col_titles = {}
+        # for finger in np.unique(finger_sequence):
+        #     if finger == 0:
+        #         col_titles[finger] = fingers_map[finger] # baseline
+        #     else:
+        #         col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
+        
+        col_titles = generate_col_titles(df_windows_all)
 
-        fig_title = 'Subject {}, {}, trial {} ({})'.format(subject_id, date, i_trial, mode)
+        if add_title:
+            fig_title = 'Subject {}, {}, trial {} ({})'.format(subject_id, date, i_trial, mode)
+        else:
+            fig_title = None
+            
         fig = plot_windows(df_windows, channel_names, col_titles, title=fig_title)
 
         # save
@@ -284,14 +316,87 @@ def plot_trials(path_data, n, dates=None, subjects=None, modes=None, path_out='.
         
     return
 
+def plot_pickled_windows(path_windows, n, fig_title=None, path_out='.', save=False):
+    '''
+    Plots subset of windows from a pickled windows DataFrame.
+    Optionally saves figure as .png file.
+
+    Parameters
+    ----------
+    path_windows : string
+        Path to pickled windows
+    n : int
+        Maximnum number of samples for each finger.
+    fig_title : string
+        Title of figure to be passed to plot_windows().
+    path_out : string, optional
+        Path to output directory. The default is '.'.
+    save : boolean, optional
+        If True, plot is saved as .png file inside a subject directory. The default is False.
+    overwrite : boolean, optional
+        If True, overwrites existing figures. The default is False.
+
+    Returns
+    -------
+    None.
+
+    '''
+    
+    with open(path_windows, 'rb') as file_in:
+        df_windows_all = pickle.load(file_in)
+
+    # resample windows
+    df_windows = pd.DataFrame()
+    for i_finger, finger in enumerate(fingers):
+        df_finger = sample_df(df_windows_all, 'finger', finger, n)
+        df_windows = df_windows.append(df_finger)
+
+    # get channel names
+    column_names = list(df_windows)
+    channel_names = [c for c in column_names if 'channel' in c]    
+
+    # # get total number of keypresses per finger
+    # finger_sequence = [g[0] for g in groupby(df_windows_all['finger'])]
+    # dict_finger_count = {f:finger_sequence.count(f) for f in np.unique(finger_sequence)}
+
+    # # generate column titles
+    # col_titles = {}
+    # for finger in np.unique(finger_sequence):
+    #     if finger == 0:
+    #         col_titles[finger] = fingers_map[finger] # baseline
+    #     else:
+    #         # col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
+    #         col_titles[finger] = '{}'.format(fingers_map[finger])
+    
+    col_titles = generate_col_titles(df_windows_all)
+
+    fig = plot_windows(df_windows, channel_names, col_titles, title=fig_title)
+
+    # save
+    if save:
+        filename_windows = os.path.basename(path_windows)
+        filename_out = 'plot_{}.png'.format(os.path.splitext(filename_windows)[0])
+        path_out = os.path.join(path_out, filename_out)
+        fig.savefig(path_out, dpi=100)
+        print('Saved figure: {}'.format(path_out))
+        
+    return
+
 if __name__ == '__main__':
     
     path_data = '../data'
     path_out = '../data/window_plots'
-    n = 15
+    n = 3
     
-    plot_trials(path_data, n=n, subjects=['001'], modes=[1, 2, 4], 
-                path_out=path_out, save=True)
+    # creates windows and plots them
+    plot_trials(path_data, n=n, subjects=['007'], modes=[1, 2, 4], trial_groups=['good', 'bad'], 
+                path_out=path_out, save=True, add_title=False)
+    
+    # # plots windows that have already been saved
+    # path_windows = 'windows/windows_date_all_subject_all_mode_1_2_4_groups_good_1000ms.pkl'
+    # plot_pickled_windows(path_windows, n, path_out='windows', save=True)
+    
+    
     
     
     
