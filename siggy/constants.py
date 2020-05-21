@@ -45,7 +45,8 @@ LABEL_MAP = {'1':10, '2':9, '3':8, '4':7, '5':7, '6': 2, '7':2, '8':3, '9':4, '0
              'a':10, 's':9, 'd':8, 'f':7, 'g':7, 'h':2, 'j':2, 'k':3, 'l':4, ';':5,
              'z':10, 'x':9, 'c':8, 'v':7, 'b':7, 'n':2, 'm':2, ',':3, '.':4, '/':5,
              '[':5, ']':5, "'":5, '\\':5 , 'space': 1, 'Shift': 10, 'Backspace':5, '`': 10,
-             '=': 5}
+             '=': 5,
+             'baseline':0}
 
 #All features currently implemented
 ALL_FEATURES = ['iemg','mav','mmav','var', 'var_abs', 'rms','rms_3', 'wl', 'zc','ssc', 'wamp','freq_feats','freq_var']

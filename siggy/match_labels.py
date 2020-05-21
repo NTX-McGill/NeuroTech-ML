@@ -9,8 +9,61 @@ import os
 import re
 import pickle
 
+def get_power(arr, ax=None):
+    
+    # compute PSD
+    nperseg = arr.shape[-1]/2
+    nfft = max(nperseg*2, 50)
+    freqs, Pxx = signal.welch(arr, fs=SAMPLING_FREQ, window='hanning', nperseg=nperseg, nfft=nfft, scaling='density')
+    
+    # keep only values for frequencies in a certain range
+    limits = [10, 50]
+    indices = [i for i in range(len(freqs)) if (freqs[i] > limits[0] and freqs[i] < limits[1])]
+    freqs = freqs[indices]
+    Pxx = Pxx[:, indices]
+    
+    # mean PSD for each channel
+    Pxx_mean = np.mean(Pxx, axis=-1)
+
+    # return max mean channel PSD
+    return np.max(Pxx_mean)
+
+def split_window(w, size, overlap=0.5, axis=-1):
+    
+    size = int(size)
+    
+    if size >= w.shape[axis]:
+        return [w]
+    
+    shift = int(overlap*size)
+    subwindows = []
+    
+    for i in range(0, w.shape[axis], shift):
+        subwindow = w[:, i:i+size]
+        if subwindow.shape[axis] == size:
+            subwindows.append(subwindow)
+    
+    return subwindows
+
+def is_baseline(w, len_subwindow, method='power', threshold=5):
+    
+    functions = {'power':get_power}
+    
+    w = np.stack(w, axis=0)
+    (n_channels, n_points) = w.shape
+    
+    subwindows = split_window(w, len_subwindow)
+    
+    for subwindow in subwindows:
+        if len(subwindow) == 0:
+            continue
+        if functions[method](subwindow) > threshold:
+            return False
+    
+    return True
+
 # not the same as the one in train.py
-def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1, seed=7):
+def sample_baseline(df, baselinelabel=np.NaN, method='mean', drop_rest=False, baseline_sample_factor=1, seed=7):
     """
     Select a subset of the baseline: convert the selected rows' label from NaN to 0
     runs in-place
@@ -28,10 +81,18 @@ def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1,
     Modified DataFrame
 
     """
+        
+    if baselinelabel is np.NaN:
+        df_baseline = df[np.logical_not(df['finger'].notnull())]
+    elif baselinelabel == 0:
+        df_baseline = df.loc[df['finger'] == 0]
+        df = df.loc[df['finger'] != 0] # remove baseline rows from DataFrame
+    else:
+        raise ValueError('Invalid argument for baselinelabel: {}'.format(baselinelabel))
     
-    fingers = df['finger']
+    fingers = df['finger'].loc[df['finger'].notnull()]
     
-    # take the maximum of all existing classes (excluding NaN), then multiply by the sample factor
+    # take the maximum of all existing classes (excluding NaN and 0), then multiply by the sample factor
     # if this maximum exceeds the number of NaN rows, uses all NaN rows
     if method == 'max':
         n_baseline_samples = min(len(df[np.logical_not(df['finger'].notnull())]), np.max(fingers.value_counts())) * baseline_sample_factor
@@ -51,9 +112,11 @@ def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1,
     else:
         raise ValueError('Invalid method: {}. Accepted methods are \'max\' and \'mean\''.format(method))
         
-    
-    baseline_samples = df[np.logical_not(df['finger'].notnull())].sample(n=n_baseline_samples, replace=False, random_state=seed)
-    df.loc[baseline_samples.index, ['finger']] = 0
+    baseline_samples = df_baseline.sample(n=n_baseline_samples, replace=False, random_state=seed)
+    if baselinelabel != 0:
+        df.loc[baseline_samples.index, ['finger']] = 0
+    else:
+        df = df.append(baseline_samples)
     
     # drop all rows where 'finger' is NaN
     if drop_rest:
@@ -61,6 +124,7 @@ def sample_baseline(df, method='max', drop_rest=False, baseline_sample_factor=1,
         df.reset_index(drop=True, inplace=True)
     
     return df
+    
 
 # copied from real_time filter.py
 def test_filter(windows, fs=250, order=2, low=5.0, high=50.0):
@@ -266,7 +330,11 @@ def to_hand(input_val):
 
     """
 
-    if type(input_val) == str:
+    if input_val == 'baseline':
+        return np.NaN
+    elif input_val == 0:
+        return np.NaN
+    elif type(input_val) == str:
         return (LABEL_MAP[input_val] - 1) // 5 + 1
     elif type(input_val) == int:
         return (input_val - 1) // 5 + 1
@@ -373,7 +441,7 @@ def get_window_label(labels, win_start, win_len):
 
 def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, 
                    filter_type='real_time_filter', drop_rest=True, sample=True,
-                   baseline_sample_factor=1, method='max'):
+                   baseline_sample_factor=1, method='mean'):
     """
         Combines data points from data into labeled windows
         inputs:
@@ -437,21 +505,33 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     window_labels = []
     
     # margin for labels
-    # margin = max(0, SAMPLING_FREQ - length) // 2
+    margin = max(0, (0.3 * SAMPLING_FREQ) - length) // 2
+    margin = int(margin)
     # print(margin)
     
     for i_window, window in windows_df.iterrows():
+                
+        # if window is baseline, label accordingly (0 or 'baseline')
+        if is_baseline(window, 0.1*SAMPLING_FREQ):
+            
+            if label_col == 'finger':
+                window_labels.append(0)
+            elif label_col == 'keypressed':
+                window_labels.append('baseline')
         
-        # TODO: label like this
-        # - if window is baseline, add label = 0
-        # - else find a label using 1s range centered around window
-        # note: sample_baseline will have to be done differently, just take a subset of rows where 'finger' is already 0
-        
-        i = i_window * shift
-        
-        #Get all not-null labels in the window (if any) and choose which one to use for the window
-        w_labels = labels[i: i + length][labels[i: i + length].notnull()] # TODO: increase range using margin
-        window_labels.append(get_window_label(w_labels, i, length))
+        # else find a label using 1s range centered around window
+        else:
+            
+            i = int(i_window * shift)
+            
+            #Get all not-null labels in a range around the window (if any)
+            #and choose which one to use for the window
+            
+            i_start = max(i - margin, 0)
+            i_end = i + length + margin
+            
+            w_labels = labels[i_start:i_end][labels[i_start:i_end].notnull()]
+            window_labels.append(get_window_label(w_labels, i, length))
     
     window_labels_series = pd.Series(window_labels)
     if label_col == 'keypressed':
@@ -460,7 +540,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
         windows_df['keypressed'] = window_labels_series            #Keep labels as they are
     else:
         windows_df['hand'] = window_labels_series.apply(to_hand)            #Map finger to hand
-        windows_df['finger'] = window_labels_series                         #Kepp labels as they are
+        windows_df['finger'] = window_labels_series                         #Keep labels as they are
         windows_df['keypressed'] = pd.Series(np.full(len(windows), np.NaN)) #No key presses
     
     #All the windows have the same id and mode as labeled data
@@ -470,6 +550,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     # add finger=0 for random subset of baseline samples
     if sample:
         windows_df = sample_baseline(windows_df, 
+                                     baselinelabel=0,   # either 0 or np.NaN
                                      drop_rest=drop_rest,
                                      baseline_sample_factor=baseline_sample_factor,
                                      method=method)
@@ -744,7 +825,7 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
                            length=1, shift=0.1,
                            save=False, path_out='.', append='',
                            filter_type='real_time_filter',
-                           method='max'):
+                           method='mean'):
     """
     Selects trials based on dates/subjects/modes, 
     then creates windows and aggregates them together.
@@ -844,9 +925,4 @@ if __name__ == '__main__':
 
     # b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
     
-    # directory = '../data/2020-02-23/'
-    # labeled_raw, good_windows = create_dataset(directory, channels)    
-#     windows.to_csv('windows-2020-02-23.csv', index=False)
-    # good_windows.to_pickle('windows-2020-02-23_not_real_time.pkl')
-
-#    w = pd.read_pickle('windows-2020-02-23.pkl')
+    
