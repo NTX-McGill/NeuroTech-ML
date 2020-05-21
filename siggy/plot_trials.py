@@ -34,10 +34,11 @@ seed = 3791
 channels = [1, 2, 3, 4, 5, 6, 7, 8]
 fingers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-size_axis_title = 36
-size_axis_labels = 24
-size_axis_ticks = 18
-size_fig_title = 'xx-large'
+# text size
+size_axis_title = 'large'
+size_axis_labels = 'large'
+size_axis_ticks = 'medium'
+size_fig_title = 'x-large'
 
 def sample_df(df, column_name, value, n):
     '''
@@ -70,7 +71,7 @@ def sample_df(df, column_name, value, n):
     # sample rows
     return df_value.sample(n=min(n, max_n), replace=False, random_state=seed)
 
-def plot_window(ax, row_data, channel_names):
+def plot_window(ax, row_data, channel_names, center='zero'):
     '''
     Plots window timeseries for a specific row of a windows dataframe.
 
@@ -88,7 +89,7 @@ def plot_window(ax, row_data, channel_names):
     None.
 
     '''
-    
+        
     ylim = [-200, 200] # y-axis limits
     
     legend = []
@@ -96,6 +97,10 @@ def plot_window(ax, row_data, channel_names):
     # plot each channel
     for i_channel, channel_name in enumerate(channel_names):
         data = row_data[channel_name]
+        
+        if center == 'average':
+            data = data - np.mean(data)
+        
         ax.plot(data, color=colours_map[channel_name], alpha=0.8)
         legend.append(channel_names[i_channel].capitalize())
 
@@ -103,13 +108,13 @@ def plot_window(ax, row_data, channel_names):
     ax.legend(legend, ncol=2)
     
     # set x/y-axis limits
-    # ax.set_xlabel('Time sample', fontsize=size_axis_labels)
+    ax.set_xlabel('Time sample', fontsize=size_axis_labels)
     ax.set_xlim(left=0, right=len(data))
     ax.set_ylim(bottom=ylim[0], top=ylim[1])
         
     return
 
-def plot_windows(df, channel_names, col_titles, title=None):
+def plot_windows(df, channel_names, col_titles, center='zero', title=None):
     '''
     Plots all windows in a windows dataframe, with one column per finger.
 
@@ -157,11 +162,11 @@ def plot_windows(df, channel_names, col_titles, title=None):
         subplots_state[i_col].append(1)
         
         # select correct subplot to fill
-        if n_rows == 0 and n_cols == 0:
+        if n_rows == 1 and n_cols == 1:
             ax = axes
-        elif n_rows == 0:
+        elif n_rows == 1:
             ax = axes[i_col]
-        elif n_cols == 0:
+        elif n_cols == 1:
             ax = axes[i_row]
         else:
             ax = axes[i_row][i_col]
@@ -169,15 +174,13 @@ def plot_windows(df, channel_names, col_titles, title=None):
         ax.tick_params(axis='both', which='major', labelsize=size_axis_ticks)
         
         # plot window
-        plot_window(ax, row_data, channel_names)
+        plot_window(ax, row_data, channel_names, center=center)
         
         # add subplot title for first row
         if i_row == 0:
             ax.set_title(col_titles[finger], fontsize=size_axis_title)
         if i_col == 0:
             ax.set_ylabel('Amplitude (\u03BCV)', fontsize=size_axis_labels)
-        if i_row == n_rows - 1:
-            ax.set_xlabel('Time sample', fontsize=size_axis_labels)
     
     # 'turn off' subplots that are empty
     for i_col in range(n_cols):
@@ -211,8 +214,8 @@ def generate_col_titles(df_windows):
         if finger == 0:
             col_titles[finger] = fingers_map[finger] # baseline
         else:
-            # col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
-            col_titles[finger] = '{}'.format(fingers_map[finger])
+            # col_titles[finger] = '{}'.format(fingers_map[finger])
+            col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
     return col_titles
 
 def plot_trials(path_data, n, dates=None, subjects=None, modes=None, trial_groups=None, path_out='.', save=False, add_title=True, overwrite=False):
@@ -289,18 +292,6 @@ def plot_trials(path_data, n, dates=None, subjects=None, modes=None, trial_group
         mode_id = np.array(df_windows['mode'])[0]
         mode = mode_id_map[mode_id]
 
-        # # get total number of keypresses per finger
-        # finger_sequence = [g[0] for g in groupby(df_windows_all['finger'])]
-        # dict_finger_count = {f:finger_sequence.count(f) for f in np.unique(finger_sequence)}
-
-        # # generate column titles
-        # col_titles = {}
-        # for finger in np.unique(finger_sequence):
-        #     if finger == 0:
-        #         col_titles[finger] = fingers_map[finger] # baseline
-        #     else:
-        #         col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
-        
         col_titles = generate_col_titles(df_windows_all)
 
         if add_title:
@@ -314,9 +305,9 @@ def plot_trials(path_data, n, dates=None, subjects=None, modes=None, trial_group
         if save:
             fig.savefig(filename_out, dpi=100)
         
-    return
+    return fig
 
-def plot_pickled_windows(path_windows, n, fig_title=None, path_out='.', save=False):
+def plot_pickled_windows(path_windows, n, center='zero', fig_title=None, path_out='.', save=False):
     '''
     Plots subset of windows from a pickled windows DataFrame.
     Optionally saves figure as .png file.
@@ -355,22 +346,9 @@ def plot_pickled_windows(path_windows, n, fig_title=None, path_out='.', save=Fal
     column_names = list(df_windows)
     channel_names = [c for c in column_names if 'channel' in c]    
 
-    # # get total number of keypresses per finger
-    # finger_sequence = [g[0] for g in groupby(df_windows_all['finger'])]
-    # dict_finger_count = {f:finger_sequence.count(f) for f in np.unique(finger_sequence)}
-
-    # # generate column titles
-    # col_titles = {}
-    # for finger in np.unique(finger_sequence):
-    #     if finger == 0:
-    #         col_titles[finger] = fingers_map[finger] # baseline
-    #     else:
-    #         # col_titles[finger] = '{} ({} keypresses total)'.format(fingers_map[finger], dict_finger_count[finger])
-    #         col_titles[finger] = '{}'.format(fingers_map[finger])
-    
     col_titles = generate_col_titles(df_windows_all)
 
-    fig = plot_windows(df_windows, channel_names, col_titles, title=fig_title)
+    fig = plot_windows(df_windows, channel_names, col_titles, center=center, title=fig_title)
 
     # save
     if save:
@@ -380,21 +358,21 @@ def plot_pickled_windows(path_windows, n, fig_title=None, path_out='.', save=Fal
         fig.savefig(path_out, dpi=100)
         print('Saved figure: {}'.format(path_out))
         
-    return
+    return fig
 
 if __name__ == '__main__':
     
     path_data = '../data'
     path_out = '../data/window_plots'
-    n = 3
+    n = 50
     
     # creates windows and plots them
-    plot_trials(path_data, n=n, subjects=['007'], modes=[1, 2, 4], trial_groups=['good', 'bad'], 
-                path_out=path_out, save=True, add_title=False)
+    # plot_trials(path_data, n=n, subjects=['007'], modes=[1, 2, 4], trial_groups=['good', 'bad'], 
+    #             path_out=path_out, save=True, add_title=True)
     
     # # plots windows that have already been saved
-    # path_windows = 'windows/windows_date_all_subject_all_mode_1_2_4_groups_good_1000ms.pkl'
-    # plot_pickled_windows(path_windows, n, path_out='windows', save=True)
+    path_windows = 'windows/windows_date_all_subject_all_mode_1_2_4_groups_ok_good_200ms_test.pkl'
+    plot_pickled_windows(path_windows, n, path_out='windows', save=True)
     
     
     
