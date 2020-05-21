@@ -9,7 +9,7 @@ import os
 import re
 import pickle
 
-def get_power(arr, ax=None):
+def get_power(arr):
     
     # compute PSD
     nperseg = arr.shape[-1]/2
@@ -50,7 +50,6 @@ def is_baseline(w, len_subwindow, method='power', threshold=5):
     functions = {'power':get_power}
     
     w = np.stack(w, axis=0)
-    (n_channels, n_points) = w.shape
     
     subwindows = split_window(w, len_subwindow)
     
@@ -63,7 +62,7 @@ def is_baseline(w, len_subwindow, method='power', threshold=5):
     return True
 
 # not the same as the one in train.py
-def sample_baseline(df, baselinelabel=np.NaN, method='mean', drop_rest=False, baseline_sample_factor=1, seed=7):
+def sample_baseline(df, baseline_label=np.NaN, method='mean', drop_rest=False, baseline_sample_factor=1, seed=7):
     """
     Select a subset of the baseline: convert the selected rows' label from NaN to 0
     runs in-place
@@ -82,24 +81,24 @@ def sample_baseline(df, baselinelabel=np.NaN, method='mean', drop_rest=False, ba
 
     """
         
-    if baselinelabel is np.NaN:
+    if baseline_label is np.NaN:
         df_baseline = df[np.logical_not(df['finger'].notnull())]
-    elif baselinelabel == 0:
+    elif baseline_label == 0:
         df_baseline = df.loc[df['finger'] == 0]
         df = df.loc[df['finger'] != 0] # remove baseline rows from DataFrame
     else:
-        raise ValueError('Invalid argument for baselinelabel: {}'.format(baselinelabel))
+        raise ValueError('Invalid argument for baseline_label: {}'.format(baseline_label))
     
     fingers = df['finger'].loc[df['finger'].notnull()]
     
     # take the maximum of all existing classes (excluding NaN and 0), then multiply by the sample factor
     # if this maximum exceeds the number of NaN rows, uses all NaN rows
     if method == 'max':
-        n_baseline_samples = min(len(df[np.logical_not(df['finger'].notnull())]), np.max(fingers.value_counts())) * baseline_sample_factor
+        n_baseline_samples = min(len(df_baseline), np.max(fingers.value_counts())) * baseline_sample_factor
     
     # other option: take the mean instead
     elif method == 'mean':
-        n_baseline_samples = int( fingers.count()/fingers.nunique() ) * baseline_sample_factor
+        n_baseline_samples = min( len(df_baseline), int( fingers.count()/fingers.nunique() ) ) * baseline_sample_factor
     
     # other option : take a fixed amount of baseline samples
     elif method == 'determined amount':
@@ -107,13 +106,13 @@ def sample_baseline(df, baselinelabel=np.NaN, method='mean', drop_rest=False, ba
     
     # other option : take the entire baseline
     elif method == 'everything':
-        n_baseline_samples = len(df[df['finger'].isnull()])
+        n_baseline_samples = len(df_baseline)
     
     else:
         raise ValueError('Invalid method: {}. Accepted methods are \'max\' and \'mean\''.format(method))
         
     baseline_samples = df_baseline.sample(n=n_baseline_samples, replace=False, random_state=seed)
-    if baselinelabel != 0:
+    if baseline_label != 0:
         df.loc[baseline_samples.index, ['finger']] = 0
     else:
         df = df.append(baseline_samples)
@@ -441,7 +440,7 @@ def get_window_label(labels, win_start, win_len):
 
 def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, 
                    filter_type='real_time_filter', drop_rest=True, sample=True,
-                   baseline_sample_factor=1, method='mean'):
+                   baseline_sample_factor=1, method='mean', labelling_method='old'):
     """
         Combines data points from data into labeled windows
         inputs:
@@ -510,28 +509,44 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     # print(margin)
     
     for i_window, window in windows_df.iterrows():
-                
-        # if window is baseline, label accordingly (0 or 'baseline')
-        if is_baseline(window, 0.1*SAMPLING_FREQ):
-            
-            if label_col == 'finger':
-                window_labels.append(0)
-            elif label_col == 'keypressed':
-                window_labels.append('baseline')
         
-        # else find a label using 1s range centered around window
-        else:
+        if labelling_method == 'old':
+            
+            baseline_label = np.NaN
             
             i = int(i_window * shift)
-            
+                
             #Get all not-null labels in a range around the window (if any)
             #and choose which one to use for the window
-            
-            i_start = max(i - margin, 0)
-            i_end = i + length + margin
-            
-            w_labels = labels[i_start:i_end][labels[i_start:i_end].notnull()]
+                
+            w_labels = labels[i:i+length][labels[i:i+length].notnull()]
             window_labels.append(get_window_label(w_labels, i, length))
+            
+        else:
+                
+            baseline_label = 0
+            
+            # if window is baseline, label accordingly (0 or 'baseline')
+            if is_baseline(window, 0.1*SAMPLING_FREQ, method=labelling_method):
+                
+                if label_col == 'finger':
+                    window_labels.append(0)
+                elif label_col == 'keypressed':
+                    window_labels.append('baseline')
+            
+            # else find a label using 1s range centered around window
+            else:
+                
+                i = int(i_window * shift)
+                
+                #Get all not-null labels in a range around the window (if any)
+                #and choose which one to use for the window
+                
+                i_start = max(i - margin, 0)
+                i_end = i + length + margin
+                
+                w_labels = labels[i_start:i_end][labels[i_start:i_end].notnull()]
+                window_labels.append(get_window_label(w_labels, i, length))
     
     window_labels_series = pd.Series(window_labels)
     if label_col == 'keypressed':
@@ -550,7 +565,7 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     # add finger=0 for random subset of baseline samples
     if sample:
         windows_df = sample_baseline(windows_df, 
-                                     baselinelabel=0,   # either 0 or np.NaN
+                                     baseline_label=baseline_label,   # either 0 or np.NaN
                                      drop_rest=drop_rest,
                                      baseline_sample_factor=baseline_sample_factor,
                                      method=method)
@@ -825,7 +840,8 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
                            length=1, shift=0.1,
                            save=False, path_out='.', append='',
                            filter_type='real_time_filter',
-                           method='mean'):
+                           method='mean',
+                           labelling_method='old'):
     """
     Selects trials based on dates/subjects/modes, 
     then creates windows and aggregates them together.
@@ -872,7 +888,8 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
             
             data = load_data(file_data, file_log, channels)
             windows = create_windows(data, length=length, shift=shift,
-                                     method=method, filter_type=filter_type)# returns filtered windows
+                                     method=method, filter_type=filter_type, # returns filtered windows
+                                     labelling_method=labelling_method)
             
             windows_all = windows_all.append(windows)
         except ValueError as e:
@@ -891,9 +908,10 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
             else:
                 to_add.append('all')
                 
-        filename = 'windows_date_{}_subject_{}_mode_{}_groups_{}_{}ms{}{}.pkl'.format(
+        filename = 'windows_date_{}_subject_{}_mode_{}_groups_{}_{}ms_{}{}{}.pkl'.format(
             to_add[0], to_add[1], to_add[2], to_add[3],
             int(length*1000),
+            labelling_method if (labelling_method != 'old') else 'old_labelling',
             '_unfiltered' if not (filter_type == 'real_time_filter') else '',
             append)
         
@@ -920,8 +938,9 @@ if __name__ == '__main__':
     # filenames = select_files(path_data, modes=[4])
     w = get_aggregated_windows(path_data, modes=[1,2,4], trial_groups=['ok', 'good'], 
                                length=0.2, shift=0.1,
-                               save=True, path_out='windows', append='_test',
-                               filter_type='real_time_filter')
+                               save=True, path_out='windows', append='',
+                               filter_type='real_time_filter',
+                               labelling_method='power')
 
     # b = get_aggregate_baseline_windows(path_data,modes=[1],save=True,path_out='windows')
     
