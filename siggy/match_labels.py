@@ -157,7 +157,7 @@ def closest_time(times, marker_time):
     
     return np.argmin(np.abs(times - marker_time))
 
-def notch_filter(freq=60.0, fs=250):
+def notch_filter(freq=60.0, fs=250, Q=60):
     """
         Design notch filter. Outputs numerator and denominator polynomials of iir filter.
         inputs:
@@ -167,7 +167,7 @@ def notch_filter(freq=60.0, fs=250):
         outputs:
             (ndarray), (ndarray)
     """
-    return signal.iirnotch(freq, freq / 6, fs=fs)
+    return signal.iirnotch(freq, freq / Q, fs=fs)
     
 def butter_filter(low=5.0, high=50.0, order=4, fs=250):
     """
