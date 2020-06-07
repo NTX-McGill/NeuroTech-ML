@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-def notch_filter_helper(freq=60.0, fs=250, Q=60):
+def notch_filter(freq=60.0, fs=250, Q=60):
     """
         Design notch filter. Outputs numerator and denominator polynomials of iir filter.
         inputs:
@@ -14,7 +14,7 @@ def notch_filter_helper(freq=60.0, fs=250, Q=60):
     """
     return signal.iirnotch(freq, freq / Q, fs=fs)
     
-def butter_filter_helper(low=5.0, high=50.0, order=4, fs=250):
+def butter_filter(low=5.0, high=50.0, order=4, fs=250):
     """
         Design butterworth filter. Outputs numerator and denominator polynomials of iir filter.
         inputs:
@@ -28,7 +28,7 @@ def butter_filter_helper(low=5.0, high=50.0, order=4, fs=250):
     nyq = fs / 2
     return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
 
-def filter_signal_helper(arr, notch=True, filter_type='original_filter', start_of_overlap=25):
+def filter_signal(arr, notch=True, filter_type='original_filter', start_of_overlap=25):
     """
         Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
         inputs:
@@ -90,7 +90,7 @@ def filter_signal_helper(arr, notch=True, filter_type='original_filter', start_o
         raise Exception
         
 
-def filter_dataframe_helper(df,filter_type='original_filter', start_of_overlap=25):
+def filter_dataframe(df,filter_type='original_filter', start_of_overlap=25):
     """
         Filters the signals in a dataframe.
         inputs:

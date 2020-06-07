@@ -12,18 +12,6 @@ import pickle
 from filtering import *
 from windowing_helpers import *
 
-def notch_filter(freq=60.0, fs=250, Q=60):
-    return notch_filter_helper(freq, fs, Q)
-    
-def butter_filter(low=5.0, high=50.0, order=4, fs=250):
-    return butter_filter_helper(low, high, order, fs)
-
-def filter_signal(arr, notch=True, filter_type='original_filter', start_of_overlap=25):
-    return filter_dataframe_helper(arr, notch, filter_type, start_of_overlap)
-        
-def filter_dataframe(df,filter_type='original_filter', start_of_overlap=25):
-    return filter_dataframe_helper(df, filtter_type, start_of_overlap)
-
 def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, 
                    filter_type='real_time_filter', drop_rest=True, sample=True,
                    baseline_sample_factor=1, method='mean', labelling_method='old'):
