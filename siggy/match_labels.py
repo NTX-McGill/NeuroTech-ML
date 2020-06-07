@@ -552,47 +552,6 @@ def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False,
     
     return windows_df
 
-def create_dataset(directory, channels, filter_type='original_filter', file_regex='*.txt'):
-    """
-    Combines all datasets in 'directory' into a single DataFrame.
-    Optionally filters the data.
-    inputs:
-        directory   (string)
-        filter_data (boolean)
-     outputs:
-        out         (DataFrame)
-        windows     (DataFrame)
-    """
-    # Set up which files and channels to merge
-    files = sorted(glob(directory + '/' + file_regex))
-
-    # Merge dataframes from files
-    big_data = pd.DataFrame()
-    windows = pd.DataFrame()
-    for i in range(0, len(files), 2):
-        print("Appending trial with labels:", files[i])
-        data = load_data(files[i+1], files[i], channels)
-        
-        # Filter data
-        if filter_type == 'original_filter':
-            data = filter_dataframe(data,filter_type=filter_type)
-        
-        # Window data
-        w = create_windows(data, filter_type=filter_type)
-        
-        #Add data/windows to larger dataframe 
-        big_data = big_data.append(data) 
-        windows = windows.append(w)
-        
-        print("Adding windows with shape:", str(w.shape) + ". Current total size:", str(windows.shape))
-        print("Adding data with shape:", str(data.shape) + ". Current total size:", str(big_data.shape))
-    
-    #Reindex datarames before returning
-    big_data.reset_index(drop=True, inplace=True)
-    windows.reset_index(drop=True, inplace=True)
-    
-    return big_data, windows
-
 def select_files(path_data, path_trials_json='.', dates=None, subjects=None, modes=None, trial_groups=None):
     """
     Selects data files according to specifications.
