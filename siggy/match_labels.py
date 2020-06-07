@@ -125,26 +125,6 @@ def sample_baseline(df, baseline_label=np.NaN, method='mean', drop_rest=False, b
     return df
     
 
-# copied from real_time filter.py
-def test_filter(windows, fs=250, order=2, low=5.0, high=50.0):
-    result = []
-    nyq = fs / 2
-    bb, ba = signal.butter(order, [low/nyq, high/nyq], 'bandpass')
-    bz = signal.lfilter_zi(bb, ba)
-
-    notch_freq = 60.0
-    bp_stop = notch_freq + 3.0 * np.array([-1,1])
-    nb, na = signal.iirnotch(notch_freq, notch_freq / 6, fs)
-    nz = signal.lfilter_zi(nb, na)
-
-    for w in windows:
-        w, nz = signal.lfilter(nb, na, w, zi=nz)
-        w, bz = signal.lfilter(bb, ba, w, zi=bz)
-        result.append(w)
-    
-    return result
-
-
 def closest_time(times, marker_time):
     """
         Get row index of data timestamp closest to marker_time 
