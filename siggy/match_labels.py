@@ -13,6 +13,7 @@ from filtering import *
 from windowing_helpers import *
 
 def create_windows(data, length=1, shift=0.1, offset=2, take_everything=False, 
+                   low=5.0, high=50.0, order=4, fs=250, freq=60.0, Q=60, notch=True,
                    filter_type='real_time_filter', drop_rest=True, sample=True,
                    baseline_sample_factor=1, method='mean', labelling_method='old'):
     """
@@ -292,13 +293,11 @@ def select_files(path_data, path_trials_json='.', dates=None, subjects=None, mod
     
     return selected_files
 
-def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,6,7,8], 
-                           dates=None, subjects=None, modes=None, trial_groups=None,
-                           length=1, shift=0.1,
-                           save=False, path_out='.', append='',
-                           filter_type='real_time_filter',
-                           method='mean',
-                           labelling_method='old'):
+def get_aggregated_windows(path_data, path_trials_json='.', dates=None, subjects=None, modes=None, trial_groups=None,
+                           channels=[1,2,3,4,5,6,7,8], length=1, shift=0.1, offset=2, take_everything=False,
+                           low=5.0, high=50.0, order=4, fs=250, freq=60.0, Q=60, notch=True, filter_type='real_time_filter',
+                           drop_rest=True, sample=True, baseline_sample_factor=1, method='mean', labelling_method='old',
+                           save=False, path_out='.', append=''):
     """
     Selects trials based on dates/subjects/modes, 
     then creates windows and aggregates them together.
@@ -344,9 +343,11 @@ def get_aggregated_windows(path_data, path_trials_json='.', channels=[1,2,3,4,5,
               '\tlog: {}'.format(file_log))
             
             data = load_data(file_data, file_log, channels)
-            windows = create_windows(data, length=length, shift=shift,
-                                     method=method, filter_type=filter_type, # returns filtered windows
-                                     labelling_method=labelling_method)
+            
+            # returns filtered windows
+            windows = create_windows(data, length=length, shift=shift, offset=offset, take_everything=take_everything,
+                                     low=low, high=high, order=order, fs=fs, freq=freq, Q=Q, notch=notch, filter_type=filter_type,
+                                     drop_rest=drop_rest, sample=sample, baseline_sample_factor=baseline_sample_factor, method=method, labelling_method=labelling_method) 
             
             windows_all = windows_all.append(windows)
         except ValueError as e:

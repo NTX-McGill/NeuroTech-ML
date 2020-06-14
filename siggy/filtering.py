@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from scipy import signal
 
 def notch_filter(freq=60.0, fs=250, Q=60):
@@ -28,7 +27,9 @@ def butter_filter(low=5.0, high=50.0, order=4, fs=250):
     nyq = fs / 2
     return signal.butter(order, [low / nyq, high / nyq], 'bandpass')
 
-def filter_signal(arr, notch=True, filter_type='original_filter', start_of_overlap=25):
+def filter_signal(arr, low=5.0, high=50.0, order=4, fs=250,
+                  freq=60.0, Q=60, notch=True, 
+                  filter_type='original_filter', start_of_overlap=25):
     """
         Apply butterworth (and optionally notch) filter to a signal. Outputs the filtered signal.
         inputs:
@@ -39,8 +40,8 @@ def filter_signal(arr, notch=True, filter_type='original_filter', start_of_overl
             (ndarray)
     """
     
-    bb, ba = butter_filter()
-    nb, na = notch_filter() 
+    bb, ba = butter_filter(low, high, order, fs)
+    nb, na = notch_filter(freq, fs, Q) 
     
     if filter_type=='original_filter':
         if notch:
@@ -90,7 +91,9 @@ def filter_signal(arr, notch=True, filter_type='original_filter', start_of_overl
         raise Exception
         
 
-def filter_dataframe(df,filter_type='original_filter', start_of_overlap=25):
+def filter_dataframe(df, low=5.0, high=50.0, order=4, fs=250, 
+                     freq=60.0, Q=60, notch=True, 
+                     filter_type='original_filter', start_of_overlap=25):
     """
         Filters the signals in a dataframe.
         inputs:
@@ -103,6 +106,9 @@ def filter_dataframe(df,filter_type='original_filter', start_of_overlap=25):
     
     for col in df.columns:
         if 'channel' in col:
-            filtered_df[col] = filter_signal(np.array(df[col]), filter_type=filter_type, start_of_overlap=start_of_overlap)
+            filtered_df[col] = filter_signal(np.array(df[col]),
+                                             low=low, high=high, order=order, fs=fs,
+                                             freq=freq, Q=Q, notch=notch,
+                                             filter_type=filter_type, start_of_overlap=start_of_overlap)
         
     return filtered_df
