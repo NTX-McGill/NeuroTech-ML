@@ -8,6 +8,8 @@ Created on Fri Mar  6 09:32:01 2020
 
 import numpy as np
 import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+import pandas as pd
 
 ###Temporal features
 
@@ -133,26 +135,39 @@ def freq_misc(signal):
     return [ssc(psd),mav(psd),mmav(psd),zc(psd-[.5]*len(psd))]
     
     
-## Unhelpful feature: power spectral density
-""" # FIX DIMENSIONS LATER
-def psd(signal):
-    shift = 0.1
-    fs_Hz = 250
-    NFFT = 256
-    overlap = NFFT - int(shift * fs_Hz)
+
+# %% PLOTTING FUNCTIONS THAT DISPLAY CORRELATION BETWEEN FEATURES
+def plot_corr_matrices(filename = "./features_windows_date_all_subject_all_mode_1_2_4_groups_good_1000ms.pkl"):
+    # read the file into pd 
+    df = pd.read_pickle(filename)
+    # drop the raw, we only carea bout features data
+    channel_names = ["channel 1","channel 2","channel 3","channel 4",
+                                "channel 5","channel 6","channel 7","channel 8"]
+    df = df.drop(axis=1,columns=channel_names)
+    # drop the baseline rows
+    df = df.dropna(axis=0,subset=['hand'])
     
-    # Pxx - 1D array for power spectrum values
-    # freq - 1D array corresponding to Pxx values
-    Pxx, freq = mlab.psd(np.squeeze(signal),
-                                   NFFT=NFFT,
-                                   window=mlab.window_hanning,
-                                   Fs=fs_Hz,
-                                   noverlap=overlap
-                                   )
-    # Make it size 130 so we can splice it
-    Pxx.append(Pxx[-1])
-    # Bin it by taking average power of every 10 hz
-    Pxx_bins = np.reshape(Pxx,(10,-1)).mean();
-    
-    return Pxx_bins
-"""
+    # plot the correlation matrices
+    for channel in ["channel 1","channel 2","channel 3","channel 4",
+                                "channel 5","channel 6","channel 7","channel 8"]:
+        chi_names = [i for i in df.columns if channel in i]
+        # select only channel_i features
+        df_chi = df[chi_names]
+        # take off the name 'channel i' for display purposes
+        column_names_mod = [i[9:] for i in df_chi.columns]
+        
+        # plot correlation matrix 
+        # credits to : https://stackoverflow.com/questions/29432629/plot-correlation-matrix-using-pandas
+        f = plt.figure(figsize=(19,15))
+        plt.matshow(df_chi.corr(),fignum=f.number)
+        plt.xticks(range(df_chi.shape[1]),column_names_mod,fontsize=14,rotation=90,alpha=.65)
+        plt.yticks(range(df_chi.shape[1]),column_names_mod,fontsize=14)
+        cb = plt.colorbar()
+        cb.ax.tick_params(labelsize=14)
+        plt.title("Correlation Matrix {}".format(channel),fontsize=45,color='b',alpha=0.5)
+        # plt.savefig("corr_matrix_{}_features".format(channel))
+        plt.show()
+
+
+if __name__=="__main__":
+    plot_corr_matrices()
