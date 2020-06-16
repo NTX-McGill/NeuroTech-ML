@@ -132,7 +132,7 @@ def freq_var(signal):
 # more freq domain features
 def freq_misc(signal):
     psd = get_psd(signal)
-    return [ssc(psd),mav(psd),mmav(psd),zc(psd-[.5]*len(psd))]
+    return [ssc(psd),mav(psd),mmav(psd),zc(psd-np.mean(psd)*np.array([.5]*len(psd)))]
     
     
 
