@@ -7,6 +7,7 @@ Created on Fri Mar  6 11:16:38 2020
 """
 import random
 import pickle
+import os
 import numpy as np
 import pandas as pd
 import seaborn as sn
@@ -21,7 +22,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
-from sklearn.metrics import plot_confusion_matrix,confusion_matrix
+from sklearn.metrics import plot_confusion_matrix, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 
 from siggy.constants import *
 from featurize import compute_features,all_names
@@ -50,31 +53,31 @@ def load_windows(filename, channels):
     df = pd.read_pickle(filename)
     df.reset_index(inplace=True)
     # set labels
-    df['keypressed'] = df['keypressed'].map(LABEL_MAP)
-    print("Key press values: {}".format(df['keypressed'].unique()))
+    # df['keypressed'] = df['keypressed'].map(LABEL_MAP)
+    print("Finger values: {}".format(df['finger'].unique()))
     return df
 
-def sample_baseline(df, labels, baseline_sample_factor=1):
-    """
-    Select a subset of the baseline: convert the selected rows' label from NaN to 0
-    runs in-place
+# def sample_baseline(df, labels, baseline_sample_factor=1):
+#     """
+#     Select a subset of the baseline: convert the selected rows' label from NaN to 0
+#     runs in-place
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-    labels : list
-    baseline_sample_factor : int
-        default 1 -> same number of baseline samples as single class
-        represents the amount to multiply the number of samples
+#     Parameters
+#     ----------
+#     df : pd.DataFrame
+#     labels : list
+#     baseline_sample_factor : int
+#         default 1 -> same number of baseline samples as single class
+#         represents the amount to multiply the number of samples
 
-    Returns
-    -------
-    None.
+#     Returns
+#     -------
+#     None.
 
-    """
-    n_baseline_samples = int(np.sum(df['keypressed'] > 0)/len(labels)) * baseline_sample_factor
-    baseline_samples = df[np.logical_not(df['keypressed'].notnull())].sample(n=n_baseline_samples, replace=False)
-    df.loc[baseline_samples.index, ['keypressed']] = 0
+#     """
+#     n_baseline_samples = int(np.sum(df['keypressed'] > 0)/len(labels)) * baseline_sample_factor
+#     baseline_samples = df[np.logical_not(df['keypressed'].notnull())].sample(n=n_baseline_samples, replace=False)
+#     df.loc[baseline_samples.index, ['keypressed']] = 0
 
 def print_dataset_stats(df):
     print(df['finger'].value_counts())
@@ -84,6 +87,10 @@ def test_all_models(X, Y, model_names, scoring='accuracy', n_splits=10):
     results = []
     for name in model_names:
         model = ALL_MODELS[name]() # instantiate model from dictionary
+        
+        if name == 'LR':
+            model = Pipeline([('scaler', StandardScaler()),
+                              ('lr', LogisticRegression(max_iter=1000))])
         
         kfold = model_selection.KFold(n_splits=n_splits)
         
@@ -448,9 +455,10 @@ if __name__ == '__main__':
     """
     
     # Features, models, and parameters to use
-    feature_names = ALL_FEATURES[:-1]
-    #model_names = ['LDA', 'CART', 'KNN']
-    model_names = ['KNN']
+    feature_names = ['mav','mmav', 'var', 'rms', 'rms_3', 'wl', 'zc', 'ssc', 'wamp', 'freq_feats', 'freq_var'] 
+
+    # model_names = ['LR']
+    model_names = ['LR']
     test_all_folds=True
     n_splits=10
     validation_size = 0.20
@@ -460,13 +468,15 @@ if __name__ == '__main__':
     label_name='finger'
     
     # filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good.pkl'
-    # filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_good_1000ms.pkl'    
-    filename = 'features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good_1000ms.pkl'
+    filename = 'features/features_windows_date_all_subject_all_mode_1_2_4_groups_ok_good_1000ms_power_max.pkl'    
+    # filename = 'siggy/windows/windows_date_all_subject_all_mode_1_2_4_groups_ok_good_500ms_power2.pkl'
 
     if 'features' in filename:
         ### MODE 1 : LOAD THE FEATURES DIRECTLY
+        print('Mode 1')
         
-        file_prefix = filename.split(".")[0].split('/')[-1]
+        feat_filename = os.path.basename(filename)
+        
         features = pd.read_pickle(filename)
         
         all_ch_names = [i for i in features.columns if 'channel' in i]
@@ -474,21 +484,23 @@ if __name__ == '__main__':
         
     else:
         ### MODE 2 : LOAD THE WINDOWS, COMPUTE THE FEATURES
+        print('Mode 2')
         
-        file_prefix = filename.split(".")[0].split('/')[-1]
         channel_names = ['channel {}'.format(i) for i in channels]
         
+        # load windows, compute features
         df = load_windows(filename, channels)
-        labels = df[label_name].unique()
-        sample_baseline(df, labels)
-        subset = df[df[label_name].notnull()]
-        #%% 
-        features, all_ch_names = compute_features(subset, channel_names, feature_names, mutate=True)
+        print('Using features: {}'.format(feature_names))
+        features, all_ch_names = compute_features(df, channel_names, feature_names, mutate=True)
+        
         # write pickle file
-        feat_filename = 'features_' + filename
-        with open(feat_filename, 'wb') as f_out:
+        feat_filename = 'features_' + os.path.basename(filename)
+        path_out = os.path.join('features', feat_filename)
+        with open(path_out, 'wb') as f_out:
             pickle.dump(features, f_out)
-            print('Saved windows to file {}'.format(filename))
+            print('Saved features to file {}'.format(path_out))
+            
+    #%%
     
     print_dataset_stats(features)
     cols = all_ch_names + [label_name] 
@@ -501,7 +513,8 @@ if __name__ == '__main__':
     features_shuffled = pd.concat(groups).reset_index(drop=True)
     
     X, Y = extract(features_shuffled, cols)
-    results = test_all_models(X,Y, model_names, n_splits=n_splits)
+    
+    results = test_all_models(X, Y, model_names, n_splits=n_splits)
     
     #%% 
     model_name = 'KNN'
@@ -509,7 +522,7 @@ if __name__ == '__main__':
                                           title='file : '+filename)
     
     # Save model earlier in case of issues with plotting
-    save_model(classifier, feature_names, file_prefix)
+    # save_model(classifier, feature_names, feat_filename)
     #%% 
     subset = features[features['mode'] == 1]
 
