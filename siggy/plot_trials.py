@@ -304,8 +304,6 @@ def plot_trials(path_data, n, dates=None, subjects=None, modes=None, trial_group
         # save
         if save:
             fig.savefig(filename_out, dpi=100)
-        
-    return fig
 
 def plot_pickled_windows(path_windows, n, center='zero', fig_title=None, path_out='.', save=False):
     '''
@@ -364,15 +362,15 @@ if __name__ == '__main__':
     
     path_data = '../data'
     path_out = '../data/window_plots'
-    n = 50
+    n = 15
     
     # creates windows and plots them
-    # plot_trials(path_data, n=n, subjects=['007'], modes=[1, 2, 4], trial_groups=['good', 'bad'], 
-    #             path_out=path_out, save=True, add_title=True)
+    plot_trials(path_data, n=n, subjects=['013'], modes=[1, 2, 4], 
+                path_out=path_out, save=True, add_title=True)
     
     # # plots windows that have already been saved
-    path_windows = 'windows/windows_date_all_subject_all_mode_1_2_4_groups_ok_good_200ms_test.pkl'
-    plot_pickled_windows(path_windows, n, path_out='windows', save=True)
+    # path_windows = 'windows/windows_date_all_subject_all_mode_1_2_4_groups_ok_good_200ms_test.pkl'
+    # plot_pickled_windows(path_windows, n, path_out='windows', save=True)
     
     
     
