@@ -52,7 +52,12 @@ def next_input(n,nodes=[root]):
     return strings,new_nodes # might return empty 
 
 if __name__=="__main__":    
-    numbers_string = text_to_numbers_string("hello this is a test")
+    phrase = "this is a text"
+    numbers_string = text_to_numbers_string(phrase)
+    print('in phone digits, the phrase "{}" becomes {}\nwhere 1 is for space\n'.format(phrase,numbers_string))
+    
+    print("the methods output a list of possibilities for each word:\n")
+
     nodes = [root]
     sentence = []
     for i in numbers_string+"1":

@@ -9,3 +9,7 @@ the file words_dictionary.json is the dictionary that I used, i got it off some 
 t9.py has methods that convert strings of text to strings of digits from 0-9 where 1 represents space and 0 is backspace
 
 the main method next_input takes a single base ten digit n and a list of nodes in the dictionary-trie (Trie) and returns a list of possible string representations and the corresponding list of nodes in the Trie. 
+
+this is what is output when you run t9.py 
+
+![t9.py output](https://github.com/NTX-McGill/NeuroTech-ML/tree/master/T9/t9pyoutput.png)

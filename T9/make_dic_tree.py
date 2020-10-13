@@ -18,6 +18,15 @@ def get_current_string(node):
         nd = nd.parent
     return current_str
 
+def get_parent(node):
+    return node.parent
+
+def get_child(node,l):
+    for child in node.children:
+        if child.data[0]==l: return child
+    return None
+        
+
 def get_node_at(string,root):
     # takes a string and tells you if there is a node which represents that string
     s = string[:]
