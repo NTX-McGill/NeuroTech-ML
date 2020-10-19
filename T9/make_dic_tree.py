@@ -1,5 +1,21 @@
 import json
 import pickle
+import numpy as np
+
+ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
+
+# define common words dictionary, global dictionary
+COMMON_WORDS_DIC = {}
+with open('google-books-common-words.txt','r') as f:
+    lines = f.readlines()
+
+for line in lines:
+    try:
+        word,freq = line.split("\t")
+        COMMON_WORDS_DIC[word.lower()]=int(freq)
+    except:
+        pass
+
 
 class Tree:
     def __init__(self,data,parent):
@@ -25,7 +41,20 @@ def get_child(node,l):
     for child in node.children:
         if child.data[0]==l: return child
     return None
-        
+
+# returns some potential candidates for word prediction, in string format at some node
+# the candidates are orderd from smallest to largest
+
+
+# takes a node and a depth and returns all the possible words of that depth
+def get_candidates(node,depth):
+    strings = []
+    if node.data[1]==1:
+        strings += [get_current_string(node)]
+    if depth >= 1:
+        for child in node.children:
+            strings += get_candidates(child, depth-1)
+    return strings
 
 def get_node_at(string,root):
     # takes a string and tells you if there is a node which represents that string
@@ -48,7 +77,7 @@ def build_tree(node,words_reduced):
     if not, init as leaf iff is_word=True
     if yes, init new node proprely and call build_tree recursively
     """
-    for l in 'abcdefghijklmnopqrstuvwxyz':
+    for l in ALPHABET:
         current_str = get_current_string(node)
         new_str = current_str+l
         words_more_reduced = [w for w in words_reduced if new_str==w[:len(new_str)]]
